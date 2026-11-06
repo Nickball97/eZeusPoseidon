@@ -236,6 +236,13 @@ public:
                 }
             }
             mTarget->setBlessed(mBless);
+            // A sanctified house instantly fills up to its maximum
+            // number of residents (never beyond it).
+            if(mBless > 0) {
+                if(const auto h = dynamic_cast<eHouseBase*>(mTarget.get())) {
+                    h->moveIn(h->vacancies());
+                }
+            }
         }
     }
 

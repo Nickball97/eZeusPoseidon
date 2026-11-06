@@ -54,6 +54,7 @@ double eEmployingBuilding::sBlessMultiplier(const eBuildingType type) {
     case eBuildingType::bibliotheke:
     case eBuildingType::laboratory:
     case eBuildingType::observatory:
+    case eBuildingType::museum:
         return 2.;
     default:
         return 1.5;

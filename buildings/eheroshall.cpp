@@ -396,6 +396,22 @@ std::string eHerosHall::sHeroRequirementStatusText(const eHeroRequirement& hr,
 }
 
 void eHerosHall::summon() {
+    // Summoning takes the required drachmas out of the treasury
+    // (Perseus, Bellerophon), as in the original game.
+    // The requirement list is only refreshed every few days, so check
+    // the treasury again before taking the money.
+    for(const auto& r : mRequirements) {
+        if(r.fType != eHeroRequirementType::drachmas) continue;
+        if(getBoard().drachmas(playerId()) < r.fRequiredCount) {
+            updateRequirementsStatus();
+            return;
+        }
+    }
+    for(const auto& r : mRequirements) {
+        if(r.fType != eHeroRequirementType::drachmas) continue;
+        getBoard().incDrachmas(playerId(), -r.fRequiredCount,
+                               eFinanceTarget::construction);
+    }
     mStage = eHeroSummoningStage::summoned;
     mArrivalCountdown = eNumbers::sHerosHallArrivalPeriod;
 }
