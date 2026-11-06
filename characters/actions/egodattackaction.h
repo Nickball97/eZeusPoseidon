@@ -6,6 +6,8 @@
 #include "walkable/eobsticlehandler.h"
 #include "etilehelper.h"
 
+enum class ePlayerSoldierType;
+
 enum class eGodAttackStage {
     none, appear, goTo1, patrol1, goTo2, patrol2, disappear
 };
@@ -26,6 +28,7 @@ public:
 private:
     void initialize();
     void applyArrivalEffects();
+    void spawnArmy(const ePlayerSoldierType type);
 
     bool lookForAttack(const int dtime, int& time,
                        const int freq, const int range);

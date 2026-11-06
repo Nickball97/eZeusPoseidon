@@ -10,6 +10,7 @@
 #include "buildings/ehousebase.h"
 #include "engine/eboardcity.h"
 #include "engine/eworldcity.h"
+#include "einvasionhandler.h"
 
 #include <algorithm>
 #include <cmath>
@@ -365,7 +366,12 @@ void eGodAttackAction::applyArrivalEffects() {
             ch->kill();
         }
     } break;
+    case eGodType::ares: // "marches into your city with an army of Sparti"
+        spawnArmy(ePlayerSoldierType::aresWarrior);
+        break;
     case eGodType::artemis: { // kills all hunters, wolves twice as strong
+        // "she and her Amazons launch a full-scale attack on your city"
+        spawnArmy(ePlayerSoldierType::amazon);
         killShare({eCharacterType::hunter}, 1);
         const auto chars = board.characters();
         for(const auto ch : chars) {
@@ -381,4 +387,18 @@ void eGodAttackAction::applyArrivalEffects() {
     } break;
     default: break;
     }
+}
+
+// An angry Ares or Artemis brings an army hostile to the city. The manual
+// gives no size; it uses the size of the army these gods lend a city that
+// worships them (2 companies, eNumbers::sSoldiersPerAresArtemisBanner each).
+void eGodAttackAction::spawnArmy(const ePlayerSoldierType type) {
+    auto& board = this->board();
+    const auto tile = character()->tile();
+    if(!tile) return;
+    const int count = 2*eNumbers::sSoldiersPerAresArtemisBanner;
+    // the handler registers itself with the city, saves with it and
+    // deletes itself when the army is gone
+    const auto h = new eInvasionHandler(board, cityId(), nullptr, nullptr);
+    h->initializeGodArmy(tile, type, count);
 }

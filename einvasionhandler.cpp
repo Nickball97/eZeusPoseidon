@@ -667,7 +667,7 @@ void eInvasionHandler::incTime(const int by) {
         }
     }
 
-    const auto invadingCid = mCity->cityId();
+    const auto invadingCid = invadingCityId();
     const auto invadingPid = mBoard.cityIdToPlayerId(invadingCid);
     const auto invasionDefeated = [&]() {
         tellHeroesAndGodsToGoBack();
@@ -695,7 +695,7 @@ void eInvasionHandler::incTime(const int by) {
                 invasionDefeated();
                 mStage = eInvasionStage::comeback;
             } else {
-                generateImmortals(mTile, mCity->cityId(),
+                generateImmortals(mTile, invadingCityId(),
                                   mAresLeft, mHeroesLeft);
                 mStage = eInvasionStage::spread;
             }
@@ -850,8 +850,7 @@ void eInvasionHandler::incTime(const int by) {
                 }
                 forces.kill(1 - double(count)/iniCount);
             }
-            assert(mEvent);
-            mEvent->invadersWon();
+            if(mEvent) mEvent->invadersWon();
         }
     } break;
     case eInvasionStage::comeback: {
@@ -1117,4 +1116,22 @@ bool eInvasionHandler::immortalsFighting() const {
         if(i) return true;
     }
     return false;
+}
+
+eCityId eInvasionHandler::invadingCityId() const {
+    return mCity ? mCity->cityId() : eCityId::neutralAggresive;
+}
+
+void eInvasionHandler::initializeGodArmy(eTile* const tile,
+                                         const ePlayerSoldierType type,
+                                         const int count) {
+    mStage = eInvasionStage::spread;
+    mTile = tile;
+    std::vector<eSoldierBanner*> solds;
+    const eSs ss{{type, count}};
+    generateSoldiersForCity(tile, ss, eCityId::neutralAggresive, solds);
+    const int tx = tile->x();
+    const int ty = tile->y();
+    eSoldierBanner::sPlace(solds, tx, ty, mBoard, 3, 3);
+    mCurrentTile = tile;
 }
