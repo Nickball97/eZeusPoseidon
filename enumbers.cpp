@@ -353,10 +353,15 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("wolf_hunt_wait_i", sWolfHuntWait, 20, 1, 1000);
     loadI("wolf_hunt_distance_i", sWolfHuntDistance, 60, 1, 1000);
 
-    loadI("olive_press_processing_period_i", sOlivePressProcessingPeriod, 20000, 1, 1000000);
-    loadI("winery_processing_period_i", sWineryProcessingPeriod, 20000, 1, 1000000);
-    loadI("armory_processing_period_i", sArmoryProcessingPeriod, 40000, 1, 1000000);
-    loadI("sculpture_studio_processing_period_i", sSculptureStudioProcessingPeriod, 100000, 1, 1000000);
+    // HeavenGames (gameinfo/industry-production): olive press, winery,
+    // sculpture studio and armory make 6 loads a year, the horse ranch
+    // 6 horses and the chariot factory 6 chariots. One year is
+    // 365 days.
+    const int sSixPerYear = (365*sDayLength)/6;
+    loadI("olive_press_processing_period_i", sOlivePressProcessingPeriod, sSixPerYear, 1, 1000000);
+    loadI("winery_processing_period_i", sWineryProcessingPeriod, sSixPerYear, 1, 1000000);
+    loadI("armory_processing_period_i", sArmoryProcessingPeriod, sSixPerYear, 1, 1000000);
+    loadI("sculpture_studio_processing_period_i", sSculptureStudioProcessingPeriod, sSixPerYear, 1, 1000000);
 
     loadI("farm_ripe_period_i", sFarmRipePeriod, 15000, 1, 1000000);
 
@@ -419,7 +424,7 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("heros_hall_spawn_period_i", sHerosHallSpawnPeriod, 5000, 1, 1000000);
 
     loadI("horse_ranch_wheat_use_period_i", sHorseRanchWheatUsePeriod, 1000, 1, 1000000);
-    loadI("horse_ranch_horse_spawn_period_i", sHorseRanchHorseSpawnPeriod, 40000, 1, 1000000);
+    loadI("horse_ranch_horse_spawn_period_i", sHorseRanchHorseSpawnPeriod, sSixPerYear, 1, 1000000);
 
     loadI("patroler_max_distance_i", sPatrolerMaxDistance, 40, 5, 1000);
     loadI("patroler_wait_time_i", sPatrolerWaitTime, 5000, 1, 1000000);
@@ -433,7 +438,7 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("trader_spawn_period_i", sTraderSpawnPeriod, 30000, 1, 1000000);
     loadI("two_way_trade_max_i", sTwoWayTradeMax, 4, 0, 100);
 
-    loadI("chariot_building_time_i", sChariotBuildingTime, 20000, 1, 1000000);
+    loadI("chariot_building_time_i", sChariotBuildingTime, sSixPerYear, 1, 1000000);
 
     loadI("olive_tree_ripe_period_i", sOliveTreeRipePeriod, 40000, 1, 1000000);
     loadI("vine_ripe_period_i", sVineRipePeriod, 40000, 1, 1000000);
