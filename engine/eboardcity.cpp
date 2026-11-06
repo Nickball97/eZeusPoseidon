@@ -1148,6 +1148,12 @@ void eBoardCity::allow(const eBuildingType type,
     mBoard.updateButtonsVisibility();
 }
 
+void eBoardCity::allowPyramid(const eBuildingType type,
+                              const std::vector<bool>& levels) {
+    mAvailableBuildings.allowPyramid(type, levels);
+    mBoard.updateButtonsVisibility();
+}
+
 void eBoardCity::disallow(const eBuildingType type,
                           const int id) {
     mAvailableBuildings.disallow(type, id);

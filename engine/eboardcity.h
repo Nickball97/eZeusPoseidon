@@ -137,6 +137,9 @@ public:
                const int id = -1);
     void disallow(const eBuildingType type,
                   const int id = -1);
+    // levels: one entry per pyramid level, true = black marble
+    void allowPyramid(const eBuildingType type,
+                      const std::vector<bool>& levels);
 
     bool manTowers() const { return mManTowers; }
     void setManTowers(const bool m);

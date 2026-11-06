@@ -3371,6 +3371,13 @@ target_include_directories(eZeus PRIVATE
 option(EZEUS_DEV_CHEATS "Enable developer test shortcuts" OFF)
 if(EZEUS_DEV_CHEATS)
     target_compile_definitions(eZeus PRIVATE EZEUS_DEV_CHEATS)
+    # crash reporter that prints the call stack (edevcrash.cpp)
+    target_sources(eZeus PRIVATE edevcrash.cpp)
+    if(MSVC)
+        target_link_libraries(eZeus PRIVATE dbghelp)
+        target_compile_options(eZeus PRIVATE /Zi)
+        target_link_options(eZeus PRIVATE /DEBUG /OPT:REF /OPT:ICF)
+    endif()
 endif()
 
 include(GNUInstallDirs)
