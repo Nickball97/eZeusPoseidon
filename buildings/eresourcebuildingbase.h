@@ -31,8 +31,10 @@ public:
 
     void read(eReadStream& src) override;
     void write(eWriteStream& dst) const override;
+protected:
+    void setMaxResource(const int m) { mMaxResource = m; }
 private:
-    const int mMaxResource = 8;
+    int mMaxResource = 8;
 
     const eResourceType mResType;
 
