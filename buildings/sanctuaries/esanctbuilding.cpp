@@ -88,6 +88,13 @@ void eSanctBuilding::scheduleTerrainUpdate() {
     }
 }
 
+void eSanctBuilding::setCosts(const std::vector<eSanctCost>& cost) {
+    if(static_cast<int>(cost.size()) != mMaxProgress) return;
+    mCost = cost;
+    mTotalCost = totalCost(cost);
+    updateNextCost();
+}
+
 void eSanctBuilding::updateNextCost() {
     if(mProgress >= mMaxProgress) {
         mNextCost = {0, 0, 0};

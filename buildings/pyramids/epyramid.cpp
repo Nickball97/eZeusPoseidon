@@ -1055,6 +1055,228 @@ void ePyramid::initialize(const std::vector<bool>& levels) {
             }
         }
     }
+
+    applyOriginalMaterials();
+}
+
+namespace {
+// Material totals from HeavenGames, zeus.heavengames.com/gameinfo/pyramids/
+// ("marble" is white or black depending on the level).
+struct ePyramidMaterials {
+    std::vector<int> fLevelMarble; // level 1 (lowest) first
+    int fTopMarble; // statue / altar / temple / observatory / museum
+    int fWood;
+    int fSculpture;
+    int fOrichalc;
+};
+
+#define EZ_SHRINES(prefix) \
+    case eBuildingType::prefix##Aphrodite: \
+    case eBuildingType::prefix##Apollo: \
+    case eBuildingType::prefix##Ares: \
+    case eBuildingType::prefix##Artemis: \
+    case eBuildingType::prefix##Athena: \
+    case eBuildingType::prefix##Atlas: \
+    case eBuildingType::prefix##Demeter: \
+    case eBuildingType::prefix##Dionysus: \
+    case eBuildingType::prefix##Hades: \
+    case eBuildingType::prefix##Hephaestus: \
+    case eBuildingType::prefix##Hera: \
+    case eBuildingType::prefix##Hermes: \
+    case eBuildingType::prefix##Poseidon: \
+    case eBuildingType::prefix##Zeus
+
+bool sOriginalMaterials(const eBuildingType type, ePyramidMaterials& m) {
+    switch(type) {
+    case eBuildingType::modestPyramid:
+        m = {{20, 4}, 0, 0, 0, 8}; return true;
+    case eBuildingType::pyramid:
+        m = {{51, 20, 4}, 0, 8, 0, 18}; return true;
+    case eBuildingType::greatPyramid:
+        m = {{99, 51, 20, 4}, 0, 16, 0, 31}; return true;
+    case eBuildingType::majesticPyramid:
+        m = {{162, 99, 51, 20, 4}, 0, 32, 0, 39}; return true;
+    case eBuildingType::smallMonumentToTheSky:
+        m = {{51, 21}, 0, 8, 0, 4}; return true;
+    case eBuildingType::monumentToTheSky:
+        m = {{71, 34}, 0, 8, 0, 18}; return true;
+    case eBuildingType::grandMonumentToTheSky:
+        m = {{127, 71, 34}, 0, 16, 0, 33}; return true;
+    EZ_SHRINES(minorShrine):
+        m = {{16}, 0, 0, 1, 4}; return true;
+    EZ_SHRINES(shrine):
+        m = {{67, 27}, 16, 16, 0, 8}; return true;
+    EZ_SHRINES(majorShrine):
+        m = {{121, 28}, 16, 16, 4, 22}; return true;
+    case eBuildingType::pyramidOfThePantheon:
+        m = {{142, 48}, 0, 16, 14, 25}; return true;
+    case eBuildingType::altarOfOlympus:
+        m = {{131, 67, 32}, 4, 16, 0, 33}; return true;
+    case eBuildingType::templeOfOlympus:
+        m = {{99, 43}, 12, 22, 0, 27}; return true;
+    case eBuildingType::observatoryKosmika:
+        m = {{163, 99}, 12, 16, 0, 8}; return true;
+    case eBuildingType::museumAtlantika:
+        m = {{127}, 32, 24, 0, 40}; return true;
+    default:
+        return false;
+    }
+}
+#undef EZ_SHRINES
+
+// One material slot: a stage of a piece.
+struct eCostRef {
+    std::vector<eSanctCost>* fCosts;
+    int fStage;
+};
+
+enum class eMaterial { marble, wood, sculpture, orichalc };
+
+int sGet(const eCostRef& r, const eMaterial mat) {
+    const auto& c = (*r.fCosts)[r.fStage];
+    switch(mat) {
+    case eMaterial::marble: return c.fMarble + c.fBlackMarble;
+    case eMaterial::wood: return c.fWood;
+    case eMaterial::sculpture: return c.fSculpture;
+    case eMaterial::orichalc: return c.fOrichalc;
+    }
+    return 0;
+}
+
+void sSet(const eCostRef& r, const eMaterial mat, const int v) {
+    auto& c = (*r.fCosts)[r.fStage];
+    switch(mat) {
+    case eMaterial::marble:
+        // keep the stage's marble colour (dark levels use black marble)
+        if(c.fBlackMarble > 0) c.fBlackMarble = v;
+        else c.fMarble = v;
+        break;
+    case eMaterial::wood: c.fWood = v; break;
+    case eMaterial::sculpture: c.fSculpture = v; break;
+    case eMaterial::orichalc: c.fOrichalc = v; break;
+    }
+}
+
+// Rescales the amounts in refs so they add up to exactly target, keeping
+// their proportions. Returns false if refs hold nothing to scale.
+bool sScale(const std::vector<eCostRef>& refs, const eMaterial mat,
+            const int target) {
+    long long total = 0;
+    for(const auto& r : refs) total += sGet(r, mat);
+    if(total <= 0) return false;
+    long long cum = 0;
+    long long prev = 0;
+    for(const auto& r : refs) {
+        cum += sGet(r, mat);
+        const long long now = target*cum/total;
+        sSet(r, mat, static_cast<int>(now - prev));
+        prev = now;
+    }
+    return true;
+}
+
+// Adds target evenly over refs (used when no piece had the material).
+void sSpread(const std::vector<eCostRef>& refs, const eMaterial mat,
+             const int target) {
+    const int n = refs.size();
+    if(n == 0) return;
+    for(int i = 0; i < n; i++) {
+        const int add = (i + 1)*target/n - i*target/n;
+        sSet(refs[i], mat, sGet(refs[i], mat) + add);
+    }
+}
+}
+
+void ePyramid::applyOriginalMaterials() {
+    ePyramidMaterials m;
+    if(!sOriginalMaterials(type(), m)) return;
+    const int nLevels = m.fLevelMarble.size();
+
+    std::vector<ePyramidElement*> els;
+    std::vector<std::vector<eSanctCost>> costs;
+    for(const auto& e : mElements) {
+        const auto pe = dynamic_cast<ePyramidElement*>(e.get());
+        if(!pe) continue;
+        els.push_back(pe);
+        costs.push_back(pe->costs());
+    }
+
+    // marble pools: one per level, plus one for the named top piece
+    std::vector<std::vector<eCostRef>> marble(nLevels + 1);
+    std::vector<eCostRef> wood;
+    std::vector<eCostRef> sculpture;
+    std::vector<eCostRef> orichalc;
+    std::vector<eCostRef> walls; // each wall's own (last) stage
+
+    const int n = els.size();
+    for(int i = 0; i < n; i++) {
+        const auto pe = els[i];
+        auto& c = costs[i];
+        const int elev = pe->elevation();
+        const auto bt = pe->type();
+        const bool namedTop = bt == eBuildingType::pyramidAltar ||
+                              bt == eBuildingType::pyramidMonument ||
+                              bt == eBuildingType::pyramidTemple ||
+                              bt == eBuildingType::pyramidObservatory ||
+                              bt == eBuildingType::pyramidMuseum;
+        const int ns = c.size();
+        for(int s = 0; s < ns; s++) {
+            const eCostRef r{&c, s};
+            // ePyramidElement puts 4 stages per level below the piece
+            // first (two of them with 1 marble), then the piece's own.
+            int pool;
+            if(s < 4*elev) {
+                pool = std::min(elev - 1 - s/4, nLevels - 1);
+            } else if(namedTop) {
+                pool = nLevels;
+            } else {
+                pool = std::min(elev, nLevels - 1);
+            }
+            if(sGet(r, eMaterial::marble) > 0) marble[pool].push_back(r);
+            if(sGet(r, eMaterial::wood) > 0) wood.push_back(r);
+            if(sGet(r, eMaterial::sculpture) > 0) sculpture.push_back(r);
+            if(sGet(r, eMaterial::orichalc) > 0) orichalc.push_back(r);
+        }
+        if(bt == eBuildingType::pyramidWall && ns > 0) {
+            walls.push_back({&c, ns - 1});
+        }
+    }
+
+    for(int l = 0; l < nLevels; l++) {
+        if(!sScale(marble[l], eMaterial::marble, m.fLevelMarble[l])) {
+            printf("Pyramid %i: no marble on level %i\n",
+                   static_cast<int>(type()), l + 1);
+        }
+    }
+    if(m.fTopMarble > 0 &&
+       !sScale(marble[nLevels], eMaterial::marble, m.fTopMarble)) {
+        printf("Pyramid %i: no top piece for its marble\n",
+               static_cast<int>(type()));
+    }
+    const auto scaleOrSpread = [&](const std::vector<eCostRef>& refs,
+                                   const eMaterial mat, const int target) {
+        if(!sScale(refs, mat, target)) sSpread(walls, mat, target);
+    };
+    scaleOrSpread(wood, eMaterial::wood, m.fWood);
+    scaleOrSpread(sculpture, eMaterial::sculpture, m.fSculpture);
+    scaleOrSpread(orichalc, eMaterial::orichalc, m.fOrichalc);
+
+    for(int i = 0; i < n; i++) {
+        els[i]->setCosts(costs[i]);
+    }
+
+    // self-check against the targets
+    const auto total = cost();
+    int marbleTarget = m.fTopMarble;
+    for(const int l : m.fLevelMarble) marbleTarget += l;
+    const int marbleTotal = total.fMarble + total.fBlackMarble;
+    if(marbleTotal != marbleTarget || total.fWood != m.fWood ||
+       total.fSculpture != m.fSculpture || total.fOrichalc != m.fOrichalc) {
+        printf("Pyramid %i materials %i/%i/%i/%i, expected %i/%i/%i/%i\n",
+               static_cast<int>(type()),
+               marbleTotal, total.fWood, total.fSculpture, total.fOrichalc,
+               marbleTarget, m.fWood, m.fSculpture, m.fOrichalc);
+    }
 }
 
 void ePyramid::buildingProgressed() {
