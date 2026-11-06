@@ -624,11 +624,11 @@ bool eMessages::loadImpl() {
     fInvasionBribed.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_players_city_saved_bribery_title");
     fInvasionBribed.fCondensed.fText = loadMessage("PHRASE_CONDENSED_players_city_saved_bribery_initial_announcement");
 
-    fInvasionBribed.fFull.fTitle = loadMessage("PHRASE_players_city_saved_bribery_title");
-    fInvasionBribed.fFull.fText = loadMessage("PHRASE_players_city_saved_bribery_initial_announcement");
+    fInvasionBribedMonument.fFull.fTitle = loadMessage("PHRASE_players_city_saved_bribery_title");
+    fInvasionBribedMonument.fFull.fText = loadMessage("PHRASE_players_city_saved_bribery_init_announcment_comm_monument");
 
-    fInvasionBribed.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_players_city_saved_bribery_title");
-    fInvasionBribed.fCondensed.fText = loadMessage("PHRASE_CONDENSED_players_city_saved_bribery_initial_announcement");
+    fInvasionBribedMonument.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_players_city_saved_bribery_title");
+    fInvasionBribedMonument.fCondensed.fText = loadMessage("PHRASE_CONDENSED_players_city_saved_bribery_init_announcment_comm_monument");
 
     fInvasionDefeat.fFull.fTitle = loadMessage("PHRASE_enemy_victorious_title");
     fInvasionDefeat.fFull.fText = loadMessage("PHRASE_enemy_victorious_initial_announcement");

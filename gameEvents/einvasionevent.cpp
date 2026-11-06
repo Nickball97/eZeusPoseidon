@@ -216,7 +216,17 @@ void eInvasionEvent::trigger() {
         board->incDrachmas(pid, -bribe, eFinanceTarget::bribesTributePaid);
         eEventData ed(cid);
         ed.fCity = city;
-        board->event(eEvent::invasionBribed, ed);
+        // The original game has a "paid off ... You can now build a
+        // Commemorative Monument" message (Model/Zeus eventmsg.txt) next to
+        // the plain one (upstream #63). When it's used isn't known, so use
+        // the same chance and monument as a won defence (invadersDefeated).
+        const bool monn = eRand::rand() % 2;
+        if(monn) {
+            board->allow(cid, eBuildingType::commemorative, 1);
+            board->event(eEvent::invasionBribedMonn, ed);
+        } else {
+            board->event(eEvent::invasionBribed, ed);
+        }
         board->updateMusic();
         if(mConquestEvent) {
             mConquestEvent->planArmyReturn();
