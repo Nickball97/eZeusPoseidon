@@ -3367,6 +3367,12 @@ target_include_directories(eZeus PRIVATE
     ${EZEUS_SDL2_COMPAT_INCLUDE}
 )
 
+# Testing shortcuts (Ctrl+Shift+M: +10000 drachmas). Never on by default.
+option(EZEUS_DEV_CHEATS "Enable developer test shortcuts" OFF)
+if(EZEUS_DEV_CHEATS)
+    target_compile_definitions(eZeus PRIVATE EZEUS_DEV_CHEATS)
+endif()
+
 include(GNUInstallDirs)
 install(TARGETS eZeus
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

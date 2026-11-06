@@ -1790,6 +1790,13 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
         if(mRotateId > 3) mRotateId = 0;
     } else if(k == SDL_Scancode::SDL_SCANCODE_P) {
         switchPause();
+#ifdef EZEUS_DEV_CHEATS
+    } else if(k == SDL_Scancode::SDL_SCANCODE_M &&
+              e.ctrlPressed() && e.shiftPressed()) {
+        // Developer test build only: +10000 drachmas.
+        const auto pid = mBoard->personPlayer();
+        mBoard->setDrachmas(pid, mBoard->drachmas(pid) + 10000);
+#endif
     } else if(k == SDL_Scancode::SDL_SCANCODE_LEFT) {
         setDX(mDX + 35);
     } else if(k == SDL_Scancode::SDL_SCANCODE_RIGHT) {
