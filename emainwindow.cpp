@@ -252,7 +252,7 @@ bool eMainWindow::saveGame(const std::string& path) {
     namespace fs = std::filesystem;
     if(!mCampaign) return false;
     // Make sure no board task is still running while the state is written.
-    if(mBoard) mBoard->waitUntilFinished();
+    mCampaign->waitUntilFinished();
 
     std::error_code ec;
     const auto fsp = fs::u8path(path);

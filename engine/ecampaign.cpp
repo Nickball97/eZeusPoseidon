@@ -747,3 +747,10 @@ void eCampaign::copyColonyEpisodeSettings(const int from, const int to) {
     const auto t = mColonyEpisodes[to];
     copyEpisodeSettings(f.get(), t.get());
 }
+
+void eCampaign::waitUntilFinished() {
+    if(mParentBoard) mParentBoard->waitUntilFinished();
+    for(const auto& b : mColonyBoards) {
+        if(b) b->waitUntilFinished();
+    }
+}

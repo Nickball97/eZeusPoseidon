@@ -67,6 +67,8 @@ public:
     { return *mParentBoard; }
     eGameBoard& colonyBoard(const int id)
     { return *mColonyBoards[id]; }
+    // waits for background tasks of every board this campaign owns
+    void waitUntilFinished();
 
     static bool sReadGlossary(const std::string& name,
                               eCampaignGlossary& glossary);
