@@ -497,6 +497,203 @@ int eDifficultyHelpers::buildingCost(
     return std::round(mult*base);
 }
 
+// Market stalls keep eZeus's formula for fire risk: the original puts the
+// risk on the agora (vendors 0), eZeus models stalls as separate buildings.
+// FRI per difficulty (beginner, mortal, hero, titan, olympian), column
+// "FRI" of the original Model/Zeus_Model_*.txt (VeryEasy..Impossible).
+bool originalFireRisk(const eBuildingType type, std::array<int, 5>& r) {
+    switch(type) {
+    case eBuildingType::commonHouse: r = {8, 12, 15, 18, 20}; return true; // BUILD_HOUSE1_HUT
+    case eBuildingType::eliteHousing: r = {8, 12, 15, 18, 20}; return true; // BUILD_ELITE_VACANT
+    case eBuildingType::flowerGarden: r = {0, 0, 0, 0, 0}; return true; // BUILD_FLOWER_GARDEN
+    case eBuildingType::gazebo: r = {0, 0, 0, 0, 0}; return true; // BUILD_GAZEBO
+    case eBuildingType::hedgeMaze: r = {0, 0, 0, 0, 0}; return true; // BUILD_HEDGE_MAZE
+    case eBuildingType::fishPond: r = {0, 0, 0, 0, 0}; return true; // BUILD_FISH_POND
+    case eBuildingType::tallObelisk: r = {0, 0, 0, 0, 0}; return true; // BUILD_TALL_OBELISK
+    case eBuildingType::sundial: r = {0, 0, 0, 0, 0}; return true; // BUILD_SUNDIAL
+    case eBuildingType::topiary: r = {0, 0, 0, 0, 0}; return true; // BUILD_TOPIARY
+    case eBuildingType::spring: r = {0, 0, 0, 0, 0}; return true; // BUILD_SPRING
+    case eBuildingType::stoneCircle: r = {0, 0, 0, 0, 0}; return true; // BUILD_STONE_CIRCLE
+    case eBuildingType::shortObelisk: r = {0, 0, 0, 0, 0}; return true; // BUILD_SHORT_OBELISK
+    case eBuildingType::waterPark: r = {0, 0, 0, 0, 0}; return true; // BUILD_WATER_PARK
+    case eBuildingType::road: r = {0, 0, 0, 0, 0}; return true; // BUILD_ROAD
+    case eBuildingType::erase: r = {0, 0, 0, 0, 0}; return true; // BUILD_DIG
+    case eBuildingType::wheatFarm: r = {5, 10, 10, 12, 20}; return true; // BUILD_WHEAT_FARM
+    case eBuildingType::onionsFarm: r = {0, 5, 5, 5, 5}; return true; // BUILD_ONION_FARM
+    case eBuildingType::carrotsFarm: r = {0, 5, 5, 5, 5}; return true; // BUILD_CARROT_FARM
+    case eBuildingType::vine: r = {0, 0, 0, 0, 0}; return true; // BUILD_GRAPEVINE
+    case eBuildingType::oliveTree: r = {0, 0, 0, 0, 0}; return true; // BUILD_OLIVE_TREE
+    case eBuildingType::growersLodge: r = {5, 10, 10, 12, 20}; return true; // BUILD_GROWERS_LODGE
+    case eBuildingType::goat: r = {0, 0, 0, 0, 0}; return true; // BUILD_GOAT
+    case eBuildingType::sheep: r = {0, 0, 0, 0, 0}; return true; // BUILD_SHEEP
+    case eBuildingType::cardingShed: r = {5, 10, 10, 15, 20}; return true; // BUILD_SHEEP_FARM
+    case eBuildingType::dairy: r = {5, 10, 10, 15, 20}; return true; // BUILD_GOAT_FARM
+    case eBuildingType::fishery: r = {5, 10, 10, 15, 20}; return true; // BUILD_FISHING_WHARF
+    case eBuildingType::urchinQuay: r = {5, 10, 10, 15, 20}; return true; // BUILD_URCHIN_COLLECTOR
+    case eBuildingType::huntingLodge: r = {8, 15, 15, 18, 25}; return true; // BUILD_HUNTING_LODGE
+    case eBuildingType::mint: r = {0, 0, 0, 0, 0}; return true; // BUILD_MINT
+    case eBuildingType::masonryShop: r = {0, 0, 0, 0, 0}; return true; // BUILD_MARBLE_QUARRY
+    case eBuildingType::foundry: r = {0, 0, 0, 0, 0}; return true; // BUILD_FOUNDRY
+    case eBuildingType::timberMill: r = {10, 20, 20, 20, 25}; return true; // BUILD_TIMBER_MILL
+    case eBuildingType::winery: r = {0, 0, 0, 0, 0}; return true; // BUILD_WINERY
+    case eBuildingType::olivePress: r = {0, 0, 0, 0, 0}; return true; // BUILD_OIL_PRESS
+    case eBuildingType::sculptureStudio: r = {0, 2, 2, 5, 8}; return true; // BUILD_SCULPTURE_STUDIO
+    case eBuildingType::artisansGuild: r = {5, 10, 10, 12, 20}; return true; // BUILD_ARTISANS_GUILD
+    case eBuildingType::granary: r = {8, 12, 16, 16, 20}; return true; // BUILD_GRANARY
+    case eBuildingType::warehouse: r = {5, 10, 10, 15, 18}; return true; // BUILD_STOREHOUSE
+    case eBuildingType::pier: r = {5, 10, 10, 15, 18}; return true; // BUILD_DOCK
+    case eBuildingType::tradePost: r = {5, 10, 10, 15, 10}; return true; // BUILD_TRADING_POST
+    case eBuildingType::fountain: r = {0, 0, 0, 0, 0}; return true; // BUILD_FOUNTAIN
+    case eBuildingType::hospital: r = {5, 10, 10, 15, 15}; return true; // BUILD_INFIRMARY
+    case eBuildingType::college: r = {0, 0, 0, 0, 0}; return true; // BUILD_COLLEGE
+    case eBuildingType::dramaSchool: r = {0, 0, 0, 0, 0}; return true; // BUILD_DRAMA_SCHOOL
+    case eBuildingType::gymnasium: r = {0, 0, 0, 0, 0}; return true; // BUILD_GYMNASIUM
+    case eBuildingType::stadium: r = {0, 0, 0, 0, 0}; return true; // BUILD_STADIUM
+    case eBuildingType::podium: r = {0, 0, 0, 0, 0}; return true; // BUILD_PODIUM
+    case eBuildingType::theater: r = {0, 0, 0, 0, 0}; return true; // BUILD_THEATRE
+    case eBuildingType::palace: r = {0, 5, 5, 10, 15}; return true; // BUILD_PALACE
+    case eBuildingType::avenue: r = {0, 0, 0, 0, 0}; return true; // BUILD_AVENUE
+    case eBuildingType::bridge: r = {0, 0, 0, 0, 0}; return true; // BUILD_LARGE_BRIDGE
+    case eBuildingType::maintenanceOffice: r = {0, 5, 5, 8, 10}; return true; // BUILD_SUPER_OFFICE
+    case eBuildingType::taxOffice: r = {5, 10, 10, 12, 15}; return true; // BUILD_TAX_OFFICE
+    case eBuildingType::watchPost: r = {0, 0, 0, 0, 0}; return true; // BUILD_GUARDPOST
+    case eBuildingType::bench: r = {0, 0, 0, 0, 0}; return true; // BUILD_BENCH
+    case eBuildingType::park: r = {0, 0, 0, 0, 0}; return true; // BUILD_GARDENS
+    case eBuildingType::doricColumn: r = {0, 0, 0, 0, 0}; return true; // BUILD_DORIC_COLUMN
+    case eBuildingType::wall: r = {0, 0, 0, 0, 0}; return true; // BUILD_WALL
+    case eBuildingType::gatehouse: r = {0, 0, 0, 0, 0}; return true; // BUILD_GATEHOUSE
+    case eBuildingType::tower: r = {0, 0, 0, 0, 0}; return true; // BUILD_TOWER
+    case eBuildingType::horseRanch: r = {5, 10, 10, 10, 20}; return true; // BUILD_HORSE_RANCH
+    case eBuildingType::armory: r = {8, 12, 15, 20, 25}; return true; // BUILD_ARMORY
+    case eBuildingType::triremeWharf: r = {5, 10, 10, 15, 20}; return true; // BUILD_WARSHIP_WHARF
+    case eBuildingType::ionicColumn: r = {0, 0, 0, 0, 0}; return true; // BUILD_IONIC_COLUMN
+    case eBuildingType::corinthianColumn: r = {0, 0, 0, 0, 0}; return true; // BUILD_CORINTHIAN_COLUMN
+    case eBuildingType::dolphinSculpture: r = {0, 0, 0, 0, 0}; return true; // BUILD_DOLPHIN_SCULPTURE
+    case eBuildingType::orrery: r = {0, 0, 0, 0, 0}; return true; // BUILD_ORRERY
+    case eBuildingType::shellGarden: r = {0, 0, 0, 0, 0}; return true; // BUILD_SHELL_GARDEN
+    case eBuildingType::baths: r = {0, 0, 0, 0, 0}; return true; // BUILD_BATHS
+    case eBuildingType::birdBath: r = {0, 0, 0, 0, 0}; return true; // BUILD_BIRD_BATH
+    case eBuildingType::hippodromePiece: r = {0, 0, 0, 0, 0}; return true; // BUILD_RACE_TRACK
+    case eBuildingType::crosswalk: r = {0, 0, 0, 0, 0}; return true; // BUILD_CROSSWALK
+    case eBuildingType::bibliotheke: r = {5, 10, 15, 18, 25}; return true; // BUILD_BIBLIOTHEKE
+    case eBuildingType::observatory: r = {0, 0, 0, 0, 0}; return true; // BUILD_OBSERVATORY
+    case eBuildingType::university: r = {0, 0, 0, 0, 0}; return true; // BUILD_UNIVERSITY
+    case eBuildingType::laboratory: r = {8, 12, 20, 20, 20}; return true; // BUILD_LABORATORY
+    case eBuildingType::inventorsWorkshop: r = {8, 12, 20, 15, 20}; return true; // BUILD_INVENTORS_WORKSHOP
+    case eBuildingType::museum: r = {0, 8, 10, 10, 10}; return true; // BUILD_MUSUEM
+    case eBuildingType::refinery: r = {0, 0, 5, 5, 10}; return true; // BUILD_ORICHALC_REFINERY
+    case eBuildingType::chariotFactory: r = {6, 12, 20, 20, 22}; return true; // BUILD_CHARIOT_WORKSHOP
+    case eBuildingType::blackMarbleWorkshop: r = {0, 0, 0, 0, 0}; return true; // BUILD_BLACK_MARBLE_SHOP
+    case eBuildingType::orangeTendersLodge: r = {8, 7, 10, 18, 15}; return true; // BUILD_FRUIT_GROWERS_LODGE
+    case eBuildingType::corral: r = {8, 7, 10, 18, 15}; return true; // BUILD_CORRAL_SLAUGHTER
+    case eBuildingType::orangeTree: r = {0, 0, 0, 0, 0}; return true; // BUILD_FRUIT_TREE
+    case eBuildingType::cattle: r = {0, 0, 0, 0, 0}; return true; // BUILD_CATTLE
+    default: return false;
+    }
+}
+
+// DRI per difficulty (beginner, mortal, hero, titan, olympian), column
+// "DRI" of the original Model/Zeus_Model_*.txt (VeryEasy..Impossible).
+bool originalDamageRisk(const eBuildingType type, std::array<int, 5>& r) {
+    switch(type) {
+    case eBuildingType::commonHouse: r = {0, 0, 0, 0, 0}; return true; // BUILD_HOUSE1_HUT
+    case eBuildingType::eliteHousing: r = {0, 0, 0, 0, 0}; return true; // BUILD_ELITE_VACANT
+    case eBuildingType::flowerGarden: r = {0, 0, 0, 0, 0}; return true; // BUILD_FLOWER_GARDEN
+    case eBuildingType::gazebo: r = {0, 0, 0, 0, 0}; return true; // BUILD_GAZEBO
+    case eBuildingType::hedgeMaze: r = {0, 0, 0, 0, 0}; return true; // BUILD_HEDGE_MAZE
+    case eBuildingType::fishPond: r = {0, 0, 0, 0, 0}; return true; // BUILD_FISH_POND
+    case eBuildingType::tallObelisk: r = {0, 0, 0, 0, 0}; return true; // BUILD_TALL_OBELISK
+    case eBuildingType::sundial: r = {0, 0, 0, 0, 0}; return true; // BUILD_SUNDIAL
+    case eBuildingType::topiary: r = {0, 0, 0, 0, 0}; return true; // BUILD_TOPIARY
+    case eBuildingType::spring: r = {0, 0, 0, 0, 0}; return true; // BUILD_SPRING
+    case eBuildingType::stoneCircle: r = {0, 0, 0, 0, 0}; return true; // BUILD_STONE_CIRCLE
+    case eBuildingType::shortObelisk: r = {0, 0, 0, 0, 0}; return true; // BUILD_SHORT_OBELISK
+    case eBuildingType::waterPark: r = {0, 0, 0, 0, 0}; return true; // BUILD_WATER_PARK
+    case eBuildingType::road: r = {0, 0, 0, 0, 0}; return true; // BUILD_ROAD
+    case eBuildingType::erase: r = {0, 0, 0, 0, 0}; return true; // BUILD_DIG
+    case eBuildingType::wheatFarm: r = {0, 5, 5, 5, 10}; return true; // BUILD_WHEAT_FARM
+    case eBuildingType::onionsFarm: r = {5, 10, 10, 12, 20}; return true; // BUILD_ONION_FARM
+    case eBuildingType::carrotsFarm: r = {5, 10, 10, 12, 20}; return true; // BUILD_CARROT_FARM
+    case eBuildingType::vine: r = {0, 0, 0, 0, 0}; return true; // BUILD_GRAPEVINE
+    case eBuildingType::oliveTree: r = {0, 0, 0, 0, 0}; return true; // BUILD_OLIVE_TREE
+    case eBuildingType::growersLodge: r = {0, 0, 0, 0, 0}; return true; // BUILD_GROWERS_LODGE
+    case eBuildingType::goat: r = {0, 0, 0, 0, 0}; return true; // BUILD_GOAT
+    case eBuildingType::sheep: r = {0, 0, 0, 0, 0}; return true; // BUILD_SHEEP
+    case eBuildingType::cardingShed: r = {0, 0, 0, 0, 0}; return true; // BUILD_SHEEP_FARM
+    case eBuildingType::dairy: r = {0, 0, 0, 0, 0}; return true; // BUILD_GOAT_FARM
+    case eBuildingType::fishery: r = {5, 10, 10, 15, 20}; return true; // BUILD_FISHING_WHARF
+    case eBuildingType::urchinQuay: r = {5, 10, 10, 15, 20}; return true; // BUILD_URCHIN_COLLECTOR
+    case eBuildingType::huntingLodge: r = {0, 5, 5, 5, 5}; return true; // BUILD_HUNTING_LODGE
+    case eBuildingType::mint: r = {10, 15, 20, 20, 25}; return true; // BUILD_MINT
+    case eBuildingType::masonryShop: r = {10, 15, 20, 20, 25}; return true; // BUILD_MARBLE_QUARRY
+    case eBuildingType::foundry: r = {10, 15, 20, 20, 25}; return true; // BUILD_FOUNDRY
+    case eBuildingType::timberMill: r = {0, 0, 0, 0, 0}; return true; // BUILD_TIMBER_MILL
+    case eBuildingType::winery: r = {5, 10, 10, 15, 20}; return true; // BUILD_WINERY
+    case eBuildingType::olivePress: r = {8, 15, 15, 18, 20}; return true; // BUILD_OIL_PRESS
+    case eBuildingType::sculptureStudio: r = {10, 15, 20, 22, 25}; return true; // BUILD_SCULPTURE_STUDIO
+    case eBuildingType::artisansGuild: r = {0, 0, 0, 0, 0}; return true; // BUILD_ARTISANS_GUILD
+    case eBuildingType::granary: r = {8, 12, 16, 20, 20}; return true; // BUILD_GRANARY
+    case eBuildingType::warehouse: r = {0, 0, 0, 0, 0}; return true; // BUILD_STOREHOUSE
+    case eBuildingType::pier: r = {0, 0, 0, 0, 0}; return true; // BUILD_DOCK
+    case eBuildingType::tradePost: r = {0, 0, 0, 0, 0}; return true; // BUILD_TRADING_POST
+    case eBuildingType::commonAgora: r = {0, 0, 0, 0, 0}; return true; // BUILD_AGORA_SMALL
+    case eBuildingType::grandAgora: r = {0, 0, 0, 0, 0}; return true; // BUILD_AGORA_LARGE
+    case eBuildingType::foodVendor: r = {0, 0, 0, 0, 0}; return true; // BUILD_FOOD_VENDOR
+    case eBuildingType::fleeceVendor: r = {0, 0, 0, 0, 0}; return true; // BUILD_FLEECE_VENDOR
+    case eBuildingType::oilVendor: r = {0, 0, 0, 0, 0}; return true; // BUILD_OIL_VENDOR
+    case eBuildingType::wineVendor: r = {0, 0, 0, 0, 0}; return true; // BUILD_WINE_VENDOR
+    case eBuildingType::armsVendor: r = {0, 0, 0, 0, 0}; return true; // BUILD_ARMS_VENDOR
+    case eBuildingType::horseTrainer: r = {0, 0, 0, 0, 0}; return true; // BUILD_HORSE_TRAINER
+    case eBuildingType::fountain: r = {8, 8, 8, 12, 8}; return true; // BUILD_FOUNTAIN
+    case eBuildingType::hospital: r = {5, 10, 10, 15, 15}; return true; // BUILD_INFIRMARY
+    case eBuildingType::college: r = {6, 12, 12, 15, 18}; return true; // BUILD_COLLEGE
+    case eBuildingType::dramaSchool: r = {8, 10, 15, 18, 18}; return true; // BUILD_DRAMA_SCHOOL
+    case eBuildingType::gymnasium: r = {0, 5, 5, 7, 10}; return true; // BUILD_GYMNASIUM
+    case eBuildingType::stadium: r = {0, 8, 8, 12, 15}; return true; // BUILD_STADIUM
+    case eBuildingType::podium: r = {0, 5, 5, 7, 10}; return true; // BUILD_PODIUM
+    case eBuildingType::theater: r = {8, 10, 15, 18, 22}; return true; // BUILD_THEATRE
+    case eBuildingType::palace: r = {0, 5, 5, 10, 15}; return true; // BUILD_PALACE
+    case eBuildingType::avenue: r = {0, 0, 0, 0, 0}; return true; // BUILD_AVENUE
+    case eBuildingType::bridge: r = {0, 0, 0, 0, 0}; return true; // BUILD_LARGE_BRIDGE
+    case eBuildingType::maintenanceOffice: r = {0, 0, 0, 0, 0}; return true; // BUILD_SUPER_OFFICE
+    case eBuildingType::taxOffice: r = {0, 0, 0, 0, 0}; return true; // BUILD_TAX_OFFICE
+    case eBuildingType::watchPost: r = {5, 10, 10, 12, 15}; return true; // BUILD_GUARDPOST
+    case eBuildingType::bench: r = {0, 0, 0, 0, 0}; return true; // BUILD_BENCH
+    case eBuildingType::park: r = {0, 0, 0, 0, 0}; return true; // BUILD_GARDENS
+    case eBuildingType::doricColumn: r = {0, 0, 0, 0, 0}; return true; // BUILD_DORIC_COLUMN
+    case eBuildingType::wall: r = {0, 0, 0, 0, 0}; return true; // BUILD_WALL
+    case eBuildingType::gatehouse: r = {0, 0, 0, 0, 0}; return true; // BUILD_GATEHOUSE
+    case eBuildingType::tower: r = {0, 0, 0, 0, 0}; return true; // BUILD_TOWER
+    case eBuildingType::horseRanch: r = {0, 0, 0, 0, 0}; return true; // BUILD_HORSE_RANCH
+    case eBuildingType::armory: r = {0, 0, 0, 0, 0}; return true; // BUILD_ARMORY
+    case eBuildingType::triremeWharf: r = {5, 10, 10, 15, 20}; return true; // BUILD_WARSHIP_WHARF
+    case eBuildingType::ionicColumn: r = {0, 0, 0, 0, 0}; return true; // BUILD_IONIC_COLUMN
+    case eBuildingType::corinthianColumn: r = {0, 0, 0, 0, 0}; return true; // BUILD_CORINTHIAN_COLUMN
+    case eBuildingType::dolphinSculpture: r = {0, 0, 0, 0, 0}; return true; // BUILD_DOLPHIN_SCULPTURE
+    case eBuildingType::orrery: r = {0, 0, 0, 0, 0}; return true; // BUILD_ORRERY
+    case eBuildingType::shellGarden: r = {0, 0, 0, 0, 0}; return true; // BUILD_SHELL_GARDEN
+    case eBuildingType::baths: r = {0, 0, 0, 0, 0}; return true; // BUILD_BATHS
+    case eBuildingType::birdBath: r = {0, 0, 0, 0, 0}; return true; // BUILD_BIRD_BATH
+    case eBuildingType::hippodromePiece: r = {0, 0, 0, 0, 0}; return true; // BUILD_RACE_TRACK
+    case eBuildingType::crosswalk: r = {0, 0, 0, 0, 0}; return true; // BUILD_CROSSWALK
+    case eBuildingType::bibliotheke: r = {0, 0, 0, 0, 0}; return true; // BUILD_BIBLIOTHEKE
+    case eBuildingType::observatory: r = {8, 12, 20, 20, 20}; return true; // BUILD_OBSERVATORY
+    case eBuildingType::university: r = {6, 8, 12, 15, 18}; return true; // BUILD_UNIVERSITY
+    case eBuildingType::laboratory: r = {0, 0, 0, 0, 0}; return true; // BUILD_LABORATORY
+    case eBuildingType::inventorsWorkshop: r = {0, 0, 0, 0, 0}; return true; // BUILD_INVENTORS_WORKSHOP
+    case eBuildingType::museum: r = {8, 10, 15, 18, 20}; return true; // BUILD_MUSUEM
+    case eBuildingType::refinery: r = {6, 12, 20, 20, 20}; return true; // BUILD_ORICHALC_REFINERY
+    case eBuildingType::chariotFactory: r = {0, 8, 10, 10, 10}; return true; // BUILD_CHARIOT_WORKSHOP
+    case eBuildingType::blackMarbleWorkshop: r = {10, 12, 20, 20, 25}; return true; // BUILD_BLACK_MARBLE_SHOP
+    case eBuildingType::orangeTendersLodge: r = {0, 0, 0, 0, 0}; return true; // BUILD_FRUIT_GROWERS_LODGE
+    case eBuildingType::chariotVendor: r = {0, 0, 0, 0, 0}; return true; // BUILD_CHARIOT_VENDOR
+    case eBuildingType::corral: r = {0, 0, 5, 5, 5}; return true; // BUILD_CORRAL_SLAUGHTER
+    case eBuildingType::orangeTree: r = {0, 0, 0, 0, 0}; return true; // BUILD_FRUIT_TREE
+    case eBuildingType::cattle: r = {0, 0, 0, 0, 0}; return true; // BUILD_CATTLE
+    default: return false;
+    }
+}
+
 int fireRiskBase(const eBuildingType type) {
     switch(type) {
     case eBuildingType::commonHouse:
@@ -598,6 +795,10 @@ double fireRiskMultiplier(const eDifficulty diff) {
 int eDifficultyHelpers::fireRisk(
         const eDifficulty diff,
         const eBuildingType type) {
+    std::array<int, 5> orig;
+    if(originalFireRisk(type, orig)) {
+        return orig[static_cast<int>(diff)];
+    }
     const double mult = fireRiskMultiplier(diff);
     const int base = fireRiskBase(type);
     return std::round(mult*base);
@@ -738,6 +939,10 @@ double damageRiskMultiplier(const eDifficulty diff) {
 int eDifficultyHelpers::damageRisk(
         const eDifficulty diff,
         const eBuildingType type) {
+    std::array<int, 5> orig;
+    if(originalDamageRisk(type, orig)) {
+        return orig[static_cast<int>(diff)];
+    }
     const double mult = damageRiskMultiplier(diff);
     const int base = damageRiskBase(type);
     return std::round(mult*base);
