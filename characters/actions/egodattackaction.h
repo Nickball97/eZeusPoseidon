@@ -25,6 +25,7 @@ public:
     void setSanctuary(const stdptr<eSanctuary>& s);
 private:
     void initialize();
+    void applyArrivalEffects();
 
     bool lookForAttack(const int dtime, int& time,
                        const int freq, const int range);

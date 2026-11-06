@@ -78,7 +78,10 @@ eTower::getOverlays(const eTileSize size) const {
 }
 
 void eTower::timeChanged(const int by) {
-    if(enabled()) {
+    // Athena's curse leaves towers unmanned (Zeus manual)
+    if(cursed()) {
+        if(mArcher) mArcher->kill();
+    } else if(enabled()) {
         if(!mArcher) {
             mSpawnTime += by;
             if(mSpawnTime > eNumbers::sTowerSpawnPeriod) {

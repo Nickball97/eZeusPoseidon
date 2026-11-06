@@ -7,6 +7,12 @@
 #include "characters/actions/ewaitaction.h"
 #include "buildings/epalace.h"
 #include "enumbers.h"
+#include "buildings/ehousebase.h"
+#include "engine/eboardcity.h"
+#include "engine/eworldcity.h"
+
+#include <algorithm>
+#include <cmath>
 
 eGodAttackAction::eGodAttackAction(eCharacter* const c) :
     eGodAction(c, eCharActionType::godAttackAction) {}
@@ -283,5 +289,96 @@ void eGodAttackAction::initialize() {
             if(c->dead()) continue;
             c->killWithCorpse();
         }
+    }
+    applyArrivalEffects();
+}
+
+// One-time effects when an angry god arrives. The behavior is from the
+// Zeus and Poseidon manuals; the amounts were given by Nicolás from the
+// original game (the manuals only say "some").
+void eGodAttackAction::applyArrivalEffects() {
+    auto& board = this->board();
+    const auto cid = cityId();
+    const auto pid = board.cityIdToPlayerId(cid);
+    const auto type = this->type();
+
+    const auto inCity = [cid](eCharacter* const ch) {
+        if(!ch || ch->dead()) return false;
+        const auto t = ch->tile();
+        return t && t->cityId() == cid;
+    };
+    // kills every n-th character of the given types in this city
+    const auto killShare = [&](const std::vector<eCharacterType>& types,
+                               const int everyNth) {
+        int i = 0;
+        const auto chars = board.characters();
+        for(const auto ch : chars) {
+            if(!inCity(ch)) continue;
+            const auto ct = ch->type();
+            if(std::find(types.begin(), types.end(), ct) == types.end()) continue;
+            if(i++ % everyNth == 0) ch->killWithCorpse();
+        }
+    };
+    const int year = 365*eNumbers::sDayLength;
+
+    switch(type) {
+    case eGodType::hermes: { // steals 33% of the treasury
+        const int d = board.drachmas(pid);
+        if(d > 0) board.setDrachmas(pid, d - (33*d)/100);
+    } break;
+    case eGodType::demeter: // kills half the sheep and goats
+        killShare({eCharacterType::sheep}, 2);
+        killShare({eCharacterType::goat}, 2);
+        break;
+    case eGodType::hera: { // half the cattle and half the orange trees
+        killShare({eCharacterType::cattle1, eCharacterType::cattle2,
+                   eCharacterType::cattle3, eCharacterType::bull}, 2);
+        // (trees that are part of a sanctuary are left alone)
+        const auto trees = board.buildings(cid, [](eBuilding* const b) {
+            if(b->type() != eBuildingType::orangeTree) return false;
+            const auto rb = dynamic_cast<eResourceBuilding*>(b);
+            return !(rb && rb->sanctuary());
+        });
+        for(int i = 0; i < (int)trees.size(); i += 2) {
+            trees[i]->erase();
+        }
+        // other leaders think one attitude tier (20 points) less of you
+        const auto& cts = board.world().cities();
+        for(const auto& ct : cts) {
+            if(ct->isCurrentCity()) continue;
+            ct->incAttitude(-20, pid);
+        }
+    } break;
+    case eGodType::aphrodite: { // 25% of the people leave with her
+        const auto bc = board.boardCityWithId(cid);
+        if(bc) {
+            const auto houses = bc->houses();
+            for(const auto h : houses) {
+                h->emigrate(int(std::round(0.25*h->people())));
+            }
+        }
+        // all walkers on the street follow her out of the city
+        const auto chars = board.characters();
+        for(const auto ch : chars) {
+            if(!inCity(ch)) continue;
+            if(!eDionysusFollowAction::sShouldFollow(ch->type())) continue;
+            ch->kill();
+        }
+    } break;
+    case eGodType::artemis: { // kills all hunters, wolves twice as strong
+        killShare({eCharacterType::hunter}, 1);
+        const auto chars = board.characters();
+        for(const auto ch : chars) {
+            if(!inCity(ch)) continue;
+            if(ch->type() != eCharacterType::wolf) continue;
+            ch->setHP(2*ch->hp());
+            ch->setAttack(2*ch->attack());
+        }
+    } break;
+    case eGodType::athena: { // walls and towers unmanned for a year
+        const auto towers = board.buildings(cid, eBuildingType::tower);
+        for(const auto t : towers) t->setBlessed(-1., year);
+    } break;
+    default: break;
     }
 }

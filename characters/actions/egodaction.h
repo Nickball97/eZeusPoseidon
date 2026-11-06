@@ -8,6 +8,8 @@
 #include "audio/esounds.h"
 #include "buildings/esmallhouse.h"
 #include "buildings/eresourcebuilding.h"
+#include "buildings/eresourcebuildingbase.h"
+#include "buildings/eartisansguild.h"
 
 class eDestructionTextures;
 enum class eGodSound;
@@ -241,6 +243,19 @@ public:
             if(mBless > 0) {
                 if(const auto h = dynamic_cast<eHouseBase*>(mTarget.get())) {
                     h->moveIn(h->vacancies());
+                }
+            } else if(mBless < 0) {
+                // Poseidon manual (Atlas): cursed marble workshops lose
+                // the marble on the premises; a cursed Artisans' Guild's
+                // artisan out working dies.
+                const auto bt = mTarget->type();
+                if(bt == eBuildingType::masonryShop ||
+                   bt == eBuildingType::blackMarbleWorkshop) {
+                    if(const auto rb = dynamic_cast<eResourceBuildingBase*>(mTarget.get())) {
+                        rb->take(rb->resourceType(), rb->resource());
+                    }
+                } else if(const auto g = dynamic_cast<eArtisansGuild*>(mTarget.get())) {
+                    g->killArtisan();
                 }
             }
         }

@@ -63,6 +63,14 @@ int eHouseBase::kill(int k) {
     return k;
 }
 
+int eHouseBase::emigrate(int k) {
+    k = std::clamp(k, 0, mPeople);
+    if(k <= 0) return 0;
+    popData().incLeft(k);
+    setPeople(mPeople - k);
+    return k;
+}
+
 int eHouseBase::moveIn(int c) {
     c = std::clamp(c, 0, vacancies());
     setPeople(mPeople + c);

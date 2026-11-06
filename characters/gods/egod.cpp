@@ -548,6 +548,10 @@ bool eGod::sAttackTarget(const eGodType gt, const eBuildingType bt) {
     switch(gt) {
     case eGodType::zeus:
         return bt == eBuildingType::palace;
+    case eGodType::demeter: // "destroy crops"; per Nicolas, the farm buildings themselves
+        return bt == eBuildingType::wheatFarm ||
+               bt == eBuildingType::carrotsFarm ||
+               bt == eBuildingType::onionsFarm;
     default:
         return false;
     }

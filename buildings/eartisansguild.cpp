@@ -71,3 +71,7 @@ void eArtisansGuild::write(eWriteStream& dst) const {
     dst << mSpawnTime;
     dst.writeCharacter(mArtisan);
 }
+
+void eArtisansGuild::killArtisan() {
+    if(mArtisan) mArtisan->killWithCorpse();
+}

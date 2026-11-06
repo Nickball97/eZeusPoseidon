@@ -360,6 +360,8 @@ public:
     std::vector<eTile*> neighbours() const;
 
     void setBlessed(const double b);
+    // blessing or curse lasting the given number of ticks
+    void setBlessed(const double b, const int time);
     bool blessed() const { return mBlessed > 0.01; }
     bool cursed() const { return mBlessed < -0.01; }
 

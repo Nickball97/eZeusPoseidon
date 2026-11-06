@@ -17,6 +17,8 @@ public:
 
     using eArtisanPtr = stdptr<eArtisan> eArtisansGuild::*;
     bool spawnArtisan(const eArtisanPtr artisan);
+    // Atlas' curse: the artisan out working dies
+    void killArtisan();
 
     void read(eReadStream& src) override;
     void write(eWriteStream& dst) const override;

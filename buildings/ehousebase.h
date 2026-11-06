@@ -51,6 +51,8 @@ public:
     int people() const { return mPeople; }
 
     int kill(int k);
+    // k residents leave the city (counted as emigrants)
+    int emigrate(int k);
     int moveIn(int c);
     void leave();
 
