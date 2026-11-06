@@ -3,6 +3,7 @@
 #include "engine/egameboard.h"
 #ifdef EZEUS_DEV_CHEATS
 #include "buildings/pyramids/epyramid.h"
+#include "gameEvents/egodattackevent.h"
 #endif
 
 #include "engine/eknownendpathfinder.h"
@@ -1825,6 +1826,25 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
                 c->allowPyramid(t, levels);
             }
         }
+    } else if(k == SDL_Scancode::SDL_SCANCODE_G &&
+              e.ctrlPressed() && e.shiftPressed()) {
+        // Developer test build only: an angry god attacks the viewed city,
+        // a different god on each press (Ares and Artemis first).
+        static int sNext = 0;
+        const eGodType gods[] = {
+            eGodType::ares, eGodType::artemis, eGodType::zeus,
+            eGodType::poseidon, eGodType::hades, eGodType::demeter,
+            eGodType::athena, eGodType::apollo, eGodType::hephaestus,
+            eGodType::aphrodite, eGodType::hermes, eGodType::dionysus,
+            eGodType::hera, eGodType::atlas};
+        const int n = sizeof(gods)/sizeof(gods[0]);
+        const auto god = gods[sNext++ % n];
+        const auto ev = e::make_shared<eGodAttackEvent>(
+                            mViewedCityId, eGameEventBranch::root, *mBoard);
+        ev->setTypes({god});
+        ev->initializeDate(mBoard->date());
+        mBoard->addRootGameEvent(ev);
+        printf("Dev: angry %s sent\n", eGod::sGodName(god).c_str());
 #endif
     } else if(k == SDL_Scancode::SDL_SCANCODE_LEFT) {
         setDX(mDX + 35);
