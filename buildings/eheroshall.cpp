@@ -121,6 +121,11 @@ std::string eHerosHall::sHeroRequirementText(const eHeroRequirement& hr,
     case eHeroRequirementType::people:
         return cstr + " " + eLanguage::zeusText(185, 52);;
 
+    case eHeroRequirementType::triremes:
+        // Atlantean cities need frigates in the original, but eZeus doesn't
+        // have frigates yet: Atlantean cities build triremes too, so name
+        // what the player can actually build.
+        return cstr + " " + eLanguage::zeusText(8, 51); // Triremes
     case eHeroRequirementType::horsemen:
         if(atlantean) {
             return cstr + " " + eLanguage::zeusText(51, 86) + " " + eLanguage::zeusText(185, 17);
@@ -260,6 +265,8 @@ std::string eHerosHall::sHeroRequirementStatusText(const eHeroRequirement& hr,
     case eHeroRequirementType::people:
         return cstr + " " + eLanguage::zeusText(185, 52);
 
+    case eHeroRequirementType::triremes:
+        return cstr + " " + eLanguage::zeusText(185, 32); // operational
     case eHeroRequirementType::horsemen:
         return cstr + " " + eLanguage::zeusText(185, 17);
     case eHeroRequirementType::horses:
@@ -586,6 +593,9 @@ void eHerosHall::updateRequirementStatus(eHeroRequirement& hr) {
     case eHeroRequirementType::people:
         sc = board.population(pid);
         break;
+    case eHeroRequirementType::triremes:
+        sc = board.countWorkingTriremes(cid);
+        break;
     case eHeroRequirementType::horsemen: {
         sc = board.countBanners(eBannerType::horseman, cid);
     } break;
@@ -778,6 +788,7 @@ eHerosHall::eHerosHall(const eHeroType type, eGameBoard& board,
         addRequirement({eHeroRequirementType::wine, 32});
         break;
     case eHeroType::jason:
+        addRequirement({eHeroRequirementType::triremes, 3});
         addRequirement({eHeroRequirementType::horsemen, 2});
         addRequirement({eHeroRequirementType::horses, 8});
         addRequirement({eHeroRequirementType::food, 64});
