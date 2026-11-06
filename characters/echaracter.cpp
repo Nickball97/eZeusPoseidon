@@ -1,4 +1,5 @@
 #include "echaracter.h"
+#include "efigurestats.h"
 
 #include "engine/egameboard.h"
 
@@ -213,6 +214,12 @@ void eCharacter::changeTile(eTile* const t, const bool prepend) {
 
 void eCharacter::incTime(const int by) {
     if(deleteScheduled()) return;
+    if(!figureStatsApplied()) {
+        // original-game speed and strength for this type (eFigureStats);
+        // a loaded character keeps its saved hit points
+        setFigureStatsApplied();
+        eFigureStats::sApply(this, !loadedFromSave());
+    }
     mTime += by;
     const auto at = actionType();
     if(mPlayFightSound &&
@@ -337,6 +344,7 @@ std::shared_ptr<eTexture> eCharacter::getTexture(
 
 void eCharacter::read(eReadStream& src) {
     eCharacterBase::read(src);
+    setLoadedFromSave();
     src >> mIOID;
     src >> mVisible;
     src >> mProvide;

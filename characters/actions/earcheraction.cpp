@@ -1,4 +1,5 @@
 #include "earcheraction.h"
+#include "characters/efigurestats.h"
 
 #include "epatrolmoveaction.h"
 
@@ -23,9 +24,10 @@ eArcherAction::eArcherAction(eCharacter* const c) :
 void eArcherAction::increment(const int by) {
     const int rangeAttackCheck = 500;
     const int missileCheck = 200;
-    const int range = eNumbers::sWallArcherRange;
-
     const auto c = character();
+    // missile range from the figure file ("Wall Sentry"), if known
+    const int range = c->missileRange() > 0 ? c->missileRange() :
+                                              eNumbers::sWallArcherRange;
     const auto ct = c->tile();
     const int tx = ct->x();
     const int ty = ct->y();
@@ -54,7 +56,8 @@ void eArcherAction::increment(const int by) {
                             mAttackTarget->dead() ||
                             mAttackTime > 1000;
         if(mAttackTarget && !mAttackTarget->dead()) {
-            const double att = by*c->attack();
+            const double att = eFigureStats::sDamage(
+                                   c, mAttackTarget.get(), true, by);
             const bool d = mAttackTarget->defend(att);
             if(d) {
                 const auto a = e::make_shared<eDieAction>(mAttackTarget);

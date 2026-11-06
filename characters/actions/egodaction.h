@@ -10,6 +10,7 @@
 #include "buildings/eresourcebuilding.h"
 #include "buildings/eresourcebuildingbase.h"
 #include "buildings/eartisansguild.h"
+#include "characters/efigurestats.h"
 
 class eDestructionTextures;
 enum class eGodSound;
@@ -653,7 +654,9 @@ public:
     void call() override {
         if(!mTptr || !mCptr) return;
         const auto t = mTptr.get();
+        // back to his normal (figure file) speed after running
         mCptr->setSpeed(1.);
+        eFigureStats::sApply(mCptr.get(), false);
         if(!mAppear) {
             t->playDisappearSound();
             mCptr->kill();

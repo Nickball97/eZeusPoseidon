@@ -1,4 +1,5 @@
 #include "etower.h"
+#include "characters/efigurestats.h"
 
 #include "textures/egametextures.h"
 
@@ -92,8 +93,9 @@ void eTower::timeChanged(const int by) {
 
         const int rangeAttackCheck = 500;
         const int missileCheck = 200;
-        const int range = eNumbers::sTowerRange;
-        const double attack = eNumbers::sTowerAttack;
+        // the tower's shooter from the figure file ("Tower Sentry")
+        const int range = eFigureStats::sTowerSentry(
+                              eFigureStats::sDifficulty(getBoard())).fMissileRange;
 
         const auto ct = centerTile();
         const int tx = ct->x();
@@ -123,7 +125,8 @@ void eTower::timeChanged(const int by) {
                                 mAttackTarget->dead() ||
                                 mAttackTime > 1000;
             if(mAttackTarget && !mAttackTarget->dead()) {
-                const double att = by*attack;
+                const double att = eFigureStats::sTowerDamage(
+                                       getBoard(), mAttackTarget.get(), by);
                 const bool d = mAttackTarget->defend(att);
                 if(d) finishAttack = true;
             }

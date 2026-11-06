@@ -186,8 +186,9 @@ public:
     bool hasFigureStats() const { return mHasFigureStats; }
     void setFigureStats(const int armor, const int missileArmor,
                         const int missileAttack, const int missileRate,
-                        const int frequency) {
+                        const int frequency, const int missileRange) {
         mHasFigureStats = true;
+        mMissileRange = missileRange;
         mFrequency = frequency;
         mArmor = armor;
         mMissileArmor = missileArmor;
@@ -199,6 +200,12 @@ public:
     int missileAttack() const { return mMissileAttack; }
     int missileRate() const { return mMissileRate; }
     int frequency() const { return mFrequency; }
+    int missileRange() const { return mMissileRange; }
+    // eFigureStats are applied once, on the first tick
+    bool figureStatsApplied() const { return mFigureStatsApplied; }
+    void setFigureStatsApplied() { mFigureStatsApplied = true; }
+    bool loadedFromSave() const { return mLoadedFromSave; }
+    void setLoadedFromSave() { mLoadedFromSave = true; }
     bool dead() const { return mHP <= 0 ||
                         mActionType == eCharacterActionType::die; }
     bool fighting() const;
@@ -252,6 +259,9 @@ private:
     int mMissileAttack = 0;
     int mMissileRate = 0;
     int mFrequency = 0;
+    int mMissileRange = 0;
+    bool mFigureStatsApplied = false;
+    bool mLoadedFromSave = false;
     double mSpeed = 1;
 };
 
