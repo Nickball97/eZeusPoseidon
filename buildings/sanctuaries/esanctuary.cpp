@@ -365,7 +365,13 @@ void eSanctuary::nextMonth() {
 }
 
 void eSanctuary::read(eReadStream& src) {
+    // A sanctuary's staff size is fixed per god (set in its constructor).
+    // Keep that value instead of the one in the save, so saves made before
+    // the per-god numbers were corrected pick up the new values.
+    const int maxEmpl = maxEmployees();
     eMonument::read(src);
+    setMaxEmployees(maxEmpl);
+    if(employed() > maxEmpl) setEmployed(maxEmpl);
 
     auto& board = getBoard();
 

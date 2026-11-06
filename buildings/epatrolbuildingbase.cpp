@@ -5,6 +5,34 @@
 
 #include <algorithm>
 
+// How many tiles a roaming walker walks before turning back, from
+// HeavenGames' "Walker Distances" table (zeus.heavengames.com/units/).
+// Other patrol buildings keep the general patroler_max_distance_i setting.
+int ePatrolBuildingBase::sMaxDistance(const eBuildingType type) {
+    switch(type) {
+    case eBuildingType::fountain: // water carrier
+    case eBuildingType::hospital: // healer
+        return 27;
+    case eBuildingType::taxOffice: // tax collector
+    case eBuildingType::gymnasium:
+    case eBuildingType::podium:
+    case eBuildingType::theater:
+    case eBuildingType::stadium:
+    case eBuildingType::bibliotheke:
+    case eBuildingType::laboratory:
+    case eBuildingType::observatory:
+    case eBuildingType::museum:
+        return 35;
+    case eBuildingType::commonAgora: // peddler
+    case eBuildingType::grandAgora:
+    case eBuildingType::maintenanceOffice: // superintendent
+    case eBuildingType::watchPost: // watchman
+        return 44;
+    default:
+        return eNumbers::sPatrolerMaxDistance;
+    }
+}
+
 ePatrolBuildingBase::ePatrolBuildingBase(
         eGameBoard& board,
         const eCharGenerator& charGen,
@@ -15,7 +43,8 @@ ePatrolBuildingBase::ePatrolBuildingBase(
         const eCityId cid) :
     eEmployingBuilding(board, type, sw, sh, maxEmployees, cid),
     mCharGenerator(charGen),
-    mActGenerator(actGen) {
+    mActGenerator(actGen),
+    mMaxDistance(sMaxDistance(type)) {
 
 }
 

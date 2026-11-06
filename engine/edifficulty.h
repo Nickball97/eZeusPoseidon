@@ -27,8 +27,8 @@ namespace eDifficultyHelpers {
     int fireRisk(const eDifficulty diff,
                  const eBuildingType type);
 
-    int plagueRisk(const eDifficulty diff);
-    int crimeRisk(const eDifficulty diff);
+    double plagueRisk(const eDifficulty diff);
+    double crimeRisk(const eDifficulty diff);
 
     int damageRisk(const eDifficulty diff,
                    const eBuildingType type);

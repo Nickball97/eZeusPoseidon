@@ -478,7 +478,68 @@ int eGod::sGodAppearTime(const eGodType gt) {
     return sl*eCharacter::sTextureTimeDivisor;
 }
 
+// Buildings each god sanctifies (blesses) while walking around the city.
+// Zeus manual, Mythology chapter (Sanctuaries), and Poseidon manual (Hera,
+// Atlas, Apollo in Atlantis); HeavenGames' sanctuaries page agrees except
+// for Atlas (it lists timber mill and refinery; the manual is used).
 bool eGod::sTarget(const eGodType gt, const eBuildingType bt) {
+    switch(gt) {
+    case eGodType::aphrodite: // "she sanctifies some of your houses"
+        return bt == eBuildingType::commonHouse ||
+               bt == eBuildingType::eliteHousing;
+    case eGodType::apollo:
+        // Podiums, Gymnasiums, Theaters and Stadium; in Atlantis any
+        // Bibliotheke, Laboratory, Observatory or ... (the manual's
+        // sentence is cut off; the Museum is kept as before).
+        return bt == eBuildingType::podium ||
+               bt == eBuildingType::gymnasium ||
+               bt == eBuildingType::theater ||
+               bt == eBuildingType::stadium ||
+               bt == eBuildingType::bibliotheke ||
+               bt == eBuildingType::laboratory ||
+               bt == eBuildingType::observatory ||
+               bt == eBuildingType::museum;
+    case eGodType::ares:
+        return false;
+    case eGodType::artemis: // the Boar Hunter's Lodge
+        return bt == eBuildingType::huntingLodge;
+    case eGodType::athena: // Carding Sheds and Olive Presses
+        return bt == eBuildingType::cardingShed ||
+               bt == eBuildingType::olivePress;
+    case eGodType::atlas: // Masonry Shop or Black Marble Workshop
+        return bt == eBuildingType::masonryShop ||
+               bt == eBuildingType::blackMarbleWorkshop;
+    case eGodType::demeter: // "your farms"
+        return bt == eBuildingType::wheatFarm ||
+               bt == eBuildingType::onionsFarm ||
+               bt == eBuildingType::carrotsFarm;
+    case eGodType::dionysus: // Wineries
+        return bt == eBuildingType::winery;
+    case eGodType::hades: // Tax Offices, Mints and Foundries
+        return bt == eBuildingType::taxOffice ||
+               bt == eBuildingType::mint ||
+               bt == eBuildingType::foundry;
+    case eGodType::hephaestus: // Armories and Sculpture Studios
+        return bt == eBuildingType::armory ||
+               bt == eBuildingType::sculptureStudio;
+    case eGodType::hera: // Corrals and Orange Tenders' Lodges
+        return bt == eBuildingType::corral ||
+               bt == eBuildingType::orangeTendersLodge;
+    case eGodType::hermes:
+        return false;
+    case eGodType::poseidon: // Fisheries, Urchin Quays, Horse Ranches
+        return bt == eBuildingType::urchinQuay ||
+               bt == eBuildingType::fishery ||
+               bt == eBuildingType::horseRanch;
+    case eGodType::zeus: // "will occasionally sanctify a building"
+        return true;
+    }
+    return false;
+}
+
+// Buildings an angry god goes after (eZeus's own list, unchanged; the
+// blessing list above follows the manuals).
+bool eGod::sAttackTarget(const eGodType gt, const eBuildingType bt) {
     switch(gt) {
     case eGodType::aphrodite:
         return bt == eBuildingType::commonHouse ||

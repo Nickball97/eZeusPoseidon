@@ -5,8 +5,9 @@
 eHeat eHeatGetters::appeal(const eBuildingType type) {
     switch(type) {
     case eBuildingType::wheatFarm: return {-3, 3};
-    case eBuildingType::carrotsFarm: return {-4, 3};
-    case eBuildingType::onionsFarm: return {-2, 2};
+    // Original model data: onion farm DES -4 RGE 3, carrot farm -2 / 2.
+    case eBuildingType::carrotsFarm: return {-2, 2};
+    case eBuildingType::onionsFarm: return {-4, 3};
     case eBuildingType::growersLodge: return {-3, 2};
     case eBuildingType::oliveTree:
     case eBuildingType::vine: return {1, 1};
@@ -24,7 +25,7 @@ eHeat eHeatGetters::appeal(const eBuildingType type) {
     case eBuildingType::blackMarbleWorkshop: return {-6, 4};
     case eBuildingType::mint:
     case eBuildingType::foundry: return {-10, 6};
-    case eBuildingType::refinery: return {-10, 6};
+    case eBuildingType::refinery: return {-10, 5};
     case eBuildingType::sculptureStudio: return {-2, 2};
     case eBuildingType::olivePress: return {-4, 4};
     case eBuildingType::winery: return {4, 4};
@@ -33,6 +34,9 @@ eHeat eHeatGetters::appeal(const eBuildingType type) {
 
     case eBuildingType::granary: return {-12, 4};
     case eBuildingType::warehouse: return {-2, 4};
+    // Trading Post and Dock: DES -2 RGE 4 in the original model data. A
+    // dock's storage part is also a tradePost in eZeus, so this covers both.
+    case eBuildingType::tradePost: return {-2, 4};
     case eBuildingType::foodVendor:
     case eBuildingType::fleeceVendor:
     case eBuildingType::oilVendor:

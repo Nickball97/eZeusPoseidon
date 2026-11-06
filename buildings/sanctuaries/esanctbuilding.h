@@ -92,13 +92,16 @@ public:
     void write(eWriteStream& dst) const override;
 
     const std::vector<eSanctCost>& costs() const { return mCost; }
+    // Replaces the per-stage costs before construction starts. The number
+    // of stages must stay the same.
+    void setCosts(const std::vector<eSanctCost>& cost);
 private:
     void scheduleTerrainUpdate();
     void updateNextCost();
 
     const int mMaxProgress;
-    const std::vector<eSanctCost> mCost{{0, 0, 0}};
-    const eSanctCost mTotalCost{0, 0, 0};
+    std::vector<eSanctCost> mCost{{0, 0, 0}};
+    eSanctCost mTotalCost{0, 0, 0};
     eSanctCost mNextCost{0, 0, 0};
     eMonument* mMonument = nullptr;
     bool mWorkedOn = false;

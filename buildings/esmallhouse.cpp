@@ -176,9 +176,9 @@ void eSmallHouse::timeChanged(const int by) {
         const int m4 = pm*pow(pbi + mHygiene, pe);
         const auto pid = playerId();
         const auto diff = b.difficulty(pid);
-        const int plagueRisk = eDifficultyHelpers::plagueRisk(diff);
-        if(plagueRisk && by) {
-            const int plaguePeriod = m4/(by*plagueRisk);
+        const double plagueRisk = eDifficultyHelpers::plagueRisk(diff);
+        if(plagueRisk > 0. && by) {
+            const int plaguePeriod = std::round(m4/(by*plagueRisk));
             if(plaguePeriod && eRand::rand() % plaguePeriod == 0) {
                 const auto center = centerTile();
                 const int tx = center->x();
@@ -210,9 +210,9 @@ void eSmallHouse::timeChanged(const int by) {
         const int m4 = pm*pow(pbi + mSatisfaction, pe);
         const auto pid = playerId();
         const auto diff = b.difficulty(pid);
-        const int crimeRisk = eDifficultyHelpers::crimeRisk(diff);
-        if(crimeRisk && by) {
-            const int crimePeriod = m4/(by*crimeRisk);
+        const double crimeRisk = eDifficultyHelpers::crimeRisk(diff);
+        if(crimeRisk > 0. && by) {
+            const int crimePeriod = std::round(m4/(by*crimeRisk));
             if(crimePeriod && eRand::rand() % crimePeriod == 0) {
                 setDisgruntled(true);
             }
@@ -229,9 +229,9 @@ void eSmallHouse::timeChanged(const int by) {
             const int m4 = pm*pow(pbi + mSatisfaction, pe);
             const auto pid = playerId();
             const auto diff = b.difficulty(pid);
-            const int leaveRisk = eDifficultyHelpers::crimeRisk(diff);
-            if(leaveRisk && by) {
-                const int leavePeriod = m4/(by*leaveRisk);
+            const double leaveRisk = eDifficultyHelpers::crimeRisk(diff);
+            if(leaveRisk > 0. && by) {
+                const int leavePeriod = std::round(m4/(by*leaveRisk));
                 if(leavePeriod && eRand::rand() % leavePeriod == 0) {
                     leave();
                 }

@@ -32,7 +32,7 @@ eGuidedMovePathTask::eGuidedMovePathTask(ePatrolBuildingBase * const b,
 }
 
 void eGuidedMovePathTask::run(eThreadBoard &data) {
-    const int maxDistance = eNumbers::sPatrolerMaxDistance;
+    const int maxDistance = mB->maxDistance();
 
     for(int j = 0; j < (mBothDirections ? 2 : 1); j++) {
         int distance = 0;

@@ -16,7 +16,14 @@
 #include "audio/emusic.h"
 #include "audio/esounds.h"
 
+#ifdef EZEUS_DEV_CHEATS
+void eInstallDevCrashHandler(); // edevcrash.cpp
+#endif
+
 bool init() {
+#ifdef EZEUS_DEV_CHEATS
+    eInstallDevCrashHandler();
+#endif
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         printf("SDL could not initialize! SDL Error: %s\n",
                SDL_GetError());

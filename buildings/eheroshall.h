@@ -21,7 +21,7 @@ enum class eHeroRequirementType {
     // wine, // 32
 
     // jason
-    // triremes, // 3
+    triremes, // 3 (Atlantean: frigates; eZeus has only triremes so far)
     horsemen, // 2
     horses, // 8
     food, // 64

@@ -16,7 +16,7 @@ eAresSanctuary::eAresSanctuary(
         eGameBoard& board,
         const eCityId cid) :
     eSanctuaryWithWarriors(board, eBuildingType::templeAres,
-                           sw, sh, 60, cid) {}
+                           sw, sh, 50, cid) {}
 
 void eSanctuaryWithWarriors::erase() {
     eSanctuary::erase();

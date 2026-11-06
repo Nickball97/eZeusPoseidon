@@ -1,6 +1,9 @@
 #include "egamewidget.h"
 
 #include "engine/egameboard.h"
+#ifdef EZEUS_DEV_CHEATS
+#include "buildings/pyramids/epyramid.h"
+#endif
 
 #include "engine/eknownendpathfinder.h"
 #include "eterraineditmenu.h"
@@ -1790,6 +1793,39 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
         if(mRotateId > 3) mRotateId = 0;
     } else if(k == SDL_Scancode::SDL_SCANCODE_P) {
         switchPause();
+#ifdef EZEUS_DEV_CHEATS
+    } else if(k == SDL_Scancode::SDL_SCANCODE_M &&
+              e.ctrlPressed() && e.shiftPressed()) {
+        // Developer test build only: +10000 drachmas.
+        const auto pid = mBoard->personPlayer();
+        mBoard->setDrachmas(pid, mBoard->drachmas(pid) + 10000);
+    } else if(k == SDL_Scancode::SDL_SCANCODE_Y &&
+              e.ctrlPressed() && e.shiftPressed()) {
+        // Developer test build only: unlock every Atlantean monument in the
+        // viewed city, levels alternating white/black marble.
+        const auto c = mBoard->boardCityWithId(mViewedCityId);
+        if(c) {
+            const eBuildingType types[] = {
+                eBuildingType::modestPyramid, eBuildingType::pyramid,
+                eBuildingType::greatPyramid, eBuildingType::majesticPyramid,
+                eBuildingType::smallMonumentToTheSky,
+                eBuildingType::monumentToTheSky,
+                eBuildingType::grandMonumentToTheSky,
+                eBuildingType::minorShrineZeus, eBuildingType::shrineZeus,
+                eBuildingType::majorShrineZeus,
+                eBuildingType::pyramidOfThePantheon,
+                eBuildingType::altarOfOlympus,
+                eBuildingType::templeOfOlympus,
+                eBuildingType::observatoryKosmika,
+                eBuildingType::museumAtlantika};
+            for(const auto t : types) {
+                std::vector<bool> levels;
+                const int n = ePyramid::sLevels(t);
+                for(int i = 0; i < n; i++) levels.push_back(i % 2 == 1);
+                c->allowPyramid(t, levels);
+            }
+        }
+#endif
     } else if(k == SDL_Scancode::SDL_SCANCODE_LEFT) {
         setDX(mDX + 35);
     } else if(k == SDL_Scancode::SDL_SCANCODE_RIGHT) {

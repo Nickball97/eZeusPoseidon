@@ -410,7 +410,10 @@ enum class eEvent {
     wageIncrease,
     wageDecrease,
 
-    areaCutOff
+    areaCutOff,
+
+    // added at the end so existing values keep their numbers
+    invasionBribedMonn
 };
 
 #endif // EEVENT_H

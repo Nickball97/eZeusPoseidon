@@ -30,6 +30,10 @@ public:
                         const eCityId cid);
     ~ePatrolBuildingBase();
 
+    // Tiles a roaming walker from this building type walks before turning
+    // back (original game values where known).
+    static int sMaxDistance(const eBuildingType type);
+
     static stdsptr<eCharacterAction> sDefaultActGenerator(
         eCharacter* const c,
         ePatrolBuildingBase* const b,

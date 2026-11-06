@@ -13,11 +13,18 @@ endif()
 
 include(FetchContent)
 
+# CMake 4 (e.g. the one bundled with Visual Studio 2026) refuses projects that
+# declare compatibility with CMake < 3.5, which the vendored freetype does.
+if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+endif()
+
 # Disable unnecessary SDL components (optional but recommended)
 set(SDL_SHARED ON CACHE BOOL "" FORCE)
 set(SDL_STATIC OFF CACHE BOOL "" FORCE)
 set(SDL_TEST OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_AVIF OFF)
+# AVIF is unused; the vendored decoder (dav1d) would need the NASM assembler.
+set(SDL2IMAGE_AVIF OFF CACHE BOOL "" FORCE)
 set(SDLTTF_VENDORED ON CACHE BOOL "" FORCE)
 if(MINGW)
     add_compile_options(-Wa,-mbig-obj)
@@ -3344,9 +3351,34 @@ add_executable(eZeus
     textureTemplates/zeusTrees
 )
 
+# The code includes <SDL2/SDL_image.h> etc. (the Linux system layout), but the
+# fetched SDL_image/SDL_mixer/SDL_ttf sources keep those headers without an
+# SDL2/ folder. Copy them into one inside the build directory.
+set(EZEUS_SDL2_COMPAT_INCLUDE ${CMAKE_BINARY_DIR}/sdl2_compat_include)
+file(COPY
+    ${sdl2_ttf_SOURCE_DIR}/SDL_ttf.h
+    ${sdl2_image_SOURCE_DIR}/include/SDL_image.h
+    ${sdl2_mixer_SOURCE_DIR}/include/SDL_mixer.h
+    DESTINATION ${EZEUS_SDL2_COMPAT_INCLUDE}/SDL2
+)
+
 target_include_directories(eZeus PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${EZEUS_SDL2_COMPAT_INCLUDE}
 )
+
+# Testing shortcuts (Ctrl+Shift+M: +10000 drachmas). Never on by default.
+option(EZEUS_DEV_CHEATS "Enable developer test shortcuts" OFF)
+if(EZEUS_DEV_CHEATS)
+    target_compile_definitions(eZeus PRIVATE EZEUS_DEV_CHEATS)
+    # crash reporter that prints the call stack (edevcrash.cpp)
+    target_sources(eZeus PRIVATE edevcrash.cpp)
+    if(MSVC)
+        target_link_libraries(eZeus PRIVATE dbghelp)
+        target_compile_options(eZeus PRIVATE /Zi)
+        target_link_options(eZeus PRIVATE /DEBUG /OPT:REF /OPT:ICF)
+    endif()
+endif()
 
 include(GNUInstallDirs)
 install(TARGETS eZeus

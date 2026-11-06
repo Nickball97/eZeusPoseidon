@@ -23,7 +23,7 @@ void eSupplyChangeEvent::trigger() {
     auto& sells = city->sells();
     for(auto& s : sells) {
         if(s.fType != type) continue;
-        s.fMax += by;
+        s.changeMax(by);
         break;
     }
     const auto board = gameBoard();
