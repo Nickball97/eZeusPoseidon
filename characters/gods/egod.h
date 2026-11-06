@@ -37,7 +37,10 @@ public:
     static int sGodBlessTime(const eGodType gt);
     static int sGodAppearTime(const eGodType gt);
 
+    // buildings the god blesses (sanctifies)
     static bool sTarget(const eGodType gt, const eBuildingType bt);
+    // buildings the god attacks when angry
+    static bool sAttackTarget(const eGodType gt, const eBuildingType bt);
 
     static std::string sGodName(const eGodType gt);
 

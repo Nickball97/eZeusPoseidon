@@ -383,7 +383,7 @@ public:
         if(!b) return null;
         const auto type = b->type();
         if(!eBuilding::sAttackable(type)) return null;
-        const bool target = eGod::sTarget(mType, type);
+        const bool target = eGod::sAttackTarget(mType, type);
         if(!target) return null;
         return b->centerTile();
     }
