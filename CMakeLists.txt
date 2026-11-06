@@ -473,6 +473,7 @@ add_executable(eZeus
     characters/eactor.cpp
     characters/eactor.h
     characters/eamazon.cpp
+    characters/efigurestats.cpp
     characters/eamazon.h
     characters/eanimal.cpp
     characters/eanimal.h

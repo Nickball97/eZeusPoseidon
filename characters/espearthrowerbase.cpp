@@ -1,6 +1,7 @@
 #include "espearthrowerbase.h"
 
 #include "enumbers.h"
+#include "efigurestats.h"
 
 eSpearthrowerBase::eSpearthrowerBase(eGameBoard& board,
                                      const eCharTexs charTexs,
@@ -9,4 +10,6 @@ eSpearthrowerBase::eSpearthrowerBase(eGameBoard& board,
     setRange(eNumbers::sSpearthrowerRange);
     setAttack(eNumbers::sSpearthrowerAttack);
     setHP(eNumbers::sSpearthrowerHP);
+    // original-game strength for this soldier type, if it has one
+    eFigureStats::sApply(this);
 }

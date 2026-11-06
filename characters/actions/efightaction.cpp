@@ -1,4 +1,5 @@
 #include "efightaction.h"
+#include "characters/efigurestats.h"
 
 #include "characters/echaracter.h"
 
@@ -15,8 +16,9 @@ eFightAction::eFightAction(eCharacter* const c, eCharacter* const o) :
 
 void eFightAction::increment(const int by) {
     const auto c = character();
-    const double a = c->attack();
-    const bool dead = mOpponent ? mOpponent->defend(by*a) : true;
+    const bool dead = mOpponent ?
+        mOpponent->defend(eFigureStats::sDamage(c, mOpponent.get(), false, by)) :
+        true;
     if(dead || c->dead()) {
         setState(eCharacterActionState::finished);
     }

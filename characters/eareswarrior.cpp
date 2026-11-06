@@ -3,12 +3,15 @@
 #include "textures/echaractertextures.h"
 #include "textures/egametextures.h"
 #include "enumbers.h"
+#include "efigurestats.h"
 
 eAresWarrior::eAresWarrior(eGameBoard& board) :
     eSoldier(board, nullptr, eCharacterType::aresWarrior) {
     eGameTextures::loadAresWarrior();
     setAttack(eNumbers::sHopliteAttack);
     setHP(eNumbers::sHopliteHP);
+    // original-game strength for this soldier type, if it has one
+    eFigureStats::sApply(this);
 }
 
 std::shared_ptr<eTexture>

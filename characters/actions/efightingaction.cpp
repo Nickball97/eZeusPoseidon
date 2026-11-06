@@ -1,4 +1,5 @@
 #include "efightingaction.h"
+#include "characters/efigurestats.h"
 
 #include <math.h>
 
@@ -182,7 +183,11 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                             mAttackTarget.dead() ||
                             (mAttackTime > 1000 && !mAttackTarget.building());
         if(mAttackTarget.valid() && !mAttackTarget.dead()) {
-            const double att = by*c->attack();
+            // ranged when shooting (as for the missiles above)
+            const bool ranged = range > 0 &&
+                                c->actionType() == eCharacterActionType::fight2;
+            const double att = eFigureStats::sDamage(
+                                   c, mAttackTarget.character(), ranged, by);
             const bool d = mAttackTarget.defend(att);
             if(d) finishAttack = true;
         }

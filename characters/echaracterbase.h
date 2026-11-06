@@ -181,6 +181,24 @@ public:
     double attack() const { return mAttack; }
     void setHP(const double hp);
     double hp() const { return mHP; }
+    // original-game combat stats (see eFigureStats); not saved, they are
+    // set again from the character type when it is created or loaded
+    bool hasFigureStats() const { return mHasFigureStats; }
+    void setFigureStats(const int armor, const int missileArmor,
+                        const int missileAttack, const int missileRate,
+                        const int frequency) {
+        mHasFigureStats = true;
+        mFrequency = frequency;
+        mArmor = armor;
+        mMissileArmor = missileArmor;
+        mMissileAttack = missileAttack;
+        mMissileRate = missileRate;
+    }
+    int armor() const { return mArmor; }
+    int missileArmor() const { return mMissileArmor; }
+    int missileAttack() const { return mMissileAttack; }
+    int missileRate() const { return mMissileRate; }
+    int frequency() const { return mFrequency; }
     bool dead() const { return mHP <= 0 ||
                         mActionType == eCharacterActionType::die; }
     bool fighting() const;
@@ -228,6 +246,12 @@ private:
 
     double mHP = 100;
     double mAttack = 0;
+    bool mHasFigureStats = false;
+    int mArmor = 0;
+    int mMissileArmor = 0;
+    int mMissileAttack = 0;
+    int mMissileRate = 0;
+    int mFrequency = 0;
     double mSpeed = 1;
 };
 

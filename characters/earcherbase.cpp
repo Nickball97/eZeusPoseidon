@@ -1,6 +1,7 @@
 #include "earcherbase.h"
 
 #include "enumbers.h"
+#include "efigurestats.h"
 
 eArcherBase::eArcherBase(eGameBoard& board,
                          const eCharTexs charTexs,
@@ -9,4 +10,6 @@ eArcherBase::eArcherBase(eGameBoard& board,
     setRange(eNumbers::sArcherRange);
     setAttack(eNumbers::sArcherAttack);
     setHP(eNumbers::sArcherHP);
+    // original-game strength for this soldier type, if it has one
+    eFigureStats::sApply(this);
 }
