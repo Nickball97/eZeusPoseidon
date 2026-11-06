@@ -147,6 +147,15 @@ struct eResourceTrade {
         }
 
         src >> fMax;
+        // Older saves may hold a negative yearly amount (supply/demand
+        // decrease events used to subtract without a lower bound).
+        if(fMax < 0) fMax = 0;
+    }
+
+    // Supply/demand change events: a yearly amount can't go below zero.
+    void changeMax(const int by) {
+        fMax += by;
+        if(fMax < 0) fMax = 0;
     }
 };
 

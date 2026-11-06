@@ -23,7 +23,7 @@ void eDemandChangeEvent::trigger() {
     auto& buys = city->buys();
     for(auto& b : buys) {
         if(b.fType != type) continue;
-        b.fMax += by;
+        b.changeMax(by);
         break;
     }
     const auto board = gameBoard();
