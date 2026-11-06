@@ -1441,8 +1441,22 @@ bool eGameWidget::buildMouseRelease() {
             };
             break;
         case eBuildingMode::tower: {
-            r = mBoard->build(mHoverTX, mHoverTY, 2, 2, cid, pid, mEditorMode,
-                  [this]() { return e::make_shared<eTower>(*mBoard, mViewedCityId); });
+            // As in the original game, a tower is built on top of 4 walls
+            // (upstream #55). The map editor may still place it anywhere.
+            const auto creator = [this]() {
+                return e::make_shared<eTower>(*mBoard, mViewedCityId);
+            };
+            const bool onWalls = mBoard->canBuildTowerOnWalls(
+                                     mHoverTX, mHoverTY, cid, pid);
+            if(onWalls) {
+                mBoard->eraseWallsUnderTower(mHoverTX, mHoverTY);
+                // flat: walkers standing on the walls don't block the tower
+                r = mBoard->build(mHoverTX, mHoverTY, 2, 2, cid, pid,
+                                  mEditorMode, creator, false, true);
+            } else if(mEditorMode) {
+                r = mBoard->build(mHoverTX, mHoverTY, 2, 2, cid, pid,
+                                  mEditorMode, creator);
+            }
         } break;
         case eBuildingMode::gatehouse: {
             int dx;

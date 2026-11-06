@@ -3765,6 +3765,47 @@ bool eGameBoard::canBuild(const int tx, const int ty,
 }
 
 
+bool eGameBoard::canBuildTowerOnWalls(const int tx, const int ty,
+                                      const eCityId cid,
+                                      const ePlayerId pid) const {
+    if(pid != cityIdToPlayerId(cid) && !mEditorMode) return false;
+    int minX;
+    int minY;
+    int maxX;
+    int maxY;
+    sBuildTiles(minX, minY, maxX, maxY, tx, ty, 2, 2);
+    for(int x = minX; x < maxX; x++) {
+        for(int y = minY; y < maxY; y++) {
+            const auto t = tile(x, y);
+            if(!t) return false;
+            if(t->cityId() != cid) return false;
+            if(t->isElevationTile()) return false;
+            const auto ub = t->underBuilding();
+            if(!ub) return false;
+            if(ub->type() != eBuildingType::wall) return false;
+            if(ub->isOnFire()) return false;
+        }
+    }
+    return true;
+}
+
+void eGameBoard::eraseWallsUnderTower(const int tx, const int ty) {
+    int minX;
+    int minY;
+    int maxX;
+    int maxY;
+    sBuildTiles(minX, minY, maxX, maxY, tx, ty, 2, 2);
+    for(int x = minX; x < maxX; x++) {
+        for(int y = minY; y < maxY; y++) {
+            const auto t = tile(x, y);
+            if(!t) continue;
+            const auto ub = t->underBuilding();
+            if(!ub || ub->type() != eBuildingType::wall) continue;
+            ub->erase();
+        }
+    }
+}
+
 bool eGameBoard::buildBase(const int minX, const int minY,
                            const int maxX, const int maxY,
                            const eBuildingCreator& bc,

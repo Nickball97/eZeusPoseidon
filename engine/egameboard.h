@@ -700,6 +700,13 @@ public:
                   const ePlayerId pid,
                   const bool fertile = false,
                   const bool flat = false) const;
+    // A tower (2x2) can only be placed on top of 4 wall tiles of this city.
+    bool canBuildTowerOnWalls(const int tx, const int ty,
+                              const eCityId cid,
+                              const ePlayerId pid) const;
+    // Removes the 4 walls a tower is placed on; call after
+    // canBuildTowerOnWalls() returned true.
+    void eraseWallsUnderTower(const int tx, const int ty);
 
     using eBuildingCreator = std::function<stdsptr<eBuilding>()>;
     bool buildBase(const int minX, const int minY,

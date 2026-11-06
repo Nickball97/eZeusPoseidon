@@ -2752,6 +2752,19 @@ void eGameWidget::paintEvent(ePainter& p) {
                 return canBuildAvenue(t, mViewedCityId, ppid, mEditorMode);
             };
         } break;
+        case eBuildingMode::tower: {
+            canBuildFunc = [&](const int tx, const int ty,
+                               const int sw, const int sh) {
+                if(mBoard->canBuildTowerOnWalls(tx, ty, mViewedCityId, ppid)) {
+                    return true;
+                }
+                // The map editor may still place a tower anywhere.
+                if(!mEditorMode) return false;
+                return mBoard->canBuild(tx, ty, sw, sh,
+                                        mEditorMode,
+                                        mViewedCityId, ppid);
+            };
+        } break;
         default: {
             canBuildFunc = [&](const int tx, const int ty,
                                const int sw, const int sh) {
