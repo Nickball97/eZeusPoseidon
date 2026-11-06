@@ -28,16 +28,47 @@ double eEmployingBuilding::vacanciesFilledFraction() const {
     return double(mEmployed)/mMaxEmployees;
 }
 
+// How much a god's blessing speeds a building up. HeavenGames' god pages
+// (zeus.heavengames.com/gameinfo/gods/): blessed production buildings
+// "produce 4 times the normal amount"; Apollo's blessed culture buildings
+// "produce twice as many walkers". Other buildings keep eZeus's 1.5.
+double eEmployingBuilding::sBlessMultiplier(const eBuildingType type) {
+    switch(type) {
+    case eBuildingType::wheatFarm:
+    case eBuildingType::carrotsFarm:
+    case eBuildingType::onionsFarm:
+    case eBuildingType::cardingShed:
+    case eBuildingType::olivePress:
+    case eBuildingType::winery:
+    case eBuildingType::mint:
+    case eBuildingType::armory:
+    case eBuildingType::foundry:
+    case eBuildingType::huntingLodge:
+    case eBuildingType::fishery:
+    case eBuildingType::urchinQuay:
+        return 4.;
+    case eBuildingType::podium:
+    case eBuildingType::gymnasium:
+    case eBuildingType::stadium:
+    case eBuildingType::theater:
+    case eBuildingType::bibliotheke:
+    case eBuildingType::laboratory:
+    case eBuildingType::observatory:
+        return 2.;
+    default:
+        return 1.5;
+    }
+}
+
 double eEmployingBuilding::effectiveness() const {
     if(mShutDown) return 0.;
     const double ef = vacanciesFilledFraction();
-    double blessed = 0.;
     if(eBuilding::blessed()) {
-        blessed = 1.;
+        return ef*sBlessMultiplier(type());
     } else if(eBuilding::cursed()) {
-        blessed = -1.;
+        return ef*0.5;
     }
-    return ef*(1 + 0.5*blessed);
+    return ef;
 }
 
 void eEmployingBuilding::setShutDown(const bool sd) {

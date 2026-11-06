@@ -18,6 +18,8 @@ public:
     int maxEmployees() const { return mMaxEmployees; }
     double vacanciesFilledFraction() const;
     double effectiveness() const;
+    // speed-up from a god's blessing for this building type
+    static double sBlessMultiplier(const eBuildingType type);
     bool shutDown() const { return mShutDown; }
     void setShutDown(const bool sd);
 
