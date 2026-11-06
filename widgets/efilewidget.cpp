@@ -8,6 +8,7 @@
 #include "escrollwidgetcomplete.h"
 
 #include "elineedit.h"
+#include "elanguage.h"
 
 #include <string>
 #include <iostream>
@@ -46,10 +47,18 @@ void eFileWidget::intialize(const std::string& title,
     addWidget(mOk);
     mOk->align(eAlignment::bottom | eAlignment::right);
     mOk->move(mOk->x() - 2*p, mOk->y() - 2*p);
-    mOk->setPressAction([this, func, closeAction] {
+    mOk->setPressAction([this, title, func, closeAction] {
+        const auto name = mLineEdit->text();
+        if(!sValidFileName(name)) {
+            showError(title, "file_invalid_name",
+                      "Invalid name. Do not use quotes or < > : / \\ | ? *");
+            return;
+        }
         const auto path = filePath();
         const bool r = func(path);
         if(r) closeAction();
+        else showError(title, "file_operation_failed",
+                       "Operation failed. Try another name.");
     });
 
     mCancel = new eCancelButton(window());
@@ -85,8 +94,10 @@ void eFileWidget::intialize(const std::string& title,
     const auto filesWidget = new eWidget(window());
 
     std::map<time_t, fs::path> sorted;
-    if(std::filesystem::exists(folder)) {
-        for(const auto& entry : fs::directory_iterator(folder)) {
+    std::error_code ec;
+    const auto folderPath = fs::u8path(folder);
+    if(fs::exists(folderPath, ec)) {
+        for(const auto& entry : fs::directory_iterator(folderPath, ec)) {
             const auto path = entry.path();
             const auto ext = path.extension();
             if(ext != ".ez") continue;
@@ -129,6 +140,35 @@ void eFileWidget::intialize(const std::string& title,
     lineW->resize(swwidth, mLineEdit->height());
 
     mLineEdit->grabKeyboard();
+}
+
+bool eFileWidget::sValidFileName(const std::string& name) {
+    if(name.empty()) return false;
+    if(name == "." || name == "..") return false;
+    for(const char c : name) {
+        const unsigned char uc = static_cast<unsigned char>(c);
+        if(uc < 32) return false;
+        switch(c) {
+        case '<': case '>': case ':': case '"': case '/':
+        case '\\': case '|': case '?': case '*':
+            return false;
+        default: break;
+        }
+    }
+    // Windows does not allow names ending with a space or a dot
+    const char last = name.back();
+    if(last == ' ' || last == '.') return false;
+    return true;
+}
+
+void eFileWidget::showError(const std::string& title,
+                            const std::string& key,
+                            const std::string& fallback) {
+    auto msg = eLanguage::text(key);
+    if(msg.empty()) msg = fallback;
+    mTitleLabel->setText(title + " - " + msg);
+    mTitleLabel->fitContent();
+    mTitleLabel->align(eAlignment::hcenter);
 }
 
 void eFileWidget::setFileName(const std::string& path) {

@@ -20,7 +20,13 @@ public:
 
     void setFileName(const std::string& path);
     std::string filePath() const;
+
+    static bool sValidFileName(const std::string& name);
 private:
+    void showError(const std::string& title,
+                   const std::string& key,
+                   const std::string& fallback);
+
     eLabel* mTitleLabel = nullptr;
     eAcceptButton* mOk = nullptr;
     eCancelButton* mCancel = nullptr;

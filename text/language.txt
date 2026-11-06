@@ -131,3 +131,6 @@ one_direction "One directions"
 can_accept "Can accept"
 
 greetings "Greetings,"
+
+file_invalid_name "Invalid name. Do not use quotes or < > : / \ | ? *"
+file_operation_failed "Operation failed. Try another name."

@@ -249,30 +249,79 @@ void eMainWindow::episodeLost() {
 }
 
 bool eMainWindow::saveGame(const std::string& path) {
-    const auto fsp = std::filesystem::path(path);
+    namespace fs = std::filesystem;
+    if(!mCampaign) return false;
+    // Make sure no board task is still running while the state is written.
+    if(mBoard) mBoard->waitUntilFinished();
+
+    std::error_code ec;
+    const auto fsp = fs::u8path(path);
     const auto fspd = fsp.parent_path();
-    std::filesystem::create_directories(fspd);
-    std::ofstream file(path, std::ios::out | std::ios::binary |
-                       std::ios::trunc);
-    if(!file) return false;
-    eWriteTarget target(&file);
-    eWriteStream dst(target);
-    dst.writeFormat("eZeus.ez");
-    if(mGW) {
-        const auto s = mGW->settings();
-        s.write(dst);
-    } else {
-        eGameWidgetSettings s;
-        s.fPaused = true;
-        s.write(dst);
+    if(!fspd.empty()) {
+        fs::create_directories(fspd, ec);
+        if(ec) {
+            printf("Could not create save directory '%s': %s\n",
+                   fspd.u8string().c_str(), ec.message().c_str());
+            return false;
+        }
     }
-    mCampaign->write(dst);
-    file.close();
+
+    // Write to a temporary file first so that a failed save never
+    // destroys an existing save with the same name.
+    auto tmp = fsp;
+    tmp += ".tmp";
+    {
+        std::ofstream file(tmp, std::ios::out | std::ios::binary |
+                           std::ios::trunc);
+        if(!file) {
+            printf("Could not open '%s' for writing.\n",
+                   tmp.u8string().c_str());
+            return false;
+        }
+        eWriteTarget target(&file);
+        eWriteStream dst(target);
+        dst.writeFormat("eZeus.ez");
+        if(mGW) {
+            const auto s = mGW->settings();
+            s.write(dst);
+        } else {
+            eGameWidgetSettings s;
+            s.fPaused = true;
+            s.write(dst);
+        }
+        mCampaign->write(dst);
+        file.flush();
+        const bool ok = static_cast<bool>(file);
+        file.close();
+        if(!ok || file.fail()) {
+            printf("Failed writing '%s'.\n", tmp.u8string().c_str());
+            fs::remove(tmp, ec);
+            return false;
+        }
+    }
+
+    fs::rename(tmp, fsp, ec);
+    if(ec) {
+        // Some platforms refuse to replace an existing file on rename.
+        std::error_code rec;
+        fs::remove(fsp, rec);
+        ec.clear();
+        fs::rename(tmp, fsp, ec);
+    }
+    if(ec) {
+        printf("Could not move '%s' to '%s': %s\n",
+               tmp.u8string().c_str(), fsp.u8string().c_str(),
+               ec.message().c_str());
+        std::error_code rec;
+        fs::remove(tmp, rec);
+        return false;
+    }
     return true;
 }
 
 bool eMainWindow::loadGame(const std::string& path) {
-    std::ifstream file(path, std::ios::in | std::ios::binary);
+    std::ifstream file(std::filesystem::u8path(path),
+                       std::ios::in | std::ios::binary);
     if(!file) return false;
     eReadSource source(&file);
     eReadStream src(source);
