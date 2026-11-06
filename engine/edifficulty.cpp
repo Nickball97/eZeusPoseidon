@@ -509,7 +509,7 @@ double plagueRiskMultiplier(const eDifficulty diff) {
     return 1;
 }
 
-int eDifficultyHelpers::plagueRisk(const eDifficulty diff) {
+double eDifficultyHelpers::plagueRisk(const eDifficulty diff) {
     return plagueRiskMultiplier(diff);
 }
 
@@ -529,7 +529,7 @@ double crimeRiskMultiplier(const eDifficulty diff) {
     return 1;
 }
 
-int eDifficultyHelpers::crimeRisk(const eDifficulty diff) {
+double eDifficultyHelpers::crimeRisk(const eDifficulty diff) {
     return crimeRiskMultiplier(diff);
 }
 
