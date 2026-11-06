@@ -67,7 +67,9 @@ double eEmployingBuilding::effectiveness() const {
     if(eBuilding::blessed()) {
         return ef*sBlessMultiplier(type());
     } else if(eBuilding::cursed()) {
-        return ef*0.5;
+        // Zeus manual (When Gods Attack): cursed buildings "become
+        // inoperable until the curse is lifted"
+        return 0.;
     }
     return ef;
 }

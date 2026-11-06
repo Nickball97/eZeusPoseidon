@@ -536,92 +536,79 @@ bool eGod::sTarget(const eGodType gt, const eBuildingType bt) {
     }
     return false;
 }
+// What an angry (attacking) god does to buildings. Zeus manual, Mythology
+// chapter ("When Gods Attack"), and Poseidon manual (Hera, Atlas, Apollo
+// in Atlantis).
 
-// Buildings an angry god goes after (eZeus's own list, unchanged; the
-// blessing list above follows the manuals).
+// Buildings an angry god destroys on purpose. Only Zeus is described as
+// destroying a particular building: "He'll destroy the city's Palace,
+// then look for other buildings to crush" (the second part is his
+// general attack, see sGeneralAttack).
 bool eGod::sAttackTarget(const eGodType gt, const eBuildingType bt) {
     switch(gt) {
-    case eGodType::aphrodite:
-        return bt == eBuildingType::commonHouse ||
-               bt == eBuildingType::fountain ||
-               bt == eBuildingType::eliteHousing;
+    case eGodType::zeus:
+        return bt == eBuildingType::palace;
+    default:
+        return false;
+    }
+}
+
+// Buildings an angry god curses; cursed buildings stop working until the
+// curse is lifted.
+bool eGod::sCurseTarget(const eGodType gt, const eBuildingType bt) {
+    switch(gt) {
+    case eGodType::zeus: // "He can perform any god's curse"
+        return true;
+    case eGodType::poseidon: // Trireme Wharves, Urchin Quays and Fisheries
+        return bt == eBuildingType::triremeWharf ||
+               bt == eBuildingType::urchinQuay ||
+               bt == eBuildingType::fishery;
+    case eGodType::hades: // Foundries and Mints
+        return bt == eBuildingType::foundry ||
+               bt == eBuildingType::mint;
+    case eGodType::dionysus: // the city's Grapevines
+        return bt == eBuildingType::vine;
+    case eGodType::athena: // "a number on the city's olive oil industry"
+        return bt == eBuildingType::oliveTree ||
+               bt == eBuildingType::olivePress;
     case eGodType::apollo:
+        // "prevent the city's cultural institutions from enriching the
+        // masses"; in Atlantis "he curses all science buildings"
         return bt == eBuildingType::podium ||
-               bt == eBuildingType::college ||
-               bt == eBuildingType::dramaSchool ||
+               bt == eBuildingType::gymnasium ||
                bt == eBuildingType::theater ||
                bt == eBuildingType::stadium ||
-               bt == eBuildingType::gymnasium ||
                bt == eBuildingType::bibliotheke ||
-               bt == eBuildingType::inventorsWorkshop ||
                bt == eBuildingType::laboratory ||
-               bt == eBuildingType::university ||
                bt == eBuildingType::observatory ||
                bt == eBuildingType::museum;
-    case eGodType::ares:
-        return false;
-    case eGodType::artemis:
-        return bt == eBuildingType::huntingLodge ||
-               bt == eBuildingType::granary;
-    case eGodType::athena:
-        return bt == eBuildingType::growersLodge ||
-               bt == eBuildingType::oliveTree ||
-               bt == eBuildingType::olivePress ||
-               bt == eBuildingType::oilVendor;
+    case eGodType::hephaestus: // Sculpture Studios and Armories
+        return bt == eBuildingType::sculptureStudio ||
+               bt == eBuildingType::armory;
     case eGodType::atlas:
-        return bt == eBuildingType::masonryShop ||
-               bt == eBuildingType::artisansGuild ||
-               bt == eBuildingType::timberMill ||
-               bt == eBuildingType::sculptureStudio;
-    case eGodType::demeter:
-        return bt == eBuildingType::wheatFarm ||
-               bt == eBuildingType::onionsFarm ||
-               bt == eBuildingType::carrotsFarm ||
-               bt == eBuildingType::cardingShed ||
-               bt == eBuildingType::dairy ||
-               bt == eBuildingType::corral ||
-               bt == eBuildingType::growersLodge ||
-               bt == eBuildingType::orangeTendersLodge ||
-               bt == eBuildingType::foodVendor ||
-               bt == eBuildingType::granary;
-    case eGodType::dionysus:
-        return bt == eBuildingType::growersLodge ||
-               bt == eBuildingType::vine ||
-               bt == eBuildingType::winery ||
-               bt == eBuildingType::wineVendor;
-    case eGodType::hades:
-        return bt == eBuildingType::foundry ||
-               bt == eBuildingType::refinery ||
-               bt == eBuildingType::mint;
-    case eGodType::hephaestus:
-        return bt == eBuildingType::foundry ||
-               bt == eBuildingType::refinery ||
-               bt == eBuildingType::blackMarbleWorkshop ||
-               bt == eBuildingType::mint ||
-               bt == eBuildingType::armory ||
-               bt == eBuildingType::sculptureStudio;
-    case eGodType::hera:
-        return bt == eBuildingType::foodVendor ||
-               bt == eBuildingType::fleeceVendor ||
-               bt == eBuildingType::oilVendor ||
-               bt == eBuildingType::wineVendor ||
-               bt == eBuildingType::armsVendor ||
-               bt == eBuildingType::horseTrainer ||
-               bt == eBuildingType::chariotFactory ||
-               bt == eBuildingType::orangeTendersLodge ||
-               bt == eBuildingType::orangeTree;
-    case eGodType::hermes:
-        return bt == eBuildingType::tradePost ||
-               bt == eBuildingType::pier;
-    case eGodType::poseidon:
-        return bt == eBuildingType::urchinQuay ||
-               bt == eBuildingType::fishery ||
-               bt == eBuildingType::pier ||
-               bt == eBuildingType::triremeWharf;
-    case eGodType::zeus:
-        return true;
+        // Black Marble Workshops, Masonry Shops and Artisans' Guilds
+        return bt == eBuildingType::blackMarbleWorkshop ||
+               bt == eBuildingType::masonryShop ||
+               bt == eBuildingType::artisansGuild;
+    default:
+        return false;
     }
-    return false;
+}
+
+// Gods that smash buildings and kill people wherever they walk. Zeus
+// "wreaks general havoc"; Hephaestus sets buildings on fire. Ares and
+// Artemis attack with armies (Sparti, Amazons) in the original; until
+// those armies exist they keep attacking in person.
+bool eGod::sGeneralAttack(const eGodType gt) {
+    switch(gt) {
+    case eGodType::zeus:
+    case eGodType::hephaestus:
+    case eGodType::ares:
+    case eGodType::artemis:
+        return true;
+    default:
+        return false;
+    }
 }
 
 std::string eGod::sGodName(const eGodType gt) {

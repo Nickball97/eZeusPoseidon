@@ -28,6 +28,8 @@ void eUrchinQuay::timeChanged(const int by) {
         }
         switch(mState) {
         case eUrchinQuayState::unpacking: {
+            // a cursed building does not work until the curse is lifted
+            if(cursed()) break;
             if(mStateCount > eNumbers::sUrchinQuayUnpackTime) {
                 mStateCount = 0;
                 mState = eUrchinQuayState::waiting;

@@ -283,7 +283,10 @@ public:
         if(!eBuilding::sBlessable(type)) {
             return null;
         }
-        if(!eGod::sTarget(mType, type)) {
+        // blessings follow the blessing list, curses the angry-god list
+        const bool target = mBless < 0 ? eGod::sCurseTarget(mType, type) :
+                                    eGod::sTarget(mType, type);
+        if(!target) {
             return null;
         }
         if(b->blessed() || b->cursed()) {

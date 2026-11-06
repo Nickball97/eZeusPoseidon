@@ -53,8 +53,16 @@ void eGodAttackAction::increment(const int by) {
         const int targetedCurseRange = eNumbers::sGodAttackTargetedCurseRange;
         const int godFightRange = eNumbers::sGodAttackGodFightRange;
 
-        bool r = lookForBlessCurse(by, mLookForCurse, cursePeriod, curseRange, -1);
-        if(!r) r = lookForAttack(by, mLookForAttack, attackPeriod, attackRange);
+        // Only Zeus curses any building; the others curse their own
+        // targets (targeted curse below). Only some gods smash and kill
+        // at random (eGod::sGeneralAttack).
+        bool r = false;
+        if(type == eGodType::zeus) {
+            r = lookForBlessCurse(by, mLookForCurse, cursePeriod, curseRange, -1);
+        }
+        if(!r && eGod::sGeneralAttack(type)) {
+            r = lookForAttack(by, mLookForAttack, attackPeriod, attackRange);
+        }
         if(!r) r = lookForTargetedAttack(by, mLookForTargetedAttack,
                                          targetedAttackPeriod, targetedAttackRange);
         if(!r) r = lookForTargetedBlessCurse(by, mLookForTargetedCurse,

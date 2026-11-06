@@ -36,6 +36,8 @@ void eFishery::timeChanged(const int by) {
             }
         } break;
         case eFisheryState::unpacking: {
+            // a cursed building does not work until the curse is lifted
+            if(cursed()) break;
             if(mStateCount > eNumbers::sFisheryUnpackTime) {
                 mStateCount = 0;
                 mState = eFisheryState::waiting;

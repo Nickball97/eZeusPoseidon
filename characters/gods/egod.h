@@ -39,8 +39,10 @@ public:
 
     // buildings the god blesses (sanctifies)
     static bool sTarget(const eGodType gt, const eBuildingType bt);
-    // buildings the god attacks when angry
+    // what an angry god destroys, curses, and whether it attacks anything
     static bool sAttackTarget(const eGodType gt, const eBuildingType bt);
+    static bool sCurseTarget(const eGodType gt, const eBuildingType bt);
+    static bool sGeneralAttack(const eGodType gt);
 
     static std::string sGodName(const eGodType gt);
 
