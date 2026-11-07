@@ -445,12 +445,17 @@ void eSmallHouse::updateSatisfaction() {
     const int workSat = 100*std::pow(ef, 4);
     mWorkSatisfaction = (weight*mWorkSatisfaction + workSat)/div;
 
-    const auto taxRate = board.taxRate(cid);
+    // Model\Tax_Sentiment_Model.txt: tax sentiment is city wide, by tax
+    // rate and difficulty; if the city-wide tax coverage is very low, the
+    // "None" row is used.
+    auto taxRate = board.taxRate(cid);
+    const auto city = board.boardCityWithId(cid);
+    const double coverage = city ? city->taxCoverage() : 0.;
+    if(coverage < eNumbers::sVeryLowTaxCoverage) taxRate = eTaxRate::none;
     const auto pid = playerId();
     const auto diff = board.difficulty(pid);
     const int ts = eDifficultyHelpers::taxSentiment(diff, taxRate);
-    const int taxSatIfPaid = std::round(100.*(ts + 7.)/14.);
-    const int taxSat = mPaidTaxesLastMonth ? taxSatIfPaid : 100;
+    const int taxSat = std::round(100.*(ts + 7.)/14.);
     mTaxSatisfaction = (weight*mTaxSatisfaction + taxSat)/div;
 
     const int m1 = std::min(mFoodSatisfaction, mWaterSatisfaction);

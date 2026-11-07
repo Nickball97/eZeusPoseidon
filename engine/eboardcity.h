@@ -104,6 +104,8 @@ public:
     int taxesPaidLastYear() const { return mTaxesPaidLastYear; }
     int peoplePaidTaxesThisYear() const { return mPeoplePaidTaxesThisYear; }
     int peoplePaidTaxesLastYear() const { return mPeoplePaidTaxesLastYear; }
+    // share of people living in houses that paid taxes last month
+    double taxCoverage() const;
 
     void saveEditorCityPlan();
     void editorClearBuildings();
@@ -536,6 +538,8 @@ private:
     std::vector<eBuilding*> mAllBuildings;
     std::vector<eBuilding*> mBuildingsWithResource;
     std::vector<eHouseBase*> mHouses;
+    mutable double mTaxCoverage = 0;
+    mutable int mTaxCoverageMonth = -1; // year*12 + month, -1 = not yet
     std::vector<eBuilding*> m3x3AestheticBuildings;
     std::vector<eBuilding*> mCommemorativeBuildings;
     std::vector<eBuilding*> mTreesAndVines;

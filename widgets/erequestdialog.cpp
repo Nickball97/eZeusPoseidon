@@ -70,7 +70,9 @@ void eRequestDialog::initialize(const stdsptr<eWorldCity>& c,
     }
     const int att = c->attitude(pid);
     sells.push_back(eResourceType::drachmas);
-    if(att <= 50 && !c->isRival()) {
+    // Zeus attitude advice.txt: an ally whose opinion is fair (the middle
+    // tier, 40+) or better grants requests; low and very low do not
+    if(att < 40 && !c->isRival()) {
         const auto notReg = eLanguage::zeusText(41, 11); // not regarded
         const int p = std::round(13*mult);
         const int h = 2*p;

@@ -341,6 +341,22 @@ void eBoardCity::payTaxes(const int d, const int people) {
     mPeoplePaidTaxesThisYear += people;
 }
 
+double eBoardCity::taxCoverage() const {
+    const auto date = mBoard.date();
+    const int m = 12*date.year() + static_cast<int>(date.month());
+    if(m == mTaxCoverageMonth) return mTaxCoverage;
+    mTaxCoverageMonth = m;
+    int total = 0;
+    int paid = 0;
+    for(const auto h : mHouses) {
+        const int p = h->people();
+        total += p;
+        if(h->paidTaxesLastMonth() > 0) paid += p;
+    }
+    mTaxCoverage = total == 0 ? 0. : double(paid)/total;
+    return mTaxCoverage;
+}
+
 void eBoardCity::nextYear() {
     mTaxesPaidLastYear = mTaxesPaidThisYear;
     mTaxesPaidThisYear = 0;

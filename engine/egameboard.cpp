@@ -1298,7 +1298,14 @@ eEnlistedForces eGameBoard::getEnlistableForces(const ePlayerId pid) const {
                        (type == eCityType::foreignCity &&
                         (rel == eForeignCityRelationship::ally ||
                          rel == eForeignCityRelationship::vassal));
-        if(e && c->attitude(pid) > 50) {
+        // Zeus attitude advice.txt: only an ally whose opinion of you is
+        // very high (the top tier, 80+) sends troops; vassals and colonies
+        // keep eZeus's rule
+        const bool ally = type == eCityType::foreignCity &&
+                          rel == eForeignCityRelationship::ally;
+        const double att = c->attitude(pid);
+        const bool willing = ally ? att >= 80 : att > 50;
+        if(e && willing) {
             result.fAllies.push_back(c);
         }
     }

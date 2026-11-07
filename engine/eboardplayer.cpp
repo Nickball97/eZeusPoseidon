@@ -261,7 +261,7 @@ bool eBoardPlayer::askFor(const eResourceType type, const eCityId cid) {
     for(const auto cid : allyCids) {
         const auto c = wboard.cityWithId(cid);
         const int att = c->attitude(mId);
-        if(att >= 50) {
+        if(att >= 40) { // fair or better grants requests (attitude advice)
             city = c;
             break;
         }
