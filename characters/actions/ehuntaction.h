@@ -5,6 +5,8 @@
 
 #include "characters/ehunter.h"
 
+#include <vector>
+
 class eHuntingLodge;
 
 class eHuntAction : public eActionWithComeback {
@@ -22,19 +24,17 @@ private:
     void findResourceDecision();
     void goBackDecision();
     void waitDecision();
-    // hunters throw spears at prey within range (Figure_model: Hunter,
-    // missile range 3); not saved, a loaded hunter looks again
-    bool findPrey();
-    bool throwSpear(const int by);
+    // 1 boar in 5 near the hunter charges (not saved; a loaded hunter
+    // simply judges nearby boars again)
+    void provokeBoars();
 
     eHuntingLodge* mLodge = nullptr;
     eHunter* mHunter = nullptr;
 
     bool mNoResource = false;
 
-    stdptr<eCharacter> mPrey;
     int mPreyScan = 0;
-    int mSpearTime = 0;
+    std::vector<eCharacter*> mJudged;
 };
 
 #endif // EHUNTACTION_H
