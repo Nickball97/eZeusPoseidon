@@ -189,7 +189,10 @@ bool eFigureStats::sGet(const eCharacterType type,
     // animals
     case eT::sheep: s = row(3, 0, 0, 0, 0, 0, 0, 6); return true;
     case eT::goat: s = row(6, 0, 0, 0, 0, 0, 0, 5); return true;
-    case eT::boar: s = row(9, 1, 0, 0, 0, 0, 0, 7); return true;
+    // Boar: speed from the file; hit points and attack are handled with
+    // hunting (eZeus's 100 HP; attack 0, or 10 when angry, see
+    // eHuntAction and sDamage)
+    case eT::boar: s = speedOnly(7); return true;
     case eT::wolf: s = wolf(d); return true;
     case eT::cattle1: case eT::cattle2:
     case eT::cattle3: case eT::bull: s = cattle(d); return true;
@@ -258,6 +261,22 @@ double missileDamage(const int ma, const int rate,
 double eFigureStats::sDamage(const eCharacter* const attacker,
                              const eCharacter* const target,
                              const bool ranged, const int by) {
+    // Hunting (per Nicolas): a hunter brings down a boar or a deer in
+    // about 330 ticks, as eZeus did (0.3 a tick against 100 HP), whether
+    // with spears or in a scuffle.
+    if(target && attacker->type() == eCharacterType::hunter &&
+       (target->type() == eCharacterType::boar ||
+        target->type() == eCharacterType::deer)) {
+        return 0.3*by;
+    }
+    // An angry boar (attack 10) hits for its attack less the target's
+    // armor, like any melee figure.
+    if(attacker->type() == eCharacterType::boar) {
+        const int armor = target && target->hasFigureStats() ? target->armor() : 0;
+        const double net = std::max(0., attacker->attack() - armor);
+        const int refNet = sRefHoplite.fAttack - sRefHoplite.fArmor;
+        return by*net*eNumbers::sHopliteAttack/refNet;
+    }
     if(!attacker->hasFigureStats()) return by*attacker->attack();
     if(ranged && attacker->missileAttack() > 0) {
         return missileDamage(attacker->missileAttack(),

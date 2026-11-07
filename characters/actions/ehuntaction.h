@@ -22,11 +22,19 @@ private:
     void findResourceDecision();
     void goBackDecision();
     void waitDecision();
+    // hunters throw spears at prey within range (Figure_model: Hunter,
+    // missile range 3); not saved, a loaded hunter looks again
+    bool findPrey();
+    bool throwSpear(const int by);
 
     eHuntingLodge* mLodge = nullptr;
     eHunter* mHunter = nullptr;
 
     bool mNoResource = false;
+
+    stdptr<eCharacter> mPrey;
+    int mPreyScan = 0;
+    int mSpearTime = 0;
 };
 
 #endif // EHUNTACTION_H
