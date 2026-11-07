@@ -65,8 +65,9 @@ void eProcessingBuilding::timeChanged(const int by) {
             mProcessTime -= mProcessWaitTime;
             if(mRawCount >= mRawUse) {
                 const auto type = resourceType();
-                const int c = addProduced(type, 1);
-                mRawCount -= c*mRawUse;
+                // a blessed workshop turns this batch into several
+                const int c = addProduced(type, useBlessing(1));
+                if(c > 0) mRawCount -= mRawUse;
             }
         }
     }

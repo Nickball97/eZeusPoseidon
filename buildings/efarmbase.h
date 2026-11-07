@@ -17,6 +17,9 @@ public:
     std::vector<eOverlay> getOverlays(const eTileSize size) const override;
 
     void timeChanged(const int by) override;
+    // a blessing lasts until used and multiplies the next output once
+    bool blessingLastsUntilUsed() const override { return true; }
+    bool blessingBoostsSpeed() const override { return false; }
 
     void read(eReadStream& src) override;
     void write(eWriteStream& dst) const override;

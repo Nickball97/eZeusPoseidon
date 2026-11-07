@@ -2,6 +2,9 @@
 
 #include "engine/egameboard.h"
 
+#include <algorithm>
+#include <cmath>
+
 eEmployingBuilding::eEmployingBuilding(
         eGameBoard& board,
         const eBuildingType type,
@@ -65,6 +68,7 @@ double eEmployingBuilding::effectiveness() const {
     if(mShutDown) return 0.;
     const double ef = vacanciesFilledFraction();
     if(eBuilding::blessed()) {
+        if(!blessingBoostsSpeed()) return ef;
         return ef*sBlessMultiplier(type());
     } else if(eBuilding::cursed()) {
         // Zeus manual (When Gods Attack): cursed buildings "become
@@ -92,4 +96,11 @@ void eEmployingBuilding::write(eWriteStream& dst) const {
     dst << mShutDown;
     dst << mMaxEmployees;
     dst << mEmployed;
+}
+
+int eEmployingBuilding::useBlessing(const int normal) {
+    if(!blessed()) return normal;
+    const int n = static_cast<int>(std::round(normal*sBlessMultiplier(type())));
+    spendBlessing();
+    return std::max(normal, n);
 }

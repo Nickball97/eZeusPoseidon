@@ -137,12 +137,13 @@ void eResourceCollectBuilding::timeChanged(const int by) {
                 if(type == eResourceType::silver) {
                     auto& brd = getBoard();
                     const auto pid = playerId();
-                    brd.incDrachmas(pid, eNumbers::sMintDrachmasPerSilver,
+                    brd.incDrachmas(pid, useBlessing(1)*eNumbers::sMintDrachmasPerSilver,
                                     eFinanceTarget::minedSilver);
                     mRawCount--;
                 } else {
-                    const int c = addProduced(type, 1);
-                    mRawCount -= c;
+                    // a blessed building turns this load into several
+                    const int c = addProduced(type, useBlessing(1));
+                    if(c > 0) mRawCount--;
                 }
                 if(mRawCount <= mRawCountCollect) enableSpawn();
             }

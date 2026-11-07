@@ -20,6 +20,11 @@ public:
     double effectiveness() const;
     // speed-up from a god's blessing for this building type
     static double sBlessMultiplier(const eBuildingType type);
+    // false: a blessing does not speed the building up; instead its next
+    // output is multiplied once (see useBlessing)
+    virtual bool blessingBoostsSpeed() const { return true; }
+    // normal output, multiplied if blessed; the blessing is then used up
+    int useBlessing(const int normal);
     bool shutDown() const { return mShutDown; }
     void setShutDown(const bool sd);
 

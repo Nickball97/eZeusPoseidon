@@ -41,9 +41,8 @@ void eFishery::timeChanged(const int by) {
             if(mStateCount > eNumbers::sFisheryUnpackTime) {
                 mStateCount = 0;
                 mState = eFisheryState::waiting;
-                // a blessed fishery brings in 4 times the catch
-                const int mult = blessed() ? sBlessMultiplier(type()) : 1;
-                addProduced(eResourceType::fish, 3*mult);
+                // a blessed fishery brings in 4 times this catch
+                addProduced(eResourceType::fish, useBlessing(3));
                 updateDisabled();
             }
         } break;

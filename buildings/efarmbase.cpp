@@ -72,10 +72,7 @@ void eFarmBase::timeChanged(const int by) {
     if(enabled()) {
         mNextRipe += by*effectiveness();
     }
-    // a blessing (4x, see sBlessMultiplier) lets the crop grow past a
-    // normal full harvest
-    const double maxGrowth = blessed() ? year*sBlessMultiplier(type()) : year;
-    mNextRipe = std::min(mNextRipe, maxGrowth);
+    mNextRipe = std::min(mNextRipe, year);
     mRipe = std::clamp(int(5*mNextRipe/year), 0, 5);
 
     const auto& date = getBoard().date();
@@ -84,7 +81,8 @@ void eFarmBase::timeChanged(const int by) {
     if(date.month() == harvestMonth && date.day() == 1) {
         const int loads = int(std::round(8*mNextRipe/year));
         if(loads > 0) {
-            addProduced(resourceType(), loads);
+            // a blessed farm brings in 4 times this harvest (sBlessMultiplier)
+            addProduced(resourceType(), useBlessing(loads));
             mNextRipe = 0;
             mRipe = 0;
         }

@@ -363,6 +363,12 @@ public:
     // blessing or curse lasting the given number of ticks
     void setBlessed(const double b, const int time);
     bool blessed() const { return mBlessed > 0.01; }
+    // Buildings whose blessing lasts until it is used (per Nicolas: "If a
+    // building is blessed, it is so until it spends that blessing").
+    // Others lose it after a while. Curses always wear off with time.
+    virtual bool blessingLastsUntilUsed() const { return false; }
+    // uses up part of the blessing (1 = all of a normal blessing)
+    void spendBlessing(const double amount = 1.);
     bool cursed() const { return mBlessed < -0.01; }
 
     bool accessToRoad() const;

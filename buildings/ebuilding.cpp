@@ -2342,7 +2342,7 @@ void eBuilding::incTime(const int by) {
     if(dead()) return;
     auto& b = getBoard();
     mTime += by;
-    if(mBlessTime > 0) {
+    if(mBlessTime > 0 && !(blessed() && blessingLastsUntilUsed())) {
         mBlessTime -= by;
         if(mBlessTime <= 0) {
             mBlessed = 0;
@@ -2702,4 +2702,13 @@ double eBuilding::appeal() const {
         sum += b.appeal(dx ,dy);
     }
     return sum/tiles.size();
+}
+
+void eBuilding::spendBlessing(const double amount) {
+    if(!blessed()) return;
+    mBlessed -= amount;
+    if(mBlessed <= 0.01) {
+        mBlessed = 0;
+        mBlessTime = 0;
+    }
 }

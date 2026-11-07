@@ -76,6 +76,9 @@ void ePatrolBuildingBase::timeChanged(const int by) {
             mSpawnTime += by*effectiveness();
             if(mSpawnTime > mWaitTime) {
                 mSpawnTime = 0;
+                // blessed: walkers come twice as often (sBlessMultiplier);
+                // two such walkers make one extra, which uses it up
+                if(blessed()) spendBlessing(0.5);
                 const bool r = updatePathIfNeeded();
                 if(r) mSpawnOnPathSet = true;
                 else spawn();

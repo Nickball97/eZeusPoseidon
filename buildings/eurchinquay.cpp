@@ -33,9 +33,8 @@ void eUrchinQuay::timeChanged(const int by) {
             if(mStateCount > eNumbers::sUrchinQuayUnpackTime) {
                 mStateCount = 0;
                 mState = eUrchinQuayState::waiting;
-                // a blessed urchin quay brings in 4 times the catch
-                const int mult = blessed() ? sBlessMultiplier(type()) : 1;
-                addProduced(eResourceType::urchin, 3*mult);
+                // a blessed urchin quay brings in 4 times this catch
+                addProduced(eResourceType::urchin, useBlessing(3));
                 updateDisabled();
             }
         } break;

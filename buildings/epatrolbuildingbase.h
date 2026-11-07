@@ -41,6 +41,8 @@ public:
         const stdsptr<eDirectionTimes>& dirTimes);
 
     void timeChanged(const int by) override;
+    // a blessing (more walkers) lasts until one extra walker went out
+    bool blessingLastsUntilUsed() const override { return true; }
 
     using ePatrolGuides = std::vector<ePatrolGuide>;
     ePatrolGuides& patrolGuides() { return mPatrolGuides; };
