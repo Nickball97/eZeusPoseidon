@@ -291,6 +291,7 @@ public:
     eMessageType fCityRaidFailedByPlayer;
 
     eMessageType fAllyAttackedByPlayer;
+    eMessageType fAtlanteanAlliesHateYou; // Symphonia Ithikos broken
 
     eMessageType fArmyReturns;
 

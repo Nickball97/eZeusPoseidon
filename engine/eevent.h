@@ -413,7 +413,8 @@ enum class eEvent {
     areaCutOff,
 
     // added at the end so existing values keep their numbers
-    invasionBribedMonn
+    invasionBribedMonn,
+    atlanteanAlliesHateYou
 };
 
 #endif // EEVENT_H

@@ -1248,6 +1248,10 @@ void eGameWidget::handleEvent(const eEvent e, eEventData& ed) {
         showMessage(ed, inst.fAllyAttackedByPlayer, true);
         return;
     } break;
+    case eEvent::atlanteanAlliesHateYou: {
+        showMessage(ed, inst.fAtlanteanAlliesHateYou, true);
+        return;
+    } break;
 
     case eEvent::armyReturns: {
         showMessage(ed, inst.fArmyReturns, true);

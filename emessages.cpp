@@ -879,6 +879,8 @@ bool eMessages::loadImpl() {
     fAllyAttackedByPlayer.fFull.fText = loadMessage("PHRASE_allies_hate_you_initial_announcement");
     fAllyAttackedByPlayer.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_allies_hate_you_title");
     fAllyAttackedByPlayer.fCondensed.fText = loadMessage("PHRASE_CONDENSED_allies_hate_you_initial_announcement");
+    loadMessage(fAtlanteanAlliesHateYou, "atlantean_allies_hate_you_title",
+                "atlantean_allies_hate_you_initial_announcement");
 
     fArmyReturns.fFull.fTitle = loadMessage("PHRASE_army_returns_title");
     fArmyReturns.fFull.fText = loadMessage("PHRASE_army_returns_initial_announcement");
