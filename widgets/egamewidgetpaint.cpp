@@ -1227,7 +1227,7 @@ void eGameWidget::paintEvent(ePainter& p) {
                 const auto r = p.renderer();
                 const auto& chars = tile->characters();
                 for(const auto& c : chars) {
-                    if(!c->visible()) continue;
+                    if(!c->visible() || c->hiddenUnderwater()) continue;
                     const auto ct = c->type();
                     if(ct == eCharacterType::cartTransporter ||
                        ct == eCharacterType::ox ||

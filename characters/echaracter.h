@@ -80,6 +80,9 @@ public:
     void setVisible(const bool v) { mVisible = v; }
 
     bool defend(const double a);
+    // Oceanid invaders swim under water to the city (Poseidon manual):
+    // unseen, and frigates, triremes and towers can't attack them there
+    virtual bool hiddenUnderwater() const { return false; }
     // Atlantean Fire: keeps taking damagePerTick for ticks (not saved)
     void setBurning(const double damagePerTick, const int ticks);
 

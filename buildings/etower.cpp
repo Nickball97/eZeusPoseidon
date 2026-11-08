@@ -183,6 +183,7 @@ void eTower::timeChanged(const int by) {
                         if(!cc->isFighter()) continue;
                         const auto cctid = cc->teamId();
                         if(!eTeamIdHelpers::isEnemy(cctid, tid)) continue;
+                        if(cc->hiddenUnderwater()) continue;
                         if(cc->dead()) continue;
                         const vec2d ccpos{cc->absX(), cc->absY()};
                         const vec2d posdif = ccpos - cpos;
