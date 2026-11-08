@@ -497,3 +497,12 @@ void eTile::setSoldierBanner(eSoldierBanner* const b) {
 void eTile::setDrawDim(const int drawDim) {
     mTerrainPainter.fDrawDim = drawDim;
 }
+
+bool eTile::bridgeBlocksShips() const {
+    if(!hasBridge()) return false;
+    if(!hasWater()) return false;
+    // Atlantean cities build Bridges, which ships always pass under
+    if(mBoard.atlantean(cityId())) return false;
+    const int smallCrossingMaxLength = 4;
+    return bridgeLength() <= smallCrossingMaxLength;
+}

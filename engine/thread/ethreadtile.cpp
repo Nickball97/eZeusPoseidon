@@ -34,6 +34,7 @@ void eThreadTile::load(eTile* const src) {
         mCharacters.emplace_back().load(ch.get());
     }
     mUnderBuilding.load(src->underBuilding());
+    mBridgeBlocksShips = src->bridgeBlocksShips();
 }
 
 bool eThreadTile::hasRoad() const {

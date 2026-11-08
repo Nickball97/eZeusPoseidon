@@ -24,8 +24,10 @@ public:
 
     bool onFire() const override { return mOnFire; }
     void setOnFire(const bool f) override { mOnFire = f; }
+    bool bridgeBlocksShips() const override { return mBridgeBlocksShips; }
 private:
     bool mOnFire = false;
+    bool mBridgeBlocksShips = false;
     std::vector<eThreadCharacter> mCharacters;
     eThreadBuilding mUnderBuilding;
 };

@@ -62,6 +62,9 @@ public:
     void addCharacter(const stdsptr<eCharacter>& c,
                       const bool prepend = false);
     bool removeCharacter(const stdsptr<eCharacter>& c);
+    // Small Water Crossings (4 tiles or fewer) block ships; Large ones
+    // and Atlantean Bridges let them pass (manuals; cut-off from Nicolás)
+    bool bridgeBlocksShips() const override;
     bool hasCharacter(const eHasChar& func) const override;
 
     const std::vector<stdsptr<eCharacter>>& characters() const
