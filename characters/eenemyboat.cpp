@@ -18,3 +18,13 @@ bool eEnemyBoat::hiddenUnderwater() const {
     }
     return mOceanid == 1;
 }
+
+std::shared_ptr<eTexture>
+eEnemyBoat::shadowTexture(const eTileSize size) const {
+    eGameTextures::loadOceanidHoplite();
+    const int id = static_cast<int>(size);
+    const auto& texs = eGameTextures::characters()[id].fOceanidHoplite;
+    const int oid = static_cast<int>(rotatedOrientation());
+    if(oid < 0 || oid >= static_cast<int>(texs.fWalk.size())) return nullptr;
+    return eCharacter::getTexture(&texs.fWalk[oid], true, false);
+}

@@ -1,4 +1,5 @@
 ﻿#include "egamewidget.h"
+#include "characters/eenemyboat.h"
 
 #include "eterraineditmenu.h"
 
@@ -1227,7 +1228,8 @@ void eGameWidget::paintEvent(ePainter& p) {
                 const auto r = p.renderer();
                 const auto& chars = tile->characters();
                 for(const auto& c : chars) {
-                    if(!c->visible() || c->hiddenUnderwater()) continue;
+                    if(!c->visible()) continue;
+                    const bool shadow = c->hiddenUnderwater();
                     const auto ct = c->type();
                     if(ct == eCharacterType::cartTransporter ||
                        ct == eCharacterType::ox ||
@@ -1321,7 +1323,9 @@ void eGameWidget::paintEvent(ePainter& p) {
                             y -= fa;
                         }
                     }
-                    const auto tex = c->getTexture(mTileSize);
+                    const auto tex = shadow ?
+                        static_cast<eEnemyBoat*>(c.get())->shadowTexture(mTileSize) :
+                        c->getTexture(mTileSize);
                     if(tex) {
                         const double offX = mTileH*tex->offsetX()/30.;
                         const double offY = mTileH*tex->offsetY()/30.;
@@ -1331,12 +1335,20 @@ void eGameWidget::paintEvent(ePainter& p) {
                         const int ddstYf = mDY + dstYf;
                         const int ddstX = std::round(ddstXf);
                         const int ddstY = std::round(ddstYf);
+                        if(shadow) {
+                            tex->setColorMod(20, 40, 60);
+                            tex->setAlpha(90);
+                        }
                         if(hover) {
                             tex->setColorMod(hr, hg, hb);
                         }
                         tex->render(r, ddstX, ddstY, false);
                         if(hover) {
                             tex->clearColorMod();
+                        }
+                        if(shadow) {
+                            tex->clearColorMod();
+                            tex->clearAlphaMod();
                         }
                     }
                     if(c->hasSecondaryTexture()) {
