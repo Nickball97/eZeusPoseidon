@@ -12,6 +12,9 @@
 #include "ewalkablehelpers.h"
 
 #include "buildings/epalace.h"
+#include "fileIO/efileformat.h"
+#include "enumbers.h"
+#include "elanguage.h"
 #include "buildings/epalacetile.h"
 
 #include "eiteratesquare.h"
@@ -218,6 +221,7 @@ void eSoldierBanner::backFromAbroad(int& wait) {
 }
 
 void eSoldierBanner::backFromHome() {
+    if(mFleeing) return; // can't be remustered until morale recovers
     if(mAbroad && !mMilitaryAid) return;
     if(!mHome) return;
     mHome = false;
@@ -352,6 +356,11 @@ void eSoldierBanner::read(eReadStream& src) {
             mSoldiers.push_back(s);
         });
     }
+    if(src.formatVersion() >= eFileFormat::soldierMorale) {
+        src >> mMorale;
+        src >> mMoraleBase;
+        src >> mFleeing;
+    }
 }
 
 void eSoldierBanner::write(eWriteStream& dst) const {
@@ -374,6 +383,9 @@ void eSoldierBanner::write(eWriteStream& dst) const {
     for(const auto s : mSoldiers) {
         dst.writeCharacter(s);
     }
+    dst << mMorale;
+    dst << mMoraleBase;
+    dst << mFleeing;
 }
 
 void eSoldierBanner::sPlaceDefault(std::vector<eSoldierBanner*>& bs,
@@ -749,5 +761,49 @@ void eSoldierBanner::teleportSoldiersToPlaces() {
         s->changeTile(tile);
         const auto a = s->soldierAction();
         if(a) a->setCurrentAction(nullptr);
+    }
+}
+
+bool eSoldierBanner::hasMorale() const {
+    if(mMilitaryAid) return false; // loaned soldiers are very brave
+    switch(mType) {
+    case eBannerType::hoplite:
+    case eBannerType::horseman:
+    case eBannerType::rockThrower:
+        return true;
+    default:
+        return false; // Amazons, Sparti, enemies, ships
+    }
+}
+
+void eSoldierBanner::soldierKilled() {
+    if(hasMorale() && !mFleeing) {
+        if(mMoraleBase <= 0 || mMorale >= 1) mMoraleBase = mCount;
+        if(mMoraleBase > 0) {
+            // losing two thirds of the men takes morale from full to none
+            mMorale -= 1.5/mMoraleBase;
+        }
+        if(mMorale <= 0) {
+            mMorale = 0;
+            mFleeing = true; // incTime sends the company home
+        }
+    }
+    decCount();
+}
+
+void eSoldierBanner::incTime(const int by) {
+    if(!hasMorale()) return;
+    if(mFleeing && !mHome && !mAbroad) {
+        // break formation and run back towards the Palace
+        if(mSelected) mBoard.deselectBanner(this);
+        goHome();
+    }
+    if(mMorale >= 1) return;
+    if(!mFleeing && fighting()) return;
+    const double month = 30.*eNumbers::sDayLength;
+    mMorale = std::min(1., mMorale + by/month);
+    if(mMorale >= 1) {
+        mFleeing = false;
+        mMoraleBase = 0;
     }
 }

@@ -19,6 +19,10 @@ void sArmySectionButtonUpdate(const stdsptr<eSoldierBanner>& b,
     if(b->isAbroad()) { // abroad
         mb->setText(eLanguage::zeusText(51, 24));
         mb->setTooltip(eLanguage::zeusText(51, 31));
+    } else if(b->fleeing()) { // fleeing, morale too low to respond
+        mb->setText(eLanguage::zeusText(51, 22));
+        mb->setTooltip(eLanguage::zeusText(51, 29));
+        mb->setPressAction(nullptr);
     } else if(b->fighting()) { // fighting
         mb->setText(eLanguage::zeusText(51, 23));
         mb->setTooltip(eLanguage::zeusText(51, 27));

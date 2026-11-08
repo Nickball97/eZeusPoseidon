@@ -217,6 +217,10 @@ void eBoardCity::incTime(const int by) {
         i->incTime(by);
     }
 
+    for(const auto& b : mPalaceSoldierBanners) {
+        b->incTime(by); // morale
+    }
+
     mCityEvents.handleNewDate(date);
 
     if(p && !p->isPerson()) {

@@ -379,6 +379,11 @@ void eGameBoard::bannersGoHome() {
 
 void eGameBoard::bannersBackFromHome() {
     for(const auto b : mSelectedBanners) {
+        if(b->fleeing()) {
+            // Company's morale too low to respond!
+            showTip(b->cityId(), eLanguage::zeusText(19, 34));
+            continue;
+        }
         b->backFromHome();
     }
 }

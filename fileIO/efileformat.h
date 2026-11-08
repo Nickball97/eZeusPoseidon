@@ -7,6 +7,7 @@ namespace eFileFormat {
         settlerEmigrant,
         cartTarget,
         oracleTimer,
+        soldierMorale,
 
         nextVersion
     };
