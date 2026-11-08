@@ -390,6 +390,7 @@ void eGameTextures::loadTrireme() {
         auto& c = sCharacterTextures[i];
         c.loadTrireme();
         c.loadTriremeOverlay();
+        c.loadFrigate();
     });
 }
 

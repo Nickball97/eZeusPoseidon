@@ -12,7 +12,7 @@ std::shared_ptr<eTexture> eBoatBase::getTexture(const eTileSize size) const {
     const int id = static_cast<int>(size);
     const auto& texs = eGameTextures::characters();
     const auto& colls = texs[id];
-    const auto& charTexs = colls.*mCharTexs;
+    const auto& charTexs = colls.*(this->charTexs());
     const eTextureCollection* coll = nullptr;
     const int oid = static_cast<int>(rotatedOrientation());
     bool wrap = true;
@@ -27,6 +27,11 @@ std::shared_ptr<eTexture> eBoatBase::getTexture(const eTileSize size) const {
     case eCharacterActionType::die:
         wrap = false;
         coll = &charTexs.fDie[oid];
+        break;
+    case eCharacterActionType::fight:
+    case eCharacterActionType::fight2:
+        if(charTexs.fFight.empty()) return nullptr;
+        coll = &charTexs.fFight[oid];
         break;
     default:
         return nullptr;

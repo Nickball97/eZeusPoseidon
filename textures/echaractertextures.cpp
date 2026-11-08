@@ -413,6 +413,8 @@ eCharacterTextures::eCharacterTextures(const int tileW, const int tileH,
 
     fTradeBoat(renderer),
     fTrireme(renderer),
+    fFrigate(renderer),
+    fFireFrigate(renderer),
     fEnemyBoat(renderer),
 
     fDisgruntled(renderer),

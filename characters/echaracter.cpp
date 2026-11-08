@@ -220,6 +220,11 @@ void eCharacter::incTime(const int by) {
         setFigureStatsApplied();
         eFigureStats::sApply(this, !loadedFromSave());
     }
+    if(mBurnTime > 0) {
+        const int t = std::min(by, mBurnTime);
+        mBurnTime -= t;
+        if(defend(mBurnDamage*t)) return;
+    }
     mTime += by;
     const auto at = actionType();
     if(mPlayFightSound &&
@@ -419,4 +424,9 @@ void eCharacter::write(eWriteStream& dst) const {
         }
         dst << a.fO;
     }
+}
+
+void eCharacter::setBurning(const double damagePerTick, const int ticks) {
+    mBurnDamage = damagePerTick;
+    mBurnTime = std::max(mBurnTime, ticks);
 }

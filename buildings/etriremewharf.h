@@ -36,6 +36,8 @@ public:
     bool isAtWharf() const;
 
     eTile* triremeTile() const;
+    // an Atlantean frigate still waiting for its Atlantean Fire launcher
+    bool wantsOrichalc() const;
 private:
     void spawnTrireme();
 
@@ -53,6 +55,9 @@ private:
     int mWoodCount{0};
     const int mMaxArmor = 4;
     int mArmorCount{0};
+    // Atlantean cities: one load of orichalc fits the frigate with an
+    // Atlantean Fire launcher (Poseidon manual, Atlantean Navy)
+    int mOrichalcCount{0};
 };
 
 #endif // ETRIREMEWHARF_H

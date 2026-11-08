@@ -39,6 +39,8 @@ struct eTradeBoatTextures {
     eTextureCollection fStand;
     std::vector<eTextureCollection> fSwim;
     std::vector<eTextureCollection> fDie;
+    // attack frames; only frigates have them
+    std::vector<eTextureCollection> fFight;
 };
 
 struct eResourceCollectorTextures : public eBasicCharacterTextures {
@@ -350,6 +352,10 @@ public:
     void loadTrireme();
     bool fTriremeOverlayLoaded = false;
     void loadTriremeOverlay();
+    // Poseidon frigates (PoseidonImps bitmaps Frigate and FireFrigate),
+    // cut from the game files by tools/sgextract
+    bool fFrigateLoaded = false;
+    void loadFrigate();
     bool fEnemyBoatLoaded = false;
     void loadEnemyBoat();
     bool fDeerLoaded = false;
@@ -622,6 +628,8 @@ public:
     eUrchinGathererTextures fUrchinGatherer;
     eTradeBoatTextures fTradeBoat;
     eTradeBoatTextures fTrireme;
+    eTradeBoatTextures fFrigate;
+    eTradeBoatTextures fFireFrigate;
     std::vector<eTextureCollection> fTriremeOverlay;
     std::vector<eTextureCollection> fTriremeFightOverlay;
     std::vector<eTextureCollection> fTriremeDieOverlay;

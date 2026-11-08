@@ -294,6 +294,12 @@ std::string eBuilding::sNameForBuilding(eBuilding* const b) {
         }
         return eLanguage::zeusText(group, string);
     } break;
+    case eBuildingType::triremeWharf:
+        // Atlantean cities build a Frigate Wharf (Poseidon manual)
+        if(b->getBoard().atlantean(b->cityId())) {
+            return eLanguage::zeusText(28, 164);
+        }
+        break;
     default:
         break;
     }
@@ -2132,6 +2138,12 @@ void eBuilding::sInfoText(eBuilding* const b,
             infoString = 15;
         }
         additionalInfoString = 1;
+        if(t->getBoard().atlantean(t->cityId())) {
+            // the Frigate Wharf texts follow the trireme ones, 21 later
+            employmentInfoString += 21;
+            infoString += 21;
+            additionalInfoString += 21;
+        }
     } break;
     case eBuildingType::growersLodge: {
         const auto gl = static_cast<eGrowersLodge*>(b);

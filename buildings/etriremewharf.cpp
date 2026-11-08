@@ -1,4 +1,5 @@
 #include "etriremewharf.h"
+#include "fileIO/efileformat.h"
 
 #include "characters/etrireme.h"
 #include "characters/actions/etriremeaction.h"
@@ -130,6 +131,11 @@ void eTriremeWharf::timeChanged(const int by) {
             mTakeCart = spawnCart(eCartActionTypeSupport::take);
             mTakeCart->setMaxDistance(eNumbers::sTriremeWharfMaxResourceTakeDistance);
         }
+        if(mOrichalcCount > 0 && mTrireme && isAtWharf() &&
+           !mTrireme->atlanteanFire()) {
+            mOrichalcCount--;
+            mTrireme->setAtlanteanFire(true);
+        }
         if(!mTrireme && mWoodCount > 1 && mArmorCount > 0) {
             mTriremeBuildingTime += by*eff;
             if(mTriremeBuildingTime > eNumbers::sTriremeWharfBuildTime) {
@@ -159,6 +165,10 @@ int eTriremeWharf::add(const eResourceType type,
         const int result = r - mArmorCount;
         mArmorCount = r;
         return result;
+    } else if(type == eResourceType::orichalc) {
+        if(!wantsOrichalc() || count <= 0) return 0;
+        mOrichalcCount++;
+        return 1;
     }
     return 0;
 }
@@ -168,6 +178,8 @@ int eTriremeWharf::count(const eResourceType type) const {
         return mWoodCount;
     } else if(type == eResourceType::armor) {
         return mArmorCount;
+    } else if(type == eResourceType::orichalc) {
+        return mOrichalcCount;
     }
     return 0;
 }
@@ -177,6 +189,8 @@ int eTriremeWharf::spaceLeft(const eResourceType type) const {
         return mMaxWood - mWoodCount;
     } else if(type == eResourceType::armor) {
         return mMaxArmor - mArmorCount;
+    } else if(type == eResourceType::orichalc) {
+        return wantsOrichalc() ? 1 : 0;
     }
     return 0;
 }
@@ -200,6 +214,14 @@ std::vector<eCartTask> eTriremeWharf::cartTasks() const {
         tasks.push_back(task);
     }
 
+    if(wantsOrichalc()) {
+        eCartTask task;
+        task.fType = eCartActionType::take;
+        task.fResource = eResourceType::orichalc;
+        task.fMaxCount = 1;
+        tasks.push_back(task);
+    }
+
     return tasks;
 }
 
@@ -216,6 +238,9 @@ void eTriremeWharf::read(eReadStream& src) {
     src >> mArmorCount;
     src >> mTriremeBuildingStage;
     src >> mTriremeBuildingTime;
+    if(src.formatVersion() >= eFileFormat::atlanteanFire) {
+        src >> mOrichalcCount;
+    }
 }
 
 void eTriremeWharf::write(eWriteStream& dst) const {
@@ -227,6 +252,7 @@ void eTriremeWharf::write(eWriteStream& dst) const {
     dst << mArmorCount;
     dst << mTriremeBuildingStage;
     dst << mTriremeBuildingTime;
+    dst << mOrichalcCount;
 }
 
 void eTriremeWharf::triremeCameBack() {
@@ -292,4 +318,11 @@ void eTriremeWharf::spawnTrireme() {
 
     const auto a = e::make_shared<eTriremeAction>(this, b.get());
     b->setAction(a);
+}
+
+bool eTriremeWharf::wantsOrichalc() const {
+    if(!getBoard().atlantean(cityId())) return false;
+    if(mOrichalcCount > 0) return false;
+    // after the frigate has been built and until it has its launcher
+    return mTrireme && !mTrireme->atlanteanFire();
 }

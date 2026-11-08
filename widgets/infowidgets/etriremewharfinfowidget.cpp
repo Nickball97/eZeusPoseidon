@@ -16,13 +16,15 @@ void eTriremeWharfInfoWidget::initialize(eTriremeWharf* const b) {
 
     auto& board = b->getBoard();
     const auto cid = b->cityId();
+    // Atlantean Frigate Wharf: its texts follow the trireme ones, 21 later
+    const int o = board.atlantean(cid) ? 21 : 0;
     const bool palace = board.hasPalace(cid);
     if(!palace) {
-        addText(eLanguage::zeusText(175, 18));
+        addText(eLanguage::zeusText(175, 18 + o));
     }
 
-    const auto storedWood = eLanguage::zeusText(175, 12);
-    const auto storedArmor = eLanguage::zeusText(175, 13);
+    const auto storedWood = eLanguage::zeusText(175, 12 + o);
+    const auto storedArmor = eLanguage::zeusText(175, 13 + o);
 
     const int cwood = b->count(eResourceType::wood);
     const int carmor = b->count(eResourceType::armor);
@@ -47,11 +49,16 @@ void eTriremeWharfInfoWidget::initialize(eTriremeWharf* const b) {
     addEmploymentWidget(b);
 
     addText(additionalInfo);
+    if(b->wantsOrichalc()) {
+        // "This frigate can build an Atlantean Fire launcher if you
+        // produce some orichalc at a Refinery."
+        addText(eLanguage::zeusText(175, 43));
+    }
 
     const auto button = new eSwitchButton(window());
     button->setUnderline(false);
-    button->addValue(eLanguage::zeusText(175, 19));
-    button->addValue(eLanguage::zeusText(175, 20));
+    button->addValue(eLanguage::zeusText(175, 19 + o));
+    button->addValue(eLanguage::zeusText(175, 20 + o));
     button->fitValidContent();
     button->setValue(b->shutDown() ? 0 : 1);
     button->setSwitchAction([b](const int val) {

@@ -1,5 +1,6 @@
 #include "efightingaction.h"
 #include "characters/efigurestats.h"
+#include "characters/etrireme.h"
 
 #include <math.h>
 
@@ -186,8 +187,22 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
             // ranged when shooting (as for the missiles above)
             const bool ranged = range > 0 &&
                                 c->actionType() == eCharacterActionType::fight2;
-            const double att = eFigureStats::sDamage(
-                                   c, mAttackTarget.character(), ranged, by);
+            double att = eFigureStats::sDamage(
+                             c, mAttackTarget.character(), ranged, by);
+            if(c->type() == eCharacterType::trireme &&
+               static_cast<const eTrireme*>(c)->atlanteanFire()) {
+                // Atlantean Fire (Poseidon manual): stronger, and sets
+                // the target ablaze. Strength per Nicolas: 1.5x damage,
+                // and the target burns for two game days at half the
+                // frigate's damage rate.
+                att *= 1.5;
+                if(const auto tc = mAttackTarget.character()) {
+                    tc->setBurning(by > 0 ? 0.5*att/(1.5*by) : 0.,
+                                   2*eNumbers::sDayLength);
+                } else if(const auto tb = mAttackTarget.buildingPtr()) {
+                    tb->setOnFire(true);
+                }
+            }
             const bool d = mAttackTarget.defend(att);
             if(d) finishAttack = true;
         }
@@ -480,4 +495,8 @@ void eFightingAction::waitAndGoHome(const int w) {
     a->setFinishAction(finish);
     a->setTime(w);
     setCurrentAction(a);
+}
+
+eBuilding* eAttackTarget::buildingPtr() const {
+    return mB.get();
 }

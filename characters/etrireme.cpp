@@ -1,4 +1,7 @@
 #include "etrireme.h"
+#include "fileIO/efileformat.h"
+#include "fileIO/ereadstream.h"
+#include "fileIO/ewritestream.h"
 
 #include "textures/egametextures.h"
 
@@ -100,6 +103,9 @@ eTriremeAction *eTrireme::triremeAction() const {
 }
 
 eOverlay eTrireme::getSecondaryTexture(const eTileSize size) const {
+    // the frigate frames already show the crew; the trireme overlay
+    // (flag and marines) is Greek only
+    if(frigate()) return eOverlay{0., 0., nullptr, false};
     const int id = static_cast<int>(size);
     const auto& texs = eGameTextures::characters();
     const auto& colls = texs[id];
@@ -134,4 +140,22 @@ void eTrireme::goHome() {
     const auto fa = fightingAction();
     if(!fa) return;
     fa->goHome();
+}
+
+eBoatBase::eCharTexs eTrireme::charTexs() const {
+    if(!frigate()) return eBoatBase::charTexs();
+    return mAtlanteanFire ? &eCharacterTextures::fFireFrigate :
+                            &eCharacterTextures::fFrigate;
+}
+
+void eTrireme::read(eReadStream& src) {
+    eBoatBase::read(src);
+    if(src.formatVersion() >= eFileFormat::atlanteanFire) {
+        src >> mAtlanteanFire;
+    }
+}
+
+void eTrireme::write(eWriteStream& dst) const {
+    eBoatBase::write(dst);
+    dst << mAtlanteanFire;
 }

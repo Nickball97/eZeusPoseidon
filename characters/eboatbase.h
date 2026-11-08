@@ -14,6 +14,9 @@ public:
     std::shared_ptr<eTexture> getTexture(const eTileSize size) const;
 
     void setCharTexs(const eCharTexs& texs);
+protected:
+    // which texture set to draw; triremes switch to frigates
+    virtual eCharTexs charTexs() const { return mCharTexs; }
 private:
     eCharTexs mCharTexs;
 };

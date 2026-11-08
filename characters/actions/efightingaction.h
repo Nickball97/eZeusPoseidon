@@ -19,6 +19,7 @@ public:
 
     bool building() const;
     eCharacter* character() const { return mC.get(); }
+    eBuilding* buildingPtr() const;
 
     double absX() const;
     double absY() const;

@@ -8,6 +8,7 @@ namespace eFileFormat {
         cartTarget,
         oracleTimer,
         soldierMorale,
+        atlanteanFire,
 
         nextVersion
     };
