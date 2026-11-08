@@ -648,6 +648,15 @@ void readEpisodeEvents(eEpisode& ep, ZeusFile& file,
             ee->setAggressivness(aggressivness);
             ee->setMinPointId(1);
             ee->setMaxPointId(3);
+            {
+                const uint16_t vals[3] = {value1, value2, value3};
+                for(int k = 0; k < 3; k++) {
+                    if(targets[k] != eMonsterTarget::industry) continue;
+                    bool v;
+                    const auto m = monsterIdToType(vals[k], v);
+                    if(v) ee->addIndustryMonster(m);
+                }
+            }
             e = ee;
         } break;
         case ePakEventType::godQuest: {

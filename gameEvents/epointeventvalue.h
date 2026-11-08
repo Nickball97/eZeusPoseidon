@@ -23,6 +23,7 @@ public:
     void read(eReadStream& src);
 protected:
     int pointId() const { return mPointId; }
+    void setPointId(const int p) { mPointId = p; }
 
     void choosePointId();
 private:

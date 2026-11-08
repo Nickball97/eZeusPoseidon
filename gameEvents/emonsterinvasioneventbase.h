@@ -23,6 +23,12 @@ public:
     { mAggressivness = a; }
 
     void chooseMonster();
+
+    // The adventure gives each monster slot a target; a monster aimed at
+    // industry appears at the monster marker nearest marble or ore (the
+    // Hydra guards the marble in Zeus and Europa, per Nicolás)
+    void addIndustryMonster(const eMonsterType m)
+    { mIndustryMonsters.push_back(m); }
     bool valid() const { return mValid; }
 
     void write(eWriteStream& dst) const override;
@@ -43,6 +49,9 @@ private:
     bool mValid = false;
     std::vector<eMonsterType> mKilled;
     std::vector<eMonsterType> mSpawned;
+    std::vector<eMonsterType> mIndustryMonsters;
+
+    void chooseIndustryPoint();
 };
 
 #endif // EMONSTERINVASIONEVENTBASE_H

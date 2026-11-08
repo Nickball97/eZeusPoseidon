@@ -12,6 +12,7 @@ namespace eFileFormat {
         towerOrichalc,
         poseidonKraken,
         eliteNoble,
+        monsterTarget,
 
         nextVersion
     };

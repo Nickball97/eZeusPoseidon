@@ -6,6 +6,7 @@
 #include "eiteratesquare.h"
 #include "evectorhelpers.h"
 #include "emessages.h"
+#include "fileIO/efileformat.h"
 
 eMonsterInvasionEventBase::eMonsterInvasionEventBase(
         const eCityId cid,
@@ -48,6 +49,11 @@ void eMonsterInvasionEventBase::write(eWriteStream& dst) const {
     for(const auto k : mKilled) {
         dst << k;
     }
+
+    dst << mIndustryMonsters.size();
+    for(const auto m : mIndustryMonsters) {
+        dst << m;
+    }
 }
 
 void eMonsterInvasionEventBase::read(eReadStream& src) {
@@ -68,6 +74,14 @@ void eMonsterInvasionEventBase::read(eReadStream& src) {
     src >> nk;
     for(int i = 0; i < nk; i++) {
         src >> mKilled.emplace_back();
+    }
+
+    if(src.formatVersion() >= eFileFormat::monsterTarget) {
+        int ni;
+        src >> ni;
+        for(int i = 0; i < ni; i++) {
+            src >> mIndustryMonsters.emplace_back();
+        }
     }
 }
 
@@ -99,6 +113,9 @@ eMonster* eMonsterInvasionEventBase::triggerBase() {
     board->addMonsterEvent(mMonster, this);
     mChooseMonster = false;
     choosePointId();
+    if(eVectorHelpers::contains(mIndustryMonsters, mMonster)) {
+        chooseIndustryPoint();
+    }
     const auto cid = cityId();
     const auto monster = eMonster::sCreateMonster(mMonster, *board);
     board->registerMonster(cid, monster.get());
@@ -144,4 +161,40 @@ eMonster* eMonsterInvasionEventBase::triggerBase() {
     a->increment(1);
 
     return monster.get();
+}
+
+void eMonsterInvasionEventBase::chooseIndustryPoint() {
+    const auto board = gameBoard();
+    if(!board) return;
+    const auto cid = cityId();
+    std::vector<eTile*> res;
+    board->iterateOverAllTiles([&](eTile* const t) {
+        if(t->cityId() != cid) return;
+        const auto terr = t->terrain();
+        if(terr == eTerrain::marble || terr == eTerrain::blackMarble ||
+           terr == eTerrain::copper || terr == eTerrain::silver ||
+           terr == eTerrain::orichalc) {
+            res.push_back(t);
+        }
+    });
+    if(res.empty()) return;
+    int bestId = -1;
+    int bestDist = __INT_MAX__;
+    for(int i = minPointId(); i <= maxPointId(); i++) {
+        const auto pt = board->monsterTile(cid, i);
+        if(!pt) continue;
+        for(const auto t : res) {
+            const int dx = t->x() - pt->x();
+            const int dy = t->y() - pt->y();
+            const int d = dx*dx + dy*dy;
+            if(d < bestDist) {
+                bestDist = d;
+                bestId = i;
+            }
+        }
+    }
+    if(bestId > 0) {
+        printf("Monster aimed at industry: marker %i\n", bestId);
+        setPointId(bestId);
+    }
 }
