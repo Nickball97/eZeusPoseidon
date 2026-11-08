@@ -52,6 +52,7 @@
 #include "eattackcityaction.h"
 
 #include "etriremeaction.h"
+#include "ekrakendefenderaction.h"
 
 stdsptr<eCharacterAction> eCharacterAction::sCreate(
         eCharacter* const c, const eCharActionType type) {
@@ -162,6 +163,8 @@ stdsptr<eCharacterAction> eCharacterAction::sCreate(
 
     case eCharActionType::triremeAction:
         return e::make_shared<eTriremeAction>(nullptr, c);
+    case eCharActionType::krakenDefenderAction:
+        return e::make_shared<eKrakenDefenderAction>(c);
     }
     return nullptr;
 }

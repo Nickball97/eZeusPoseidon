@@ -218,6 +218,17 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
             return eLookForEnemyState::attacking;
         }
     }
+    // Poseidon's Kraken guards the city's waters (Zeus manual): it only
+    // goes after enemies on water, and it is the one defender that can
+    // attack Oceanids while they are under water (Poseidon manual)
+    const bool kraken = c->type() == eCharacterType::kraken;
+    const auto canTarget = [kraken](const stdsptr<eCharacter>& cc) {
+        if(kraken) {
+            const auto cct = cc->tile();
+            return cct && cct->hasWater();
+        }
+        return !cc->hiddenUnderwater();
+    };
     const vec2d cpos{c->absX(), c->absY()};
 
     const auto setAttackTarget = [&](const stdsptr<eCharacter>& cc,
@@ -252,7 +263,7 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                 const auto cctype = cc->type();
                 const auto cctid = cc->teamId();
                 if(!eTeamIdHelpers::isEnemy(cctid, tid)) continue;
-                if(cc->hiddenUnderwater()) continue;
+                if(!canTarget(cc)) continue;
                 if(cc->dead()) continue;
                 const vec2d ccpos{cc->absX(), cc->absY()};
                 const vec2d posdif = ccpos - cpos;
@@ -298,7 +309,7 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                         const auto cctype = cc->type();
                         const auto cctid = cc->teamId();
                         if(!eTeamIdHelpers::isEnemy(cctid, tid)) continue;
-                        if(cc->hiddenUnderwater()) continue;
+                        if(!canTarget(cc)) continue;
                         if(cc->dead()) continue;
                         if(!cc->isSoldier()) {
                             if(cc->isImmortal()) {
@@ -347,7 +358,7 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                         if(!cc->isFighter()) continue;
                         const auto cctid = cc->teamId();
                         if(!eTeamIdHelpers::isEnemy(cctid, tid)) continue;
-                        if(cc->hiddenUnderwater()) continue;
+                        if(!canTarget(cc)) continue;
                         if(cc->dead()) continue;
                         setOverwrittableAction(false);
                         goTo(ttx, tty, range);
@@ -409,7 +420,7 @@ void eFightingAction::goTo(const int fx, const int fy,
     const bool attackBuildings = eTeamIdHelpers::isEnemy(tid, ttid);
     stdsptr<eWalkableObject> pathFindWalkable;
     stdsptr<eWalkableObject> moveWalkable;
-    if(c->isBoat()) {
+    if(c->isBoat() || c->type() == eCharacterType::kraken) {
         pathFindWalkable =
             eWalkableObject::sCreateDeepWater();
     } else {

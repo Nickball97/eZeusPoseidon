@@ -10,6 +10,7 @@ namespace eFileFormat {
         soldierMorale,
         atlanteanFire,
         towerOrichalc,
+        poseidonKraken,
 
         nextVersion
     };

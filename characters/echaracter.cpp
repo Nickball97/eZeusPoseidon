@@ -38,7 +38,7 @@ bool eCharacter::canFight(eCharacter* const c) {
           t == eCharacterType::deer))) {
     } else {
         if(!eTeamIdHelpers::isEnemy(teamId(), c->teamId())) return false;
-        if(c->hiddenUnderwater()) return false;
+        if(c->hiddenUnderwater() && t != eCharacterType::kraken) return false;
     }
     if(attack() == 0 && c->attack() == 0) return false;
     const auto at = actionType();

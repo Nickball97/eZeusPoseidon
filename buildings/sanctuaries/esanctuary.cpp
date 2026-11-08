@@ -30,6 +30,8 @@
 
 #include "gameEvents/egodattackevent.h"
 #include "characters/actions/ekillcharacterfinishfail.h"
+#include "characters/actions/ekrakendefenderaction.h"
+#include "characters/monsters/ecalydonianboar.h"
 
 #include "buildings/eresourcebuilding.h"
 #include "buildings/eplaceholder.h"
@@ -90,6 +92,7 @@ void eSanctuary::erase() {
         const auto c = board.boardCityWithId(cid);
         if(c) c->incTerrainState();
     }
+    if(mKraken) mKraken->kill();
     eMonument::erase();
 }
 
@@ -385,6 +388,14 @@ void eSanctuary::timeChanged(const int by) {
         }
     }
 
+    if(!mKraken && godType() == eGodType::poseidon && finished()) {
+        mKrakenWait -= by;
+        if(mKrakenWait <= 0) {
+            mKrakenWait = 5000;
+            spawnKraken();
+        }
+    }
+
     if(mAskedForHelp) {
         const int checkInterval = 1000;
         mCheckHelpNeeded += by;
@@ -462,6 +473,11 @@ void eSanctuary::read(eReadStream& src) {
     if(src.formatVersion() >= eFileFormat::oracleTimer) {
         src >> mOracleTimer;
     }
+    if(src.formatVersion() >= eFileFormat::poseidonKraken) {
+        src.readCharacter(&board, [this](eCharacter* const c) {
+            mKraken = c;
+        });
+    }
 }
 
 void eSanctuary::write(eWriteStream& dst) const {
@@ -485,6 +501,7 @@ void eSanctuary::write(eWriteStream& dst) const {
         dst.writeTile(t);
     }
     dst << mOracleTimer;
+    dst.writeCharacter(mKraken);
 }
 
 std::vector<eTile*> eSanctuary::warriorTiles() const {
@@ -681,4 +698,36 @@ bool eSanctuary::askForHelp(eHelpDenialReason& reason) {
         mGodAbroad = true;
     }
     return true;
+}
+
+void eSanctuary::spawnKraken() {
+    auto& board = getBoard();
+    const auto cid = cityId();
+    const auto ct = centerTile();
+    if(!ct) return;
+    // the Kraken rises in the city's water closest to the sanctuary
+    const SDL_Rect r = board.boardCityTileBRect(cid);
+    eTile* spawn = nullptr;
+    int bestDist = __INT_MAX__;
+    for(int x = r.x; x < r.x + r.w; x++) {
+        for(int y = r.y; y < r.y + r.h; y++) {
+            const auto t = board.tile(x, y);
+            if(!t) continue;
+            if(t->cityId() != cid) continue;
+            if(!t->hasDeepWater()) continue;
+            const int dx = t->x() - ct->x();
+            const int dy = t->y() - ct->y();
+            const int dist = dx*dx + dy*dy;
+            if(dist >= bestDist) continue;
+            bestDist = dist;
+            spawn = t;
+        }
+    }
+    if(!spawn) return; // no sea in this city
+    const auto k = e::make_shared<eKraken>(board);
+    k->setBothCityIds(cid);
+    k->changeTile(spawn);
+    const auto a = e::make_shared<eKrakenDefenderAction>(k.get());
+    k->setAction(a);
+    mKraken = k.get();
 }
