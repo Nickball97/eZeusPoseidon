@@ -843,6 +843,7 @@ eBuildingTextures::eBuildingTextures(const int tileW, const int tileH,
 
     fPoseidonSanctuary(renderer),
     fPoseidonGrandStatue(renderer),
+    fPoseidonGrandStatueWater(renderer),
     fPyramid(renderer),
     fPyramid2(renderer),
 

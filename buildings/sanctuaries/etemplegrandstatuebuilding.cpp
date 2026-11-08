@@ -24,3 +24,18 @@ eTempleGrandStatueBuilding::getTexture(const eTileSize size) const {
     if(n == 0) return nullptr;
     return coll.getTexture(std::min(p, n) - 1);
 }
+
+std::vector<eOverlay>
+eTempleGrandStatueBuilding::getOverlays(const eTileSize size) const {
+    if(!finished()) return {};
+    const int sizeId = static_cast<int>(size);
+    const auto& coll = eGameTextures::buildings()[sizeId].fPoseidonGrandStatueWater;
+    const int n = coll.size();
+    if(n == 0) return {};
+    eOverlay o;
+    o.fX = 0;
+    o.fY = 0;
+    o.fTex = coll.getTexture(textureTime() % n);
+    o.fAlignTop = true;
+    return {o};
+}

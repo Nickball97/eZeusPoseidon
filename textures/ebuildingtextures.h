@@ -658,6 +658,7 @@ public:
     std::vector<eTextureCollection> fSanctuary;
     eTextureCollection fPoseidonSanctuary;
     eTextureCollection fPoseidonGrandStatue;
+    eTextureCollection fPoseidonGrandStatueWater; // fountain animation
     eTextureCollection fPyramid;
     eTextureCollection fPyramid2;
 

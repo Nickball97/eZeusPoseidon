@@ -12,6 +12,8 @@ public:
     eTempleGrandStatueBuilding(eGameBoard& board, const eCityId cid);
 
     std::shared_ptr<eTexture> getTexture(const eTileSize size) const override;
+    // the fountain's water moves once the statue is finished
+    std::vector<eOverlay> getOverlays(const eTileSize size) const override;
 };
 
 #endif // ETEMPLEGRANDSTATUEBUILDING_H

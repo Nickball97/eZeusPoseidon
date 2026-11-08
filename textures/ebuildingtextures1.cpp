@@ -1,4 +1,8 @@
 #include "ebuildingtextures.h"
+#include "spriteData/poseidonGrandStatueWater15.h"
+#include "spriteData/poseidonGrandStatueWater30.h"
+#include "spriteData/poseidonGrandStatueWater45.h"
+#include "spriteData/poseidonGrandStatueWater60.h"
 #include "spriteData/poseidonGrandStatue115.h"
 #include "spriteData/poseidonGrandStatue130.h"
 #include "spriteData/poseidonGrandStatue145.h"
@@ -554,5 +558,21 @@ void eBuildingTextures::loadPoseidonGrandStatue() {
                              "poseidonGrandStatue" + std::to_string(k + 1),
                              *sds[k], nullptr, fRenderer);
         loader.load(201, 201, fPoseidonGrandStatue);
+    }
+    // Fountain frames (Poseidon_GrandStatue3 202-206). The finished image's
+    // record puts them 242 pixels below its top; it is 381 tall and they
+    // are 122, so drawn bottom-aligned with it they sit 17 pixels higher.
+    {
+        const auto& sds = spriteData(fTileH,
+                                     ePoseidonGrandStatueWaterSpriteData15,
+                                     ePoseidonGrandStatueWaterSpriteData30,
+                                     ePoseidonGrandStatueWaterSpriteData45,
+                                     ePoseidonGrandStatueWaterSpriteData60);
+        eSpriteLoader loader(fTileH, "poseidonGrandStatueWater", sds,
+                             nullptr, fRenderer);
+        for(int i = 202; i <= 206; i++) {
+            const auto& tex = loader.load(202, i, fPoseidonGrandStatueWater);
+            tex->setOffset(0, 17);
+        }
     }
 }
