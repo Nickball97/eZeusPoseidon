@@ -175,6 +175,44 @@ static void decodePlain(const uint8_t* d, size_t len, Image& img) {
     }
 }
 
+// Isometric building image (type 30): a diamond footprint of size x size
+// floor tiles (58x30 each, 1800 bytes of raw 555 pixels, tiles 60 pixels
+// apart), stored row by row from the top of the diamond, at the bottom of
+// the image; then the part above the floor, run-length coded like a
+// sprite over the whole image.
+static void decodeIsoTile(const uint8_t* d, Image& img, int ox, int oy) {
+    const int w = 58, h = 30;
+    size_t i = 0;
+    for(int y = 0; y < h; y++) {
+        const int start = y < h/2 ? h - 2*(y + 1) : 2*y - h;
+        const int end = w - start;
+        for(int x = start; x < end; x++, i += 2) {
+            put555(img, ox + x, oy + y, uint16_t(d[i] | (d[i + 1] << 8)));
+        }
+    }
+}
+
+static void decodeIsometric(const uint8_t* d, size_t len, size_t uLen,
+                            int size, Image& img) {
+    const int tileBytes = 1800;
+    const int baseH = (img.fW + 2)/2;
+    if(size <= 0) size = baseH/30;
+    if(size <= 0) return;
+    int yOff = img.fH - baseH;
+    size_t i = 0;
+    for(int y = 0; y < 2*size - 1; y++) {
+        int xOff = (y < size ? size - y - 1 : y - size + 1)*30;
+        const int n = y < size ? y + 1 : 2*size - y - 1;
+        for(int x = 0; x < n; x++, i++) {
+            if((i + 1)*tileBytes > uLen || (i + 1)*tileBytes > len) return;
+            decodeIsoTile(d + i*tileBytes, img, xOff, yOff);
+            xOff += 60;
+        }
+        yOff += 15;
+    }
+    if(len > uLen) decodeSprite(d + uLen, len - uLen, img);
+}
+
 // round half up, as eZeus's own 15/45 sheets do
 static int scaled(int v, double s) { return int(std::floor(v * s + 0.5)); }
 
@@ -239,12 +277,16 @@ int main(int argc, char** argv) {
     if(!readFile(p555, d555)) { std::printf("can't read %s\n", p555.string().c_str()); return 1; }
     const uint32_t version = u32(sg, 4);
     const int nImages = int(u32(sg, 16));
-    if(version != 0xd6) { std::printf("unsupported sg3 version %x\n", version); return 1; }
+    if(version != 0xd5 && version != 0xd6) {
+        std::printf("unsupported sg3 version %x\n", version);
+        return 1;
+    }
     if(first < 1 || last > nImages || first > last) {
         std::printf("frames must be within 1..%d\n", nImages); return 1;
     }
     const size_t recStart = 680 + 200 * 200;
-    const size_t recSize = 72;
+    // 0xd6 records carry an alpha mask offset and length (8 more bytes)
+    const size_t recSize = version == 0xd6 ? 72 : 64;
 
     // decode at original size
     std::vector<Image> frames;
@@ -263,7 +305,9 @@ int main(int argc, char** argv) {
             const uint32_t len = u32(sg, r + 4);
             const uint16_t type = u16(sg, r + 50);
             const uint8_t ext = sg[r + 52];
-            const uint32_t aLen = u32(sg, r + 68);
+            const uint32_t aLen = version == 0xd6 ? u32(sg, r + 68) : 0;
+            const uint32_t uLen = u32(sg, r + 8); // isometric footprint bytes
+            const int isoSize = sg[r + 55];
             if(ext) {
                 std::printf("frame %d is in an external file, skipped\n", i);
             } else if(off + len + aLen <= d555.size()) {
@@ -273,6 +317,8 @@ int main(int argc, char** argv) {
                     if(aLen > 0) decodeAlpha(dp + len, aLen, img);
                 } else if(type == 0 || type == 1 || type == 10 || type == 12 || type == 13) {
                     decodePlain(dp, len, img);
+                } else if(type == 30) {
+                    decodeIsometric(dp, len, uLen, isoSize, img);
                 } else {
                     std::printf("frame %d has unsupported type %d, left empty\n", i, type);
                 }
