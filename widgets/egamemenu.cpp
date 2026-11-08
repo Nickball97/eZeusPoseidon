@@ -1,4 +1,5 @@
 ﻿#include "egamemenu.h"
+#include "buildings/sanctuaries/esanctuary.h"
 
 #include "textures/egametextures.h"
 #include "emainwindow.h"
@@ -230,7 +231,18 @@ void eGameMenu::openBuildWidget(const int cmx, const int cmy,
     for(const auto& c : cs) {
         if(!mBoard->supportsBuilding(cid, c.fMode) &&
            !mShowAllPossibleBuildings) continue;
-        const auto bb = createBuildButton(c);
+        // Atlantean cities build a Frigate Wharf and the Citadel of
+        // Poseidon instead (Poseidon manual)
+        auto cc = c;
+        if(mBoard->atlantean(cid)) {
+            if(c.fMode == eBuildingMode::triremeWharf) {
+                cc.fName = eLanguage::zeusText(28, 164);
+            } else if(c.fMode == eBuildingMode::templePoseidon) {
+                cc.fName = eLanguage::zeusText(28, 98);
+                cc.fMarbleCost = eSanctuary::sCitadelInitialMarble;
+            }
+        }
+        const auto bb = createBuildButton(cc);
         ws.push_back(bb);
     }
     if(ws.empty()) return;
