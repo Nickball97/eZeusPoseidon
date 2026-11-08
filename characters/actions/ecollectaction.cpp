@@ -7,6 +7,7 @@
 
 #include "engine/eregrowforestaction.h"
 #include "enumbers.h"
+#include "buildings/sanctuaries/esanctuary.h"
 
 eCollectAction::eCollectAction(eCharacter* const c,
                                const eTranformFunc tf) :
@@ -69,6 +70,14 @@ void eCollectAction::increment(const int by) {
         period = eNumbers::sFishCollectTime;
     } else if(cType == eCharacterType::urchinGatherer) {
         period = eNumbers::sUrchinCollectTime;
+    }
+    if(cType == eCharacterType::fishingBoat ||
+       cType == eCharacterType::urchinGatherer) {
+        // With Poseidon's sanctuary finished, his Kraken convinces fish
+        // and urchins to be caught faster (Zeus manual); 3/4 of the
+        // usual time per Nicolás
+        const auto s = c->getBoard().sanctuary(c->cityId(), eGodType::poseidon);
+        if(s && s->finished()) period = period*3/4;
     }
     if(mTime > period) {
         mTile->decResource(1);
