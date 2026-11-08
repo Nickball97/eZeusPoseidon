@@ -269,7 +269,9 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                 const vec2d posdif = ccpos - cpos;
                 const double dist = posdif.length();
                 if(dist > 1.) continue;
-                if(!cc->isSoldier()) {
+                // soldiers fight wolves too (upstream #52)
+                const bool wolf = cctype == eCharacterType::wolf;
+                if(!cc->isSoldier() && !wolf) {
                     if(cc->isImmortal()) {
                         thirdOption = cc;
                     } else if(cctype == eCharacterType::enemyBoat ||
@@ -311,7 +313,8 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                         if(!eTeamIdHelpers::isEnemy(cctid, tid)) continue;
                         if(!canTarget(cc)) continue;
                         if(cc->dead()) continue;
-                        if(!cc->isSoldier()) {
+                        if(!cc->isSoldier() &&
+                           cctype != eCharacterType::wolf) {
                             if(cc->isImmortal()) {
                                 thirdOption = cc;
                             } else if(cctype == eCharacterType::enemyBoat ||
@@ -355,7 +358,8 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                     if(!t) continue;
                     const auto& chars = t->characters();
                     for(const auto& cc : chars) {
-                        if(!cc->isFighter()) continue;
+                        if(!cc->isFighter() &&
+                           cc->type() != eCharacterType::wolf) continue;
                         const auto cctid = cc->teamId();
                         if(!eTeamIdHelpers::isEnemy(cctid, tid)) continue;
                         if(!canTarget(cc)) continue;
