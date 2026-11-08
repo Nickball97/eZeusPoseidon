@@ -1,4 +1,5 @@
 ﻿
+#include "buildings/sanctuaries/etempleobeliskbuilding.h"
 #include "buildings/sanctuaries/etemplegrandstatuebuilding.h"
 #include "egameboard.h"
 
@@ -4101,6 +4102,13 @@ bool eGameBoard::buildSanctuary(const int minX, const int maxX,
                 tt->setMonument(b.get());
                 const int d = rotate ? 1 : 0;
                 this->build(tx - d, ty + d, 2, 2, cid, pid, editorDisplay, [tt]() { return tt; });
+                b->registerElement(tt);
+            } break;
+            case eSanctEleType::obelisk: {
+                const auto tt = e::make_shared<eTempleObeliskBuilding>(
+                                    t.fId, *this, cid);
+                tt->setMonument(b.get());
+                this->build(tx, ty, 1, 1, cid, pid, editorDisplay, [tt]() { return tt; });
                 b->registerElement(tt);
             } break;
             case eSanctEleType::grandStatue: {

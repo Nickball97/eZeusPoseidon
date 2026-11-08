@@ -174,6 +174,7 @@ std::shared_ptr<eTexture> eTileToTexture::get(eTile* const tile,
     case eBuildingType::temple:
     case eBuildingType::templeStatue:
     case eBuildingType::templeGrandStatue:
+    case eBuildingType::templeObelisk:
     case eBuildingType::templeMonument:
     case eBuildingType::templeAltar: {
         const auto& coll = blds.fSanctuarySpace;

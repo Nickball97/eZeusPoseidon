@@ -175,6 +175,7 @@ bool eBuilding::sTimedBuilding(const eBuildingType bt) {
     if(bt == eBuildingType::templeTile) return false;
     if(bt == eBuildingType::templeMonument) return false;
     if(bt == eBuildingType::templeGrandStatue) return false;
+    if(bt == eBuildingType::templeObelisk) return false;
     if(bt == eBuildingType::templeStatue) return false;
     if(bt == eBuildingType::wall) return false;
     if(bt == eBuildingType::gatehouse) return false;
@@ -809,6 +810,7 @@ std::string eBuilding::sNameForBuilding(const eBuildingType type) {
     case eBuildingType::temple:
     case eBuildingType::templeTile:
     case eBuildingType::templeGrandStatue:
+    case eBuildingType::templeObelisk:
     case eBuildingType::templeStatue:
     case eBuildingType::templeMonument:
     case eBuildingType::templeAltar:

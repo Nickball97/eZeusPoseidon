@@ -685,6 +685,8 @@ void eBoardCity::saveEditorCityPlan() {
             continue;
         } else if(ab.fType == eBuildingType::templeGrandStatue) {
             continue;
+        } else if(ab.fType == eBuildingType::templeObelisk) {
+            continue;
         } else if(ab.fType == eBuildingType::templeStatue) {
             continue;
         } else if(ab.fType == eBuildingType::temple) {
@@ -914,6 +916,7 @@ void eBoardCity::registerBuilding(eBuilding* const b) {
     case eBuildingType::temple:
     case eBuildingType::templeMonument:
     case eBuildingType::templeGrandStatue:
+    case eBuildingType::templeObelisk:
     case eBuildingType::templeStatue:
     case eBuildingType::templeTile:
 

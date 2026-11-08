@@ -45,6 +45,8 @@ bool loadLineBP(const int x,
             ele.fType = eSanctEleType::sanctuary;
         } else if(codeStr == "m") {
             ele.fType = eSanctEleType::monument;
+        } else if(codeStr == "p") {
+            ele.fType = eSanctEleType::obelisk;
         } else if(codeStr == "g") {
             ele.fType = eSanctEleType::grandStatue;
         } else if(codeStr == "a") {

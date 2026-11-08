@@ -33,7 +33,8 @@ enum class eSanctEleType {
     hermesStatue,
     poseidonStatue,
     zeusStatue,
-    grandStatue // Citadel of Poseidon centrepiece (code "g", 6x6)
+    grandStatue, // Citadel of Poseidon centrepiece (code "g", 6x6)
+    obelisk // Citadel corner: "p0" pyramid floor, "p1" block with obelisk
 };
 
 struct eSanctEle {

@@ -162,6 +162,7 @@ SOURCES += \
         buildings/sanctuaries/etemplealtarbuilding.cpp \
         buildings/sanctuaries/etemplebuilding.cpp \
         buildings/sanctuaries/etemplegrandstatuebuilding.cpp \
+        buildings/sanctuaries/etempleobeliskbuilding.cpp \
         buildings/sanctuaries/etemplemonumentbuilding.cpp \
         buildings/sanctuaries/etemplestatuebuilding.cpp \
         buildings/sanctuaries/etempletilebuilding.cpp \
@@ -861,6 +862,7 @@ HEADERS += \
     buildings/sanctuaries/etemplealtarbuilding.h \
     buildings/sanctuaries/etemplebuilding.h \
     buildings/sanctuaries/etemplegrandstatuebuilding.h \
+    buildings/sanctuaries/etempleobeliskbuilding.h \
     buildings/sanctuaries/etemplemonumentbuilding.h \
     buildings/sanctuaries/etemplestatuebuilding.h \
     buildings/sanctuaries/etempletilebuilding.h \

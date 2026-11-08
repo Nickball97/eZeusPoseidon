@@ -4,7 +4,8 @@
 
 // HeavenGames (Sanctuaries): the Citadel needs 231 marble, 52 wood,
 // 2 sculptures and 16 orichalc. Its other pieces use eZeus's usual piece
-// costs (182 tiles, 4 temple halves, altar, 2 statues: 216 marble,
+// costs (173 tiles, 9 obelisk-corner pieces, 4 temple halves, altar,
+// 2 statues: 216 marble,
 // 20 wood, 2 sculptures), so the grand statue takes the rest:
 // 15 marble, 32 wood and 16 orichalc over its three stages.
 eTempleGrandStatueBuilding::eTempleGrandStatueBuilding(
