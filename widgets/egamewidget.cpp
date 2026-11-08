@@ -1826,6 +1826,45 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
                 c->allowPyramid(t, levels);
             }
         }
+    } else if(k == SDL_Scancode::SDL_SCANCODE_W &&
+              e.ctrlPressed() && e.shiftPressed()) {
+        // Developer test build only (W for wares): fills the viewed city's storehouses
+        // with building and military goods (as much as fits).
+        const eResourceType types[] = {
+            eResourceType::marble, eResourceType::wood,
+            eResourceType::sculpture, eResourceType::orichalc,
+            eResourceType::blackMarble, eResourceType::armor,
+            eResourceType::bronze};
+        for(const auto t : types) {
+            const int added = mBoard->addResource(mViewedCityId, t, 32);
+            printf("Dev: +%i %s\n", added,
+                   eResourceTypeHelpers::typeName(t).c_str());
+        }
+    } else if(k == SDL_Scancode::SDL_SCANCODE_F &&
+              e.ctrlPressed() && e.shiftPressed()) {
+        // Developer test build only: every sanctuary becomes available in
+        // the viewed city, and every sanctuary and monument under
+        // construction there is finished at once.
+        const auto c = mBoard->boardCityWithId(mViewedCityId);
+        if(c) {
+            const int first = static_cast<int>(eBuildingType::templeAphrodite);
+            const int last = static_cast<int>(eBuildingType::templeZeus);
+            for(int t = first; t <= last; t++) {
+                c->allow(static_cast<eBuildingType>(t));
+            }
+            c->setMaxSanctuaries(16); // lift the scenario's sanctuary limit
+            std::vector<eMonument*> ms = c->monuments();
+            for(const auto s : c->sanctuaries()) {
+                if(std::find(ms.begin(), ms.end(), s) == ms.end()) {
+                    ms.push_back(s);
+                }
+            }
+            for(const auto m : ms) {
+                if(m) m->devFinishConstruction();
+            }
+            printf("Dev: sanctuaries allowed, %i monuments finished\n",
+                   static_cast<int>(ms.size()));
+        }
     } else if(k == SDL_Scancode::SDL_SCANCODE_G &&
               e.ctrlPressed() && e.shiftPressed()) {
         // Developer test build only: an angry god attacks the viewed city,

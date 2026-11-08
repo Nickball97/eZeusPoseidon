@@ -7,6 +7,9 @@
 
 class eMonument : public eEmployingBuilding {
 public:
+    // Developer test builds: completes every piece at once, as if the
+    // materials had been delivered
+    void devFinishConstruction();
     eMonument(eGameBoard& board,
               const eBuildingType type,
               const int sw, const int sh,

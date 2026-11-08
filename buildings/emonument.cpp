@@ -208,3 +208,17 @@ int eMonument::progress() const {
 bool eMonument::finished() const {
     return progress() >= 100;
 }
+
+void eMonument::devFinishConstruction() {
+    for(const auto& e : mElements) {
+        if(!e) continue;
+        while(!e->finished()) {
+            const int p = e->progress();
+            const auto& costs = e->costs();
+            if(p >= 0 && p < static_cast<int>(costs.size())) {
+                mStored += costs[p]; // as if delivered, so stock stays sane
+            }
+            if(!e->incProgress()) break;
+        }
+    }
+}
