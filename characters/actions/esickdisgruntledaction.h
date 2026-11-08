@@ -3,12 +3,13 @@
 
 #include "eactionwithcomeback.h"
 
-class eSmallHouse;
+class eBuilding;
 
 class eSickDisgruntledAction : public eActionWithComeback {
 public:
     eSickDisgruntledAction(eCharacter* const c,
-                           eSmallHouse* const ch);
+                           eBuilding* const ch);
+    // also used for an elite house's nobleman (eEliteHousing)
 
     bool decide() override;
 
@@ -19,7 +20,7 @@ protected:
     void goBackDecision(const stdsptr<eWalkableObject>& w =
                             eWalkableObject::sCreateRoadAvenue());
 private:
-    eSmallHouse* mBuilding = nullptr;
+    eBuilding* mBuilding = nullptr;
 
     bool mGoBackNext = false;
 };

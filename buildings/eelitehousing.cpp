@@ -6,6 +6,10 @@
 #include "elanguage.h"
 #include "enumbers.h"
 #include "buildings/epalace.h"
+#include "characters/eelitecitizen.h"
+#include "characters/actions/esickdisgruntledaction.h"
+#include "fileIO/efileformat.h"
+#include "erand.h"
 
 #include <algorithm>
 
@@ -213,7 +217,32 @@ int eEliteHousing::provide(const eProvide p, const int n) {
     return add;
 }
 
+eEliteHousing::~eEliteHousing() {
+    if(mNoble) mNoble->kill();
+}
+
+void eEliteHousing::spawnNoble() {
+    auto ts = surroundingRoad(false, true);
+    if(ts.empty()) return;
+    const auto tile = ts[eRand::rand() % ts.size()];
+    const auto c = e::make_shared<eEliteCitizen>(getBoard());
+    c->setBothCityIds(cityId());
+    c->changeTile(tile);
+    const auto a = e::make_shared<eSickDisgruntledAction>(c.get(), this);
+    c->setAction(a);
+    mNoble = c.get();
+}
+
 void eEliteHousing::timeChanged(const int by) {
+    // how often and how far nobles walk isn't in any source: eZeus's
+    // usual roaming-walker wait is used
+    if(!mNoble && mPeople > 0) {
+        mNobleWait += by;
+        if(mNobleWait > eNumbers::sPatrolerWaitTime) {
+            mNobleWait = 0;
+            spawnNoble();
+        }
+    }
     const int lupdate = 1000;
     if(mUpdateLevel > lupdate) {
         mUpdateLevel -= lupdate;
@@ -303,6 +332,12 @@ void eEliteHousing::read(eReadStream& src) {
     src >> mWine;
     src >> mArms;
     src >> mHorses;
+    if(src.formatVersion() >= eFileFormat::eliteNoble) {
+        src.readCharacter(&getBoard(), [this](eCharacter* const c) {
+            mNoble = c;
+        });
+        src >> mNobleWait;
+    }
 }
 
 void eEliteHousing::write(eWriteStream& dst) const {
@@ -311,6 +346,8 @@ void eEliteHousing::write(eWriteStream& dst) const {
     dst << mWine;
     dst << mArms;
     dst << mHorses;
+    dst.writeCharacter(mNoble);
+    dst << mNobleWait;
 }
 
 std::string eEliteHousing::sName(const int level) {

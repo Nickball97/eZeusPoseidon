@@ -6,7 +6,7 @@
 #include "emovearoundaction.h"
 
 eSickDisgruntledAction::eSickDisgruntledAction(eCharacter* const c,
-                                               eSmallHouse* const ch) :
+                                               eBuilding* const ch) :
     eActionWithComeback(c, ch ? ch->centerTile() : nullptr,
                         eCharActionType::sickDisgruntledAction),
     mBuilding(ch) {
@@ -29,7 +29,7 @@ void eSickDisgruntledAction::read(eReadStream& src) {
     eActionWithComeback::read(src);
 
     src.readBuilding(&board(), [this](eBuilding* const b) {
-        mBuilding = static_cast<eSmallHouse*>(b);
+        mBuilding = b;
     });
     src >> mGoBackNext;
 }

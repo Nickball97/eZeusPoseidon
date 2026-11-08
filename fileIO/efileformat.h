@@ -11,6 +11,7 @@ namespace eFileFormat {
         atlanteanFire,
         towerOrichalc,
         poseidonKraken,
+        eliteNoble,
 
         nextVersion
     };

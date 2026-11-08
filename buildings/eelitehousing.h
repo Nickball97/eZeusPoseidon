@@ -6,6 +6,7 @@
 class eEliteHousing : public eHouseBase {
 public:
     eEliteHousing(eGameBoard& board, const eCityId cid);
+    ~eEliteHousing();
 
     std::shared_ptr<eTexture>
     getTexture(const eTileSize) const override { return nullptr; }
@@ -66,6 +67,12 @@ private:
     int mWine = 0;
     int mArms = 0;
     int mHorses = 0;
+
+    // a lived-in elite house sends out a nobleman who roams the streets
+    // and stops disgruntled citizens and outlaws (Zeus manual)
+    void spawnNoble();
+    stdptr<eCharacter> mNoble;
+    int mNobleWait = 0;
 };
 
 #endif // EELITEHOUSING_H
