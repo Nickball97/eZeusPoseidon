@@ -1319,6 +1319,18 @@ bool eGameWidget::bridgeTiles(eTile* const t, const eTerrain terr,
     tiles.clear();
     rotated = false;
     if(!t) return false;
+    // Zeus manual (Water Crossing): two crossings can't be built directly
+    // next to each other, their supports block the way under the water
+    const auto noCrossingNextTo = [&tiles]() {
+        for(const auto tt : tiles) {
+            eTile* const ns[4] = {tt->topLeft<eTile>(), tt->topRight<eTile>(),
+                                  tt->bottomLeft<eTile>(), tt->bottomRight<eTile>()};
+            for(const auto n : ns) {
+                if(n && n->hasBridge()) return false;
+            }
+        }
+        return true;
+    };
     if(!t->isShoreTile(terr)) return false;
     if(t->underBuilding()) return false;
     const auto tl = t->topLeft<eTile>();
@@ -1369,7 +1381,8 @@ bool eGameWidget::bridgeTiles(eTile* const t, const eTerrain terr,
             const auto tt_tl = tt->topLeft<eTile>();
             if(tt_tl->hasTerrain(terr)) return false;
         }
-        return !tr->underBuilding() && !bl->underBuilding();
+        return !tr->underBuilding() && !bl->underBuilding() &&
+               noCrossingNextTo();
     } else if(tl->isShoreTile(terr) && br->isShoreTile(terr)) {
         rotated = true;
         if(bl->hasTerrain(terr)) {
@@ -1410,7 +1423,8 @@ bool eGameWidget::bridgeTiles(eTile* const t, const eTerrain terr,
             const auto tt_tr = tt->topRight<eTile>();
             if(tt_tr->hasTerrain(terr)) return false;
         }
-        return !tl->underBuilding() && !br->underBuilding();
+        return !tl->underBuilding() && !br->underBuilding() &&
+               noCrossingNextTo();
     }
 
     return false;
