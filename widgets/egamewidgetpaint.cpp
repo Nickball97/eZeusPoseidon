@@ -2891,7 +2891,9 @@ void eGameWidget::paintEvent(ePainter& p) {
         case eBuildingMode::templeZeus: {
             const auto& tex = trrTexs.fBuildingBase;
             const auto type = eBuildingModeHelpers::toBuildingType(mode);
-            const auto h = eSanctBlueprints::sSanctuaryBlueprint(type, mRotate);
+            const auto h = eSanctBlueprints::sSanctuaryBlueprint(
+                type, mRotate, type == eBuildingType::templePoseidon &&
+                               mBoard->atlantean(mViewedCityId));
             const int sw = h->fW;
             const int sh = h->fH;
             const int xMin = mHoverTX - sw/2;

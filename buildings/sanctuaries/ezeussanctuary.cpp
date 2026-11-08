@@ -1,4 +1,5 @@
 #include "ezeussanctuary.h"
+#include "engine/egameboard.h"
 
 eZeusSanctuary::eZeusSanctuary(
         const int sw, const int sh, eGameBoard& board, const eCityId cid) :
@@ -42,4 +43,5 @@ eHermesSanctuary::eHermesSanctuary(
 
 ePoseidonSanctuary::ePoseidonSanctuary(
         const int sw, const int sh, eGameBoard& board, const eCityId cid) :
-    eSanctuary(board, eBuildingType::templePoseidon, sw, sh, 75, cid) {}
+    eSanctuary(board, eBuildingType::templePoseidon, sw, sh,
+               board.atlantean(cid) ? sCitadelEmployees : 75, cid) {}

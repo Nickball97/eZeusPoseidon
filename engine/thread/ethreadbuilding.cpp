@@ -144,6 +144,7 @@ void eThreadBuilding::load(eBuilding* const src) {
         case eBuildingType::templeMonument:
         case eBuildingType::templeStatue:
         case eBuildingType::templeTile:
+        case eBuildingType::templeGrandStatue:
 
         case eBuildingType::pyramidPart:
         case eBuildingType::pyramidWall:

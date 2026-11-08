@@ -33,6 +33,7 @@ enum class eSanctEleType {
     hermesStatue,
     poseidonStatue,
     zeusStatue,
+    grandStatue // Citadel of Poseidon centrepiece (code "g", 6x6)
 };
 
 struct eSanctEle {
@@ -55,7 +56,8 @@ public:
     static eSanctBlueprints instance;
 
     static const eSanctBlueprint* sSanctuaryBlueprint(
-            const eBuildingType type, const bool rotate);
+            const eBuildingType type, const bool rotate,
+            const bool atlantean = false);
 
     static void load();
     static bool loaded();
@@ -101,6 +103,10 @@ public:
 
     eSanctBlueprint fPoseidonW;
     eSanctBlueprint fPoseidonH;
+    // Atlantean cities build the Citadel of Poseidon instead (Poseidon
+    // manual; layout from ModelSanctuary_POSEIDON_GRAND.txt)
+    eSanctBlueprint fPoseidonCitadelW;
+    eSanctBlueprint fPoseidonCitadelH;
 private:
     void loadImpl();
 

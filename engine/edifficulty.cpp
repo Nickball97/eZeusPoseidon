@@ -330,6 +330,7 @@ int costBase(const eBuildingType type) {
     case eBuildingType::temple:
     case eBuildingType::templeTile:
     case eBuildingType::templeStatue:
+    case eBuildingType::templeGrandStatue:
     case eBuildingType::templeMonument:
     case eBuildingType::templeAltar:
 

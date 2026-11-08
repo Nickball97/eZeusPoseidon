@@ -2443,3 +2443,10 @@ void eGameTextures::loadAtlanteanFire() {
         c.loadAtlanteanFire();
     });
 }
+
+void eGameTextures::loadPoseidonGrandStatue() {
+    loadTexture([](const int i) {
+        auto& c = sBuildingTextures[i];
+        c.loadPoseidonGrandStatue();
+    });
+}

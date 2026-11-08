@@ -174,6 +174,7 @@ bool eBuilding::sTimedBuilding(const eBuildingType bt) {
     if(bt == eBuildingType::placeholder) return false;
     if(bt == eBuildingType::templeTile) return false;
     if(bt == eBuildingType::templeMonument) return false;
+    if(bt == eBuildingType::templeGrandStatue) return false;
     if(bt == eBuildingType::templeStatue) return false;
     if(bt == eBuildingType::wall) return false;
     if(bt == eBuildingType::gatehouse) return false;
@@ -295,6 +296,12 @@ std::string eBuilding::sNameForBuilding(eBuilding* const b) {
         }
         return eLanguage::zeusText(group, string);
     } break;
+    case eBuildingType::templePoseidon:
+        // Atlantean cities build the Citadel of Poseidon
+        if(b->getBoard().atlantean(b->cityId())) {
+            return eLanguage::zeusText(28, 98);
+        }
+        break;
     case eBuildingType::triremeWharf:
         // Atlantean cities build a Frigate Wharf (Poseidon manual)
         if(b->getBoard().atlantean(b->cityId())) {
@@ -801,6 +808,7 @@ std::string eBuilding::sNameForBuilding(const eBuildingType type) {
     case eBuildingType::godMonumentTile:
     case eBuildingType::temple:
     case eBuildingType::templeTile:
+    case eBuildingType::templeGrandStatue:
     case eBuildingType::templeStatue:
     case eBuildingType::templeMonument:
     case eBuildingType::templeAltar:

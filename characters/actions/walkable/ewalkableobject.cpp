@@ -41,7 +41,8 @@ bool eWalkableObject::walkable(eTileBase* const t) const {
         if(type == eBuildingType::temple ||
            type == eBuildingType::templeAltar ||
            type == eBuildingType::templeStatue ||
-           type == eBuildingType::templeMonument) return false;
+           type == eBuildingType::templeMonument ||
+           type == eBuildingType::templeGrandStatue) return false;
         if(type == eBuildingType::road) return true;
         if(!t->walkableElev() && t->isElevationTile()) return false;
         const auto terr = t->terrain() & eTerrain::walkable;

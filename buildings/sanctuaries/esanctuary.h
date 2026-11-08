@@ -52,6 +52,13 @@ public:
     void godComeback();
     bool godAbroad() const { return mGodAbroad; }
 
+    // Citadel of Poseidon (Atlantean Promontory): ModelZeus_Model_*.txt
+    // BUILD_LARGE_SANC_POSEIDON2 (cost 2080, 80 workers, same on every
+    // difficulty) and HeavenGames (initial marble 32)
+    static constexpr int sCitadelCost = 2080;
+    static constexpr int sCitadelInitialMarble = 32;
+    static constexpr int sCitadelEmployees = 80;
+
     double helpTimeFraction() const;
     double helpAttackTimeFraction() const;
 

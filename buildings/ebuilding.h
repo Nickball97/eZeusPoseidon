@@ -247,7 +247,10 @@ enum class eBuildingType {
     pyramidMuseum,
 
     hippodromePiece,
-    crosswalk
+    crosswalk,
+
+    // added at the end so saved types keep their numbers
+    templeGrandStatue // Citadel of Poseidon centrepiece, 6x6
 };
 
 struct eTextureSpace {

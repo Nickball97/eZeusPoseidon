@@ -2027,7 +2027,10 @@ bool eGameWidget::buildMouseRelease() {
             }
 
             const auto bt = eBuildingModeHelpers::toBuildingType(mode);
-            const int m = eBuilding::sInitialMarbleCost(bt);
+            const bool citadel = bt == eBuildingType::templePoseidon &&
+                                 mBoard->atlantean(mViewedCityId);
+            const int m = citadel ? eSanctuary::sCitadelInitialMarble :
+                                    eBuilding::sInitialMarbleCost(bt);
             const int hasM = mBoard->resourceCount(mViewedCityId, eResourceType::marble);
             if(!mEditorMode && hasM < m) {
                 auto text = eLanguage::zeusText(19, 201);
@@ -2040,7 +2043,9 @@ bool eGameWidget::buildMouseRelease() {
                 return false;
             }
 
-            const auto h = eSanctBlueprints::sSanctuaryBlueprint(bt, mRotate);
+            const auto h = eSanctBlueprints::sSanctuaryBlueprint(
+                bt, mRotate, bt == eBuildingType::templePoseidon &&
+                             mBoard->atlantean(mViewedCityId));
 
             const int sw = h->fW;
             const int sh = h->fH;

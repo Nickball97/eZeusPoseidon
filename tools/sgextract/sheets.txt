@@ -8,3 +8,6 @@
 PoseidonImps.sg3 7516 7755 frigate
 PoseidonImps.sg3 7988 8227 fireFrigate
 PoseidonImps.sg3 4718 4757 atlanteanFire
+Poseidon_GrandStatue1.sg3 201 201 poseidonGrandStatue1
+Poseidon_GrandStatue2.sg3 201 201 poseidonGrandStatue2
+Poseidon_GrandStatue3.sg3 201 201 poseidonGrandStatue3

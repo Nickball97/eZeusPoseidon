@@ -1,4 +1,16 @@
 #include "ebuildingtextures.h"
+#include "spriteData/poseidonGrandStatue115.h"
+#include "spriteData/poseidonGrandStatue130.h"
+#include "spriteData/poseidonGrandStatue145.h"
+#include "spriteData/poseidonGrandStatue160.h"
+#include "spriteData/poseidonGrandStatue215.h"
+#include "spriteData/poseidonGrandStatue230.h"
+#include "spriteData/poseidonGrandStatue245.h"
+#include "spriteData/poseidonGrandStatue260.h"
+#include "spriteData/poseidonGrandStatue315.h"
+#include "spriteData/poseidonGrandStatue330.h"
+#include "spriteData/poseidonGrandStatue345.h"
+#include "spriteData/poseidonGrandStatue360.h"
 
 #include "spriteData/bibliotheke15.h"
 #include "spriteData/bibliotheke30.h"
@@ -514,5 +526,33 @@ void eBuildingTextures::loadCorral() {
         for(int i = 1878; i < 1938; i++) {
             loader.load(1878, i, fCorralProcessingOverlay);
         }
+    }
+}
+
+void eBuildingTextures::loadPoseidonGrandStatue() {
+    if(fPoseidonGrandStatueLoaded) return;
+    fPoseidonGrandStatueLoaded = true;
+
+    const std::vector<eSpriteData>* sds[3] = {
+        &spriteData(fTileH,
+                    ePoseidonGrandStatue1SpriteData15,
+                    ePoseidonGrandStatue1SpriteData30,
+                    ePoseidonGrandStatue1SpriteData45,
+                    ePoseidonGrandStatue1SpriteData60),
+        &spriteData(fTileH,
+                    ePoseidonGrandStatue2SpriteData15,
+                    ePoseidonGrandStatue2SpriteData30,
+                    ePoseidonGrandStatue2SpriteData45,
+                    ePoseidonGrandStatue2SpriteData60),
+        &spriteData(fTileH,
+                    ePoseidonGrandStatue3SpriteData15,
+                    ePoseidonGrandStatue3SpriteData30,
+                    ePoseidonGrandStatue3SpriteData45,
+                    ePoseidonGrandStatue3SpriteData60)};
+    for(int k = 0; k < 3; k++) {
+        eSpriteLoader loader(fTileH,
+                             "poseidonGrandStatue" + std::to_string(k + 1),
+                             *sds[k], nullptr, fRenderer);
+        loader.load(201, 201, fPoseidonGrandStatue);
     }
 }

@@ -332,6 +332,7 @@ public:
 
     static void loadZeusSanctuary();
     static void loadPoseidonSanctuary();
+    static void loadPoseidonGrandStatue();
     static void loadPoseidonHerosHall();
 
     static void loadHoplitePoseidon();

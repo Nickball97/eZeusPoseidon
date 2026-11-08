@@ -1,4 +1,5 @@
 ﻿
+#include "buildings/sanctuaries/etemplegrandstatuebuilding.h"
 #include "egameboard.h"
 
 #include "buildings/eagorabase.h"
@@ -3975,7 +3976,12 @@ bool eGameBoard::buildSanctuary(const int minX, const int maxX,
                                  editorDisplay, cid, pid);
     if(!cb) return false;
 
-    const auto h = eSanctBlueprints::sSanctuaryBlueprint(type, rotate);
+    // Atlantean cities build the Citadel of Poseidon (HeavenGames:
+    // Promontory in Greek adventures, Citadel in Atlantean ones)
+    const bool citadel = type == eBuildingType::templePoseidon &&
+                         atlantean(cid);
+    const auto h = eSanctBlueprints::sSanctuaryBlueprint(type, rotate,
+                                                         citadel);
 
     const int sw = h->fW;
     const int sh = h->fH;
@@ -3986,9 +3992,11 @@ bool eGameBoard::buildSanctuary(const int minX, const int maxX,
 
     if(!editorDisplay) {
         const auto diff = difficulty(pid);
-        const int cost = eDifficultyHelpers::buildingCost(diff, type);
+        const int cost = citadel ? eSanctuary::sCitadelCost :
+                                   eDifficultyHelpers::buildingCost(diff, type);
         incDrachmas(pid, -cost, eFinanceTarget::construction);
-        const int m = eBuilding::sInitialMarbleCost(type);
+        const int m = citadel ? eSanctuary::sCitadelInitialMarble :
+                                eBuilding::sInitialMarbleCost(type);
         takeResource(cid, eResourceType::marble, m);
     }
 
@@ -4093,6 +4101,13 @@ bool eGameBoard::buildSanctuary(const int minX, const int maxX,
                 tt->setMonument(b.get());
                 const int d = rotate ? 1 : 0;
                 this->build(tx - d, ty + d, 2, 2, cid, pid, editorDisplay, [tt]() { return tt; });
+                b->registerElement(tt);
+            } break;
+            case eSanctEleType::grandStatue: {
+                const auto tt = e::make_shared<eTempleGrandStatueBuilding>(
+                                    *this, cid);
+                tt->setMonument(b.get());
+                this->build(tx, ty, 6, 6, cid, pid, editorDisplay, [tt]() { return tt; });
                 b->registerElement(tt);
             } break;
             case eSanctEleType::altar: {

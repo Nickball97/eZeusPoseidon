@@ -324,7 +324,9 @@ add_executable(eZeus
     buildings/sanctuaries/etemplealtarbuilding.h
     buildings/sanctuaries/etemplebuilding.cpp
     buildings/sanctuaries/etemplebuilding.h
+    buildings/sanctuaries/etemplegrandstatuebuilding.cpp
     buildings/sanctuaries/etemplemonumentbuilding.cpp
+    buildings/sanctuaries/etemplegrandstatuebuilding.h
     buildings/sanctuaries/etemplemonumentbuilding.h
     buildings/sanctuaries/etemplestatuebuilding.cpp
     buildings/sanctuaries/etemplestatuebuilding.h

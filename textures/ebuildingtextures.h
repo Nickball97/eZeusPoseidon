@@ -117,6 +117,10 @@ public:
     void loadZeusSanctuary();
     bool fPoseidonSanctuaryLoaded = false;
     void loadPoseidonSanctuary();
+    // Citadel of Poseidon grand statue, 3 building stages (Poseidon_
+    // GrandStatue1-3), cut by tools/sgextract
+    bool fPoseidonGrandStatueLoaded = false;
+    void loadPoseidonGrandStatue();
     bool fPyramidLoaded = false;
     void loadPyramid();
     bool fPyramid2Loaded = false;
@@ -653,6 +657,7 @@ public:
 
     std::vector<eTextureCollection> fSanctuary;
     eTextureCollection fPoseidonSanctuary;
+    eTextureCollection fPoseidonGrandStatue;
     eTextureCollection fPyramid;
     eTextureCollection fPyramid2;
 

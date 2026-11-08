@@ -1,4 +1,5 @@
 #include "ebuildingreader.h"
+#include "buildings/sanctuaries/etemplegrandstatuebuilding.h"
 
 #include "buildings/allbuildings.h"
 #include "engine/egameboard.h"
@@ -474,6 +475,11 @@ stdsptr<eBuilding> eBuildingReader::sRead(
     } break;
     case eBuildingType::templeAltar: {
         const auto ts = e::make_shared<eTempleAltarBuilding>(board, cid);
+        b = ts;
+        readSanctBuildingMonument(board, src, ts);
+    } break;
+    case eBuildingType::templeGrandStatue: {
+        const auto ts = e::make_shared<eTempleGrandStatueBuilding>(board, cid);
         b = ts;
         readSanctBuildingMonument(board, src, ts);
     } break;
