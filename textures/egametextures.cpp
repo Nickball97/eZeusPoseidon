@@ -2436,3 +2436,10 @@ int eGameTextures::menuSize() {
 void eGameTextures::setSettings(const eSettings& s) {
     sSettings = s;
 }
+
+void eGameTextures::loadAtlanteanFire() {
+    loadTexture([](const int i) {
+        auto& c = sDestructionTextures[i];
+        c.loadAtlanteanFire();
+    });
+}

@@ -1,4 +1,5 @@
 #include "emissile.h"
+#include "eatlanteanfiremissile.h"
 
 #include "engine/egameboard.h"
 #include "engine/etile.h"
@@ -107,6 +108,8 @@ stdsptr<eMissile> eMissile::sCreate(
         return e::make_shared<eDustMissile>(brd);
     case eMissileType::racingHorse:
         return e::make_shared<eRacingHorse>(brd);
+    case eMissileType::atlanteanFire:
+        return e::make_shared<eAtlanteanFireMissile>(brd);
     }
     return nullptr;
 }

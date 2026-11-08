@@ -1012,7 +1012,9 @@ add_executable(eZeus
     gameEvents/ewarning.cpp
     gameEvents/ewarning.h
     main.cpp
+    missiles/eatlanteanfiremissile.cpp
     missiles/earrowmissile.cpp
+    missiles/eatlanteanfiremissile.h
     missiles/earrowmissile.h
     missiles/earrowspearbase.cpp
     missiles/earrowspearbase.h

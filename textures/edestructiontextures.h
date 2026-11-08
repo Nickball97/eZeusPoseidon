@@ -32,6 +32,10 @@ public:
     void loadBlackArrow();
     bool fArrowLoaded = false;
     void loadArrow();
+    // Poseidon: tower and frigate Atlantean Fire (PoseidonImps fireball,
+    // 8 directions x 5 frames), cut by tools/sgextract
+    bool fAtlanteanFireLoaded = false;
+    void loadAtlanteanFire();
 
     bool fBlessLoaded = false;
     void loadBless();
@@ -79,6 +83,7 @@ public:
     eTextureCollection fSpear;
     eTextureCollection fBlackArrow;
     eTextureCollection fArrow;
+    std::vector<eTextureCollection> fAtlanteanFire;
 
     std::vector<eTextureCollection> fBless;
     std::vector<eTextureCollection> fCurse;

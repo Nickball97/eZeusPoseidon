@@ -501,6 +501,7 @@ SOURCES += \
         gameEvents/ewagechangeevent.cpp \
         gameEvents/ewarning.cpp \
         main.cpp \
+        missiles/eatlanteanfiremissile.cpp \
         missiles/earrowmissile.cpp \
         missiles/earrowspearbase.cpp \
         missiles/edustmissile.cpp \
@@ -1205,6 +1206,7 @@ HEADERS += \
     gameEvents/etroopsrequestfulfilledevent.h \
     gameEvents/ewagechangeevent.h \
     gameEvents/ewarning.h \
+    missiles/eatlanteanfiremissile.h \
     missiles/earrowmissile.h \
     missiles/earrowspearbase.h \
     missiles/edustmissile.h \

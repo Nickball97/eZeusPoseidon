@@ -170,6 +170,7 @@ public:
     static void loadSpear();
     static void loadBlackArrow();
     static void loadArrow();
+    static void loadAtlanteanFire();
 
     static void loadBless();
     static void loadCurse();

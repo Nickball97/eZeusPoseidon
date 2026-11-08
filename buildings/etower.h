@@ -23,6 +23,7 @@ public:
     bool spawn();
 
     void setDeleteArchers(const bool d) { mDeleteArchers = d; }
+    bool atlanteanFire() const { return mOrichalc; }
 private:
     bool mDeleteArchers = true;
 
@@ -36,6 +37,8 @@ private:
     int mSpawnTime = 0;
 
     stdptr<eArcher> mArcher;
+    bool mOrichalc = false; // has an Atlantean Fire launcher
+    int mOrichalcCheck = 0;
 };
 
 #endif // ETOWER_H

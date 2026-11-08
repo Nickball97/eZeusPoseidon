@@ -106,7 +106,8 @@ enum class eMissileType {
     wave,
     lava,
     dust,
-    racingHorse
+    racingHorse,
+    atlanteanFire // added at the end so saved missiles keep their type
 };
 
 class eMissile : public eStdSelfRef {

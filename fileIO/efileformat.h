@@ -9,6 +9,7 @@ namespace eFileFormat {
         oracleTimer,
         soldierMorale,
         atlanteanFire,
+        towerOrichalc,
 
         nextVersion
     };

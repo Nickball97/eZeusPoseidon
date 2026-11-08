@@ -110,7 +110,10 @@ eInfoWidget* eGameWidget::openInfoWidget(eBuilding* const b) {
             eBuilding::sInfoText(eb, title, info,
                                  employmentInfo,
                                  additionalInfo);
-            ebWid->initialize(title, info, employmentInfo, eb, "");
+            // towers show their Atlantean Fire status underneath
+            const bool tower = eb->type() == eBuildingType::tower;
+            ebWid->initialize(title, info, employmentInfo, eb,
+                              tower ? additionalInfo : "");
             wid = ebWid;
         } else if(const auto p = dynamic_cast<ePalace*>(b)) {
             const auto pWid = new eInfoWidget(window(), this, true, true);

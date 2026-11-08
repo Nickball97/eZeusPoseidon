@@ -1,4 +1,5 @@
 #include "ebuilding.h"
+#include "buildings/etower.h"
 
 #include "engine/egameboard.h"
 #include "engine/eevent.h"
@@ -2085,6 +2086,19 @@ void eBuilding::sInfoText(eBuilding* const b,
             employmentInfoString = 2;
         } else {
             employmentInfoString = 3;
+        }
+        // Atlantean Tower: Atlantean Fire status (original texts)
+        auto& board = b->getBoard();
+        const auto cid = b->cityId();
+        if(board.atlantean(cid)) {
+            const auto t = static_cast<eTower*>(b);
+            if(t->atlanteanFire()) {
+                additionalInfoString = 15; // equipped
+            } else if(board.resourceCount(cid, eResourceType::orichalc) > 0) {
+                additionalInfoString = 14; // waiting for a delivery
+            } else {
+                additionalInfoString = 12; // mine and refine orichalc
+            }
         }
     } break;
     case eBuildingType::artisansGuild: {

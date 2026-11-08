@@ -1,4 +1,7 @@
 #include "etower.h"
+#include "missiles/eatlanteanfiremissile.h"
+#include "fileIO/efileformat.h"
+#include "engine/egameboard.h"
 #include "characters/efigurestats.h"
 
 #include "textures/egametextures.h"
@@ -83,6 +86,21 @@ void eTower::timeChanged(const int by) {
     if(cursed()) {
         if(mArcher) mArcher->kill();
     } else if(enabled()) {
+        // Atlantean Towers (Poseidon manual): orichalc is delivered
+        // automatically if the metal is available; one load fits the
+        // Atlantean Fire launcher
+        if(!mOrichalc) {
+            mOrichalcCheck += by;
+            if(mOrichalcCheck > eNumbers::sDayLength) {
+                mOrichalcCheck = 0;
+                auto& board = getBoard();
+                const auto cid = cityId();
+                if(board.atlantean(cid) &&
+                   board.takeResource(cid, eResourceType::orichalc, 1) > 0) {
+                    mOrichalc = true;
+                }
+            }
+        }
         if(!mArcher) {
             mSpawnTime += by;
             if(mSpawnTime > eNumbers::sTowerSpawnPeriod) {
@@ -112,8 +130,13 @@ void eTower::timeChanged(const int by) {
                     const auto tt = mAttackTarget->tile();
                     const int ttx = tt->x();
                     const int tty = tt->y();
-                    eMissile::sCreate<eArrowMissile>(brd, tx, ty, 3.5,
-                                                     ttx, tty, 0.5, 2);
+                    if(mOrichalc) {
+                        eMissile::sCreate<eAtlanteanFireMissile>(
+                            brd, tx, ty, 3.5, ttx, tty, 0.5, 2);
+                    } else {
+                        eMissile::sCreate<eArrowMissile>(brd, tx, ty, 3.5,
+                                                         ttx, tty, 0.5, 2);
+                    }
                     auto& board = getBoard();
                     board.ifVisible(centerTile(), [&]() {
                         eSounds::playAttackSound(eCharacterType::archer);
@@ -125,8 +148,16 @@ void eTower::timeChanged(const int by) {
                                 mAttackTarget->dead() ||
                                 mAttackTime > 1000;
             if(mAttackTarget && !mAttackTarget->dead()) {
-                const double att = eFigureStats::sTowerDamage(
-                                       getBoard(), mAttackTarget.get(), by);
+                double att = eFigureStats::sTowerDamage(
+                                 getBoard(), mAttackTarget.get(), by);
+                if(mOrichalc && att > 0) {
+                    // Atlantean Fire: same strength as on frigates (per
+                    // Nicolas): 1.5x damage, target burns two game days
+                    // at half the tower's damage rate
+                    mAttackTarget->setBurning(by > 0 ? 0.5*att/by : 0.,
+                                              2*eNumbers::sDayLength);
+                    att *= 1.5;
+                }
                 const bool d = mAttackTarget->defend(att);
                 if(d) finishAttack = true;
             }
@@ -192,6 +223,9 @@ void eTower::read(eReadStream& src) {
     src.readCharacter(&getBoard(), [this](eCharacter* const c) {
         mArcher = static_cast<eArcher*>(c);
     });
+    if(src.formatVersion() >= eFileFormat::towerOrichalc) {
+        src >> mOrichalc;
+    }
 }
 
 void eTower::write(eWriteStream& dst) const {
@@ -204,6 +238,7 @@ void eTower::write(eWriteStream& dst) const {
     dst.writeCharacter(mAttackTarget);
     dst << mSpawnTime;
     dst.writeCharacter(mArcher);
+    dst << mOrichalc;
 }
 
 bool eTower::spawn() {
