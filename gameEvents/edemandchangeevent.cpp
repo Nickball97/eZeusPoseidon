@@ -1,4 +1,5 @@
 #include "edemandchangeevent.h"
+#include "emessages.h"
 
 #include "engine/egameboard.h"
 #include "engine/eeventdata.h"
@@ -41,4 +42,15 @@ std::string eDemandChangeEvent::longName() const {
     longNameReplaceResource("%1", tmpl);
     longNameReplaceCity("%2", tmpl);
     return tmpl;
+}
+
+bool eDemandChangeEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    oracleChooseCity();
+    if(!mCity) return false;
+    oracleChooseType();
+    oracleChooseCount();
+    ed.fCity = mCity;
+    ed.fResourceType = resourceType();
+    msg = eMessages::oracleMessage("demand_change", count() > 0 ? "_I" : "_D");
+    return true;
 }

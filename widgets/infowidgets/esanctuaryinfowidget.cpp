@@ -164,6 +164,40 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
             bw->stackVertically(p);
             bw->fitContent();
         }
+        if(s->hasOracle()) {
+            // Zeus manual, Consulting the Oracle: like prayer; if the
+            // Oracle responds it issues a prediction
+            const auto bw = new eWidget(window());
+            bw->setNoPadding();
+            buttonsW->addWidget(bw);
+            const auto txt = eLanguage::zeusText(132, 109); // Consult Oracle
+            const auto pb = new eFramedButton(txt, window());
+            pb->setUnderline(false);
+            pb->fitContent();
+            bw->addWidget(pb);
+            pb->setPressAction([s, buttonReasonW, reasonLabel]() {
+                if(s->oracleReady()) {
+                    s->consultOracle();
+                    return;
+                }
+                reasonLabel->setYellowFontColor();
+                reasonLabel->setText(eLanguage::zeusText(132, 110)); // Oracle Unavailable
+                reasonLabel->fitContent();
+                buttonReasonW->stackVertically();
+                buttonReasonW->fitHeight();
+                buttonReasonW->align(eAlignment::bottom);
+            });
+            const auto bar = new eProgressBar(window());
+            bar->setRange(0, 100);
+            const double frac = s->oracleTimeFraction();
+            bar->setValue(std::clamp(int(std::floor(100*frac)), 5, 100));
+            bw->addWidget(bar);
+            const int w = pb->width();
+            bar->resize(w, p);
+
+            bw->stackVertically(p);
+            bw->fitContent();
+        }
         const auto& board = m->getBoard();
         const auto cids = board.citiesOnBoard();
         const auto pid = m->playerId();

@@ -15,6 +15,7 @@ public:
     void read(eReadStream& src) override;
 
     void trigger() override;
+    bool oraclePrediction(eEventData& ed, eMessageType& msg) override;
     std::string longName() const override;
 };
 

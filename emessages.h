@@ -117,6 +117,13 @@ public:
                                         const std::string& reason,
                                         const int months);
 
+    // Consult Oracle: title PHRASE_<base>_title<variant>, text
+    // PHRASE_<base>_oracle_prediction<variant> (original eventmsg keys)
+    static eMessageType oracleMessage(const std::string& base,
+                                      const std::string& variant = "");
+    // god name as used in the original message keys ("zeus", ...)
+    static std::string godKey(const eGodType god);
+
     std::map<std::string, std::string> fMessages;
 
     eMessageType fPop100;
@@ -131,6 +138,8 @@ public:
     eMessageType fPop25000; // comm
 
     eMessageType fHappinessMonument;
+
+    eMessageType fOracleNothing; // "The Oracle is silent"
 
     eMessageType fFire;
     eMessageType fCollapse;

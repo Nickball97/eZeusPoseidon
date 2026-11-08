@@ -17,6 +17,9 @@ public:
     void setResourceType(const int id, const eResourceType type)
     { mResources[id] = type; }
 
+    // Consult Oracle: picks the resource now; the event then keeps it
+    void oracleChooseType();
+
     void write(eWriteStream& dst) const;
     void read(eReadStream& src);
 protected:
@@ -31,6 +34,7 @@ protected:
                                              eResourceType::none};
 
     eResourceType mResource = eResourceType::fleece;
+    bool mOracleType = false;
 };
 
 #endif // ERESOURCEEVENTVALUE_H

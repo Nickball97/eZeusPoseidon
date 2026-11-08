@@ -1,4 +1,5 @@
 #include "epricechangeevent.h"
+#include "emessages.h"
 
 #include "engine/egameboard.h"
 #include "engine/eeventdata.h"
@@ -40,4 +41,12 @@ void ePriceChangeEvent::read(eReadStream &src) {
     eGameEvent::read(src);
     eResourceEventValue::read(src);
     eCountEventValue::read(src);
+}
+
+bool ePriceChangeEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    oracleChooseType();
+    oracleChooseCount();
+    ed.fResourceType = resourceType();
+    msg = eMessages::oracleMessage("price_change", count() > 0 ? "_I" : "_D");
+    return true;
 }

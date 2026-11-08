@@ -440,3 +440,35 @@ void eTroopsRequestEvent::finished(eEventTrigger& t, const eReason& r) {
     const auto date = board->date();
     t.trigger(*this, date, r.fFull);
 }
+
+bool eTroopsRequestEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    if(!isMainEvent() || mFinish || mPostpone != 0) return false;
+    oracleChooseCity();
+    if(!mCity) return false;
+    std::string base;
+    std::string variant;
+    switch(mType) {
+    case eTroopsRequestEventType::cityUnderAttack:
+        if(mCity->isVassal()) { base = "vassal_under_attack"; variant = "_P"; }
+        else if(mCity->isColony()) { base = "colony_under_attack"; variant = "_P"; }
+        else if(mCity->isParentCity()) { base = "parentcity_under_attack"; variant = "_R"; }
+        else if(mCity->isAlly()) { base = "ally_under_attack"; variant = "_S"; }
+        break;
+    case eTroopsRequestEventType::cityAttacksRival:
+        if(mCity->isVassal()) { base = "vassal_attacks_rival"; variant = "_P"; }
+        else if(mCity->isAlly()) { base = "ally_attacks_rival"; variant = "_S"; }
+        break;
+    case eTroopsRequestEventType::greekCityTerrorized:
+        if(mCity->isVassal()) base = "vassal_terrorized";
+        else if(mCity->isColony()) base = "colony_terrorized";
+        else if(mCity->isParentCity()) base = "parentcity_terrorized";
+        else if(mCity->isAlly()) base = "ally_terrorized";
+        ed.fMonster = mMonster;
+        break;
+    }
+    if(base.empty()) return false;
+    ed.fCity = mCity;
+    ed.fRivalCity = mAttackingCity;
+    msg = eMessages::oracleMessage(base, variant);
+    return true;
+}

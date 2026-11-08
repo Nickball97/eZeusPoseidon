@@ -276,8 +276,36 @@ void eMessages::loadMessage(eMessageType& m,
                             const std::string& textKey) {
     m.fFull.fTitle = loadMessage("PHRASE_" + titleKey);
     m.fFull.fText = loadMessage("PHRASE_" + textKey);
-    m.fCondensed.fText = loadMessage("PHRASE_CONDENSED_" + titleKey);
+    m.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_" + titleKey);
     m.fCondensed.fText = loadMessage("PHRASE_CONDENSED_" + textKey);
+}
+
+eMessageType eMessages::oracleMessage(const std::string& base,
+                                      const std::string& variant) {
+    eMessageType m;
+    instance.loadMessage(m, base + "_title" + variant,
+                         base + "_oracle_prediction" + variant);
+    return m;
+}
+
+std::string eMessages::godKey(const eGodType god) {
+    switch(god) {
+    case eGodType::aphrodite: return "aphrodite";
+    case eGodType::apollo: return "apollo";
+    case eGodType::ares: return "ares";
+    case eGodType::artemis: return "artemis";
+    case eGodType::athena: return "athena";
+    case eGodType::atlas: return "atlas";
+    case eGodType::demeter: return "demeter";
+    case eGodType::dionysus: return "dionysus";
+    case eGodType::hades: return "hades";
+    case eGodType::hephaestus: return "hephaestus";
+    case eGodType::hera: return "hera";
+    case eGodType::hermes: return "hermes";
+    case eGodType::poseidon: return "poseidon";
+    case eGodType::zeus: return "zeus";
+    }
+    return "";
 }
 
 void eMessages::loadReason(eReason& r,
@@ -439,6 +467,9 @@ bool eMessages::loadImpl() {
     fHappinessMonument.fFull.fTitle = loadMessage("PHRASE_happiness_monument_title");
     fHappinessMonument.fFull.fText = loadMessage("PHRASE_happiness_monument_initial_announcement");
     fHappinessMonument.fCondensed.fText = loadMessage("PHRASE_CONDENSED_happiness_monument_initial_announcement");
+
+    loadMessage(fOracleNothing, "oracle_nothing_title",
+                "oracle_nothing_initial_announcement");
 
     fFire.fFull.fTitle = loadMessage("PHRASE_fire_title");
     fFire.fFull.fText = loadMessage("PHRASE_fire_initial_announcement");

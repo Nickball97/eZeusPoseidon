@@ -11,6 +11,8 @@
 class eWriteStream;
 class eReadStream;
 class eWorldBoard;
+struct eEventData;
+struct eMessageType;
 
 enum class eGameEventType {
     godVisit,
@@ -92,6 +94,16 @@ public:
     virtual void read(eReadStream& src);
 
     virtual void loadResources() const;
+
+    // Consult Oracle: fills the prediction for this event and fixes the
+    // random choices it will make; false if the original game has no
+    // prediction for it
+    virtual bool oraclePrediction(eEventData& ed, eMessageType& msg) {
+        (void)ed; (void)msg;
+        return false;
+    }
+    const std::vector<stdsptr<eGameEvent>>& consequences() const
+    { return mConsequences; }
 
     static stdsptr<eGameEvent> sCreate(const eCityId cid,
                                        const eGameEventType type,

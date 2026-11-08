@@ -23,6 +23,7 @@ public:
     void loadResources() const override;
 
     void trigger() override;
+    bool oraclePrediction(eEventData& ed, eMessageType& msg) override;
     std::string longName() const override;
 
     void write(eWriteStream& dst) const override;
@@ -32,6 +33,7 @@ private:
     std::vector<eGodType> mTypes;
     int mNextId = 0;
     bool mRandom = false;
+    int mOracleGod = -1; // random god already chosen by the Oracle
 };
 
 

@@ -20,6 +20,9 @@ public:
     void loadResources();
 
     void clear();
+
+    const std::vector<stdsptr<eGameEvent>>& events() const
+    { return mGameEvents; }
 private:
     const eCityId mCid;
     eGameBoard& mBoard;

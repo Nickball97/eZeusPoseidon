@@ -120,3 +120,13 @@ void eMonsterInvasionEvent::trigger() {
 std::string eMonsterInvasionEvent::longName() const {
     return eLanguage::zeusText(182, 2);
 }
+
+bool eMonsterInvasionEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    chooseMonster();
+    if(!valid()) return false;
+    const auto msgs = eMessages::instance.monsterMessages(mMonster);
+    if(!msgs) return false;
+    ed.fMonster = mMonster;
+    msg = msgs->fPrediction;
+    return true;
+}

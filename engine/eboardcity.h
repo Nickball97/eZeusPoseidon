@@ -400,6 +400,7 @@ public:
     { return mBuildingsWithResource; }
     const std::vector<eHouseBase*>& houses() const
     { return mHouses; }
+    const eGameEvents& cityEvents() const { return mCityEvents; }
     const std::vector<eBuilding*>& treesAndVines() const
     { return mTreesAndVines; }
     const std::vector<eTile*>& resourceTiles();

@@ -6,6 +6,11 @@
 #include "etilehelper.h"
 #include "engine/eevent.h"
 #include "engine/eeventdata.h"
+#include "fileIO/efileformat.h"
+#include "engine/egameevents.h"
+#include "emessages.h"
+#include <functional>
+#include <algorithm>
 #include "gameEvents/eplayerconquesteventbase.h"
 
 #include "characters/actions/godHelp/eaphroditehelpaction.h"
@@ -218,6 +223,60 @@ double eSanctuary::helpTimeFraction() const {
     return double(mHelpTimer)/eNumbers::sGodHelpPeriod;
 }
 
+bool eSanctuary::hasOracle() const {
+    const auto type = godType();
+    return type == eGodType::zeus || type == eGodType::apollo;
+}
+
+bool eSanctuary::oracleReady() const {
+    return mOracleTimer >= eNumbers::sGodHelpPeriod;
+}
+
+double eSanctuary::oracleTimeFraction() const {
+    return double(mOracleTimer)/eNumbers::sGodHelpPeriod;
+}
+
+// Every original prediction says the event comes "within a year". When
+// several are coming, the Oracle reveals the one farthest in the future
+// (Nicolas's call; no source says which). The Oracle only waits again
+// after it actually made a prediction (Zeus manual: "especially if it
+// recently made a prediction for you").
+void eSanctuary::consultOracle() {
+    auto& board = getBoard();
+    const auto cid = cityId();
+    const auto city = board.boardCityWithId(cid);
+    if(!city) return;
+    const auto now = board.date();
+    const auto limit = now + 365;
+
+    std::vector<eGameEvent*> coming;
+    std::function<void(const stdsptr<eGameEvent>&)> collect;
+    collect = [&](const stdsptr<eGameEvent>& e) {
+        if(!e) return;
+        if(e->repeat() > 0 && !e->episodeCompleteEvent()) {
+            const auto& d = e->nextDate();
+            if(d > now && d <= limit) coming.push_back(e.get());
+        }
+        for(const auto& c : e->consequences()) collect(c);
+    };
+    for(const auto& e : city->cityEvents().events()) collect(e);
+
+    std::stable_sort(coming.begin(), coming.end(),
+                     [](eGameEvent* const a, eGameEvent* const b) {
+        return a->nextDate() > b->nextDate();
+    });
+    for(const auto e : coming) {
+        eEventData ed(cid);
+        eMessageType msg;
+        if(!e->oraclePrediction(ed, msg)) continue;
+        oracleConsulted();
+        board.showMessage(ed, msg);
+        return;
+    }
+    eEventData ed(cid);
+    board.showMessage(ed, eMessages::instance.fOracleNothing);
+}
+
 double eSanctuary::helpAttackTimeFraction() const {
     auto& board = getBoard();
     const auto pid = playerId();
@@ -316,6 +375,7 @@ bool eSanctuary::sacrificing() const {
 
 void eSanctuary::timeChanged(const int by) {
     mHelpTimer += by;
+    if(mOracleTimer < eNumbers::sGodHelpPeriod) mOracleTimer += by;
     eMonument::timeChanged(by);
 
     if(!mGod && !mGodAbroad && finished()) {
@@ -398,6 +458,10 @@ void eSanctuary::read(eReadStream& src) {
         const auto t = src.readTile(board);
         mSpecialTiles.push_back(t);
     }
+
+    if(src.formatVersion() >= eFileFormat::oracleTimer) {
+        src >> mOracleTimer;
+    }
 }
 
 void eSanctuary::write(eWriteStream& dst) const {
@@ -420,6 +484,7 @@ void eSanctuary::write(eWriteStream& dst) const {
     for(const auto t : mSpecialTiles) {
         dst.writeTile(t);
     }
+    dst << mOracleTimer;
 }
 
 std::vector<eTile*> eSanctuary::warriorTiles() const {

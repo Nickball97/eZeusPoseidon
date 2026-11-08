@@ -1,4 +1,5 @@
 #include "einvasionevent.h"
+#include "emessages.h"
 
 #include "engine/egameboard.h"
 #include "engine/eevent.h"
@@ -534,4 +535,12 @@ void eInvasionEvent::invadersDefeated() {
             }
         }
     }
+}
+
+bool eInvasionEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    if(!mWarned) oracleChooseCity();
+    if(!mCity) return false;
+    ed.fCity = mCity;
+    msg = eMessages::oracleMessage("invasion");
+    return true;
 }

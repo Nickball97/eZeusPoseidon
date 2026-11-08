@@ -55,6 +55,16 @@ public:
     double helpTimeFraction() const;
     double helpAttackTimeFraction() const;
 
+    // Zeus' Stronghold and the Oracle of Apollo have an Oracle (Zeus
+    // manual, Consulting the Oracle); it waits as long as prayer does
+    bool hasOracle() const;
+    bool oracleReady() const;
+    void oracleConsulted() { mOracleTimer = 0; }
+    // shows the prediction (or that the Oracle is silent); a prediction
+    // restarts the wait
+    void consultOracle();
+    double oracleTimeFraction() const;
+
     static stdsptr<eSanctuary> sCreate(
             const eBuildingType type,
             const int sw, const int sh,
@@ -73,6 +83,7 @@ private:
     bool mAskedForHelp = false;
     int mCheckHelpNeeded = 0;
     int mHelpTimer = 10000000;
+    int mOracleTimer = 10000000;
 
     std::vector<eTile*> mWarriorTiles;
     std::vector<eTile*> mSpecialTiles;

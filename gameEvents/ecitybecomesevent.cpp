@@ -1,4 +1,5 @@
 #include "ecitybecomesevent.h"
+#include "emessages.h"
 
 #include "engine/egameboard.h"
 #include "engine/eeventdata.h"
@@ -210,4 +211,14 @@ void eCityBecomesEvent::read(eReadStream& src) {
     eCityEventValue::read(src, *gameBoard());
     eAttackingCityEventValue::read(src, *gameBoard());
     src >> mType;
+}
+
+bool eCityBecomesEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    // the original game only predicts the end of a rebellion
+    if(mType != eCityBecomesType::rebellionOver) return false;
+    oracleChooseCity();
+    if(!mCity) return false;
+    ed.fCity = mCity;
+    msg = eMessages::oracleMessage("rebellion_over_tribute_resumed");
+    return true;
 }

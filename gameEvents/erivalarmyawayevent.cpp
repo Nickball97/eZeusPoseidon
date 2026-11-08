@@ -1,4 +1,5 @@
 #include "erivalarmyawayevent.h"
+#include "emessages.h"
 
 #include "engine/egameboard.h"
 #include "engine/eeventdata.h"
@@ -37,4 +38,12 @@ void eRivalArmyAwayEvent::write(eWriteStream& dst) const {
 void eRivalArmyAwayEvent::read(eReadStream& src) {
     eGameEvent::read(src);
     eCityEventValue::read(src, *gameBoard());
+}
+
+bool eRivalArmyAwayEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    oracleChooseCity();
+    if(!mCity) return false;
+    ed.fCity = mCity;
+    msg = eMessages::oracleMessage("rival_away");
+    return true;
 }

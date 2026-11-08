@@ -1,4 +1,5 @@
 #include "etradeopenupevent.h"
+#include "emessages.h"
 
 #include "engine/egameboard.h"
 #include "engine/eeventdata.h"
@@ -38,4 +39,12 @@ void eTradeOpenUpEvent::write(eWriteStream &dst) const {
 void eTradeOpenUpEvent::read(eReadStream &src) {
     eGameEvent::read(src);
     eCityEventValue::read(src, *gameBoard());
+}
+
+bool eTradeOpenUpEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    oracleChooseCity();
+    if(!mCity) return false;
+    ed.fCity = mCity;
+    msg = eMessages::oracleMessage("trade_opens_up");
+    return true;
 }

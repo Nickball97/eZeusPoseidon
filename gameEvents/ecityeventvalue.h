@@ -20,6 +20,9 @@ public:
 
     int maxCityId() const { return mMaxCityId; }
     void setMaxCityId(const int max) { mMaxCityId = max; }
+
+    // Consult Oracle: picks the city now; the event then keeps it
+    void oracleChooseCity();
 protected:
     void chooseCity();
 
@@ -29,6 +32,7 @@ protected:
     stdsptr<eWorldCity> mCity;
     int mMinCityId = 0;
     int mMaxCityId = 0;
+    bool mOracleCity = false;
 private:
     int chooseCityId() const;
 
