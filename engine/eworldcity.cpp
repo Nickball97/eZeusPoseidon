@@ -4,6 +4,7 @@
 #include "egifthelpers.h"
 #include "evectorhelpers.h"
 #include "engine/egameboard.h"
+#include "fileIO/efileformat.h"
 
 #include <algorithm>
 
@@ -598,6 +599,7 @@ void eWorldCity::write(eWriteStream& dst) const {
     dst << mTributeCount;
     dst << mRecTributeType;
     dst << mRecTributeCount;
+    dst << mRescueGiven;
 }
 
 void sread(eReadStream& src,
@@ -681,6 +683,9 @@ void eWorldCity::read(eReadStream& src, eWorldBoard* const board) {
     src >> mTributeCount;
     src >> mRecTributeType;
     src >> mRecTributeCount;
+    if(src.formatVersion() >= eFileFormat::worldCityRescue) {
+        src >> mRescueGiven;
+    }
 }
 
 void eWorldCity::gifted(const eResourceType type, const int count) {

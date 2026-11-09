@@ -26,6 +26,7 @@ namespace eFileFormat {
         cityPlague,
         eliteFailedChecks,
         buildingRiskCounters,
+        worldCityRescue,
 
         nextVersion
     };

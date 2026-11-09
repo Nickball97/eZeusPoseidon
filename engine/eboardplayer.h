@@ -78,6 +78,7 @@ public:
 private:
     void giftAllies();
     bool askForDrachmas();
+    void rescueCash();
 
     eGameBoard& mBoard;
 

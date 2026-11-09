@@ -263,6 +263,9 @@ public:
     void setMilitaryStrength(const int s);
 
     int wealth() const { return mWealth; }
+    // has already sent debt relief ("rescue cash"); each city does so once
+    bool rescueGiven() const { return mRescueGiven; }
+    void setRescueGiven(const bool r) { mRescueGiven = r; }
     void setWealth(const int w) { mWealth = w; }
 
     void setWaterTrade(const bool w, const eCityId cid);
@@ -362,6 +365,7 @@ private:
 
     std::set<eCityId> mWaterTrade;
     bool mVisible = true;
+    bool mRescueGiven = false;
 
     std::vector<eResourceTrade> mBuys;
     std::vector<eResourceTrade> mSells;
