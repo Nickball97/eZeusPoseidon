@@ -6,6 +6,8 @@
 #include "buildings/emuseum.h"
 
 #include "characters/esettler.h"
+#include "characters/ehomeless.h"
+#include "characters/actions/esettleraction.h"
 #include "characters/actions/emovetoaction.h"
 #include "characters/actions/ekillcharacterfinishfail.h"
 #include "enumbers.h"
@@ -204,6 +206,24 @@ int eHouseBase::evict() {
     const int e = -vacancies();
     if(e <= 0) return 0;
     setPeople(mPeople - e);
+    // the people who no longer fit walk off as homeless and look for a
+    // new home (Citadel of Poseidon, walkers/housing.html), as when a
+    // house is demolished
+    const auto tile = centerTile();
+    if(tile) {
+        auto& board = getBoard();
+        const auto h = e::make_shared<eHomeless>(board);
+        h->setOnCityId(tile->cityId());
+        h->setCityId(eCityId::neutralFriendly);
+        h->changeTile(tile);
+        const auto fa = std::make_shared<eKillCharacterFinishFail>(board);
+        const auto a = e::make_shared<eSettlerAction>(h.get());
+        a->setNumberPeople(e);
+        a->setFailAction(fa);
+        a->setFinishAction(fa);
+        a->setDeleteFailAction(fa);
+        h->setAction(a);
+    }
     return e;
 }
 
