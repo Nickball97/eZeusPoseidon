@@ -69,7 +69,8 @@ The tax mood factor uses the "no taxes" row when tax coverage is below 11% (`0x0
 - **Hermes:** cart pushers, storehouse workers and deliverymen get speed code ×1.33 (6 → 7 = 1.25×); merchants, donkeys and trade ships ×1.5 (`0x004E1B20`).
 - **Apollo:** +20 to the city's Pan-Hellenic games score (`0x00565D40`).
 - **Hera:** +3% to the yearly births (`0x00566D40`).
-- Not yet read: Artemis (`0x0056AF80`, `0x00567C70`), Ares (`0x0046DAA0`), Hades (`0x00546E80`), Zeus.
+- **Artemis:** the wolf's action (`0x004BD4A0`) calls `0x0056AF80`. When a wolf attacks, or its victim has just died, and her sanctuary is finished (record 0xEF5EA8), Artemis (god 4) is found, or spawned at her sanctuary, and sent to attack the wolf (state 0x4A). Applied in a lighter form: a wolf dies right after its kill in a city with her finished sanctuary. Artemis isn't shown.
+- Not yet read: Ares (`0x0046DAA0`), Hades (`0x00546E80`), Zeus.
 
 ## Births and deaths (verified in code, `0x00566D40`, once a year)
 Population changes by a share set by city health: 91+ +6%, 81–90 +4%, 71–80 +3%, 61–70 +2%, 51–60 +1%, 41–50 0; 40 or less: −1% while the health target is 31+, otherwise −2% (21–40), −3% (11–20), −5% (1–10). Hera +3%.

@@ -4,6 +4,7 @@
 #include "enumbers.h"
 #include "emovetoaction.h"
 #include "engine/egameboard.h"
+#include "buildings/sanctuaries/esanctuary.h"
 
 eWolfAction::eWolfAction(eCharacter* const c,
                          const int spawnerX, const int spawnerY) :
@@ -36,6 +37,15 @@ void eWolfAction::increment(const int by) {
     const auto c = character();
     const auto t = c->tile();
     if(t && killedPrey(t)) {
+        // Artemis' finished sanctuary: she comes for any wolf that attacks
+        // in her city and kills it (original exe 0x0056AF80, wolf action
+        // 0x004BD4A0). eZeus doesn't show her; the wolf dies after its kill.
+        auto& b = c->getBoard();
+        const auto s = b.sanctuary(t->cityId(), eGodType::artemis);
+        if(s && s->finished()) {
+            c->kill();
+            return;
+        }
         goBack();
         return;
     }
