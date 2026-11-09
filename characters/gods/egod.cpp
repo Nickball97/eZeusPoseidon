@@ -553,6 +553,12 @@ bool eGod::sAttackTarget(const eGodType gt, const eBuildingType bt) {
         return bt == eBuildingType::wheatFarm ||
                bt == eBuildingType::carrotsFarm ||
                bt == eBuildingType::onionsFarm;
+    case eGodType::poseidon:
+        // "Poseidon destroys fisheries, urchin quays, piers and ships"
+        // (Citadel of Poseidon); a dock's water part is the pier
+        return bt == eBuildingType::fishery ||
+               bt == eBuildingType::urchinQuay ||
+               bt == eBuildingType::pier;
     default:
         return false;
     }
@@ -586,7 +592,18 @@ bool eGod::sCurseTarget(const eGodType gt, const eBuildingType bt) {
                bt == eBuildingType::bibliotheke ||
                bt == eBuildingType::laboratory ||
                bt == eBuildingType::observatory ||
-               bt == eBuildingType::museum;
+               bt == eBuildingType::museum ||
+               // "and curses infirmaries" (Citadel of Poseidon)
+               bt == eBuildingType::hospital;
+    // Citadel of Poseidon, sanctuary.html:
+    case eGodType::hera: // "Hera curses your corrals"
+        return bt == eBuildingType::corral;
+    case eGodType::demeter: // "curses farms"
+        return bt == eBuildingType::wheatFarm ||
+               bt == eBuildingType::carrotsFarm ||
+               bt == eBuildingType::onionsFarm;
+    case eGodType::artemis: // "curses hunting lodges"
+        return bt == eBuildingType::huntingLodge;
     case eGodType::hephaestus: // Sculpture Studios and Armories
         return bt == eBuildingType::sculptureStudio ||
                bt == eBuildingType::armory;
