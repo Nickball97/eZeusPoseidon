@@ -23,7 +23,9 @@ bool killedPrey(eTile* const tile) {
            t == eCharacterType::goat ||
            t == eCharacterType::cattle1 ||
            t == eCharacterType::cattle2 ||
-           t == eCharacterType::cattle3) {
+           t == eCharacterType::cattle3 ||
+           t == eCharacterType::deer ||
+           t == eCharacterType::boar) {
             if(c->dead()) return true;
         }
     }
@@ -111,7 +113,9 @@ void eWolfAction::findPrey() {
                    type == eCharacterType::goat ||
                    type == eCharacterType::cattle1 ||
                    type == eCharacterType::cattle2 ||
-                   type == eCharacterType::cattle3;
+                   type == eCharacterType::cattle3 ||
+                   type == eCharacterType::deer ||
+                   type == eCharacterType::boar;
         });
     };
 

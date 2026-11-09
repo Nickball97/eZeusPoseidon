@@ -25,7 +25,9 @@ public:
 private:
     bool spawn();
 
-    stdptr<eHunter> mHunter;
+    // "Each hunting lodge sends out 3 hunters" (Citadel of Poseidon)
+    std::vector<stdptr<eHunter>> mHunters;
+    int hunterCount();
     double mSpawnTime = 1000000;
 };
 

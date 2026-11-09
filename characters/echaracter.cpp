@@ -30,12 +30,13 @@ bool eCharacter::canFight(eCharacter* const c) {
     if(dead()) return false;
     const auto ct = c->type();
     const auto t = type();
-    if((t == eCharacterType::hunter &&
-        (ct == eCharacterType::boar ||
-         ct == eCharacterType::deer)) ||
-        (ct == eCharacterType::hunter &&
-         (t == eCharacterType::boar ||
-          t == eCharacterType::deer))) {
+    // hunters, and wolves ("they do love goat, sheep, deer and boar",
+    // Citadel of Poseidon), go after boar and deer
+    const auto hunts = [](const eCharacterType a, const eCharacterType b) {
+        return (a == eCharacterType::hunter || a == eCharacterType::wolf) &&
+               (b == eCharacterType::boar || b == eCharacterType::deer);
+    };
+    if(hunts(t, ct) || hunts(ct, t)) {
     } else {
         if(!eTeamIdHelpers::isEnemy(teamId(), c->teamId())) return false;
         if(c->hiddenUnderwater() && t != eCharacterType::kraken) return false;

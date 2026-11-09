@@ -4,6 +4,7 @@
 #include "textures/egametextures.h"
 #include "characters/actions/ehuntaction.h"
 #include "enumbers.h"
+#include "fileIO/efileformat.h"
 
 #include <algorithm>
 
@@ -15,7 +16,9 @@ eHuntingLodge::eHuntingLodge(eGameBoard& board,
 }
 
 eHuntingLodge::~eHuntingLodge() {
-    if(mHunter) mHunter->kill();
+    for(const auto& h : mHunters) {
+        if(h) h->kill();
+    }
 }
 
 std::shared_ptr<eTexture> eHuntingLodge::getTexture(const eTileSize size) const {
@@ -46,7 +49,7 @@ std::vector<eOverlay> eHuntingLodge::getOverlays(const eTileSize size) const {
 
 void eHuntingLodge::timeChanged(const int by) {
     eResourceCollectBuildingBase::timeChanged(by);
-    if(!mHunter) {
+    if(hunterCount() < 3) {
         const double eff = effectiveness();
         mSpawnTime += by*eff;
         const int wait = eNumbers::sHuntingLodgeWaitPeriod;
@@ -60,21 +63,39 @@ void eHuntingLodge::timeChanged(const int by) {
 void eHuntingLodge::read(eReadStream& src) {
     eResourceCollectBuildingBase::read(src);
     src >> mSpawnTime;
-    src.readCharacter(&getBoard(), [this](eCharacter* const c) {
-        mHunter = static_cast<eHunter*>(c);
-    });
+    int n = 1;
+    if(src.formatVersion() >= eFileFormat::huntingLodgeHunters) src >> n;
+    mHunters.clear();
+    for(int i = 0; i < n; i++) {
+        src.readCharacter(&getBoard(), [this](eCharacter* const c) {
+            if(c) mHunters.push_back(static_cast<eHunter*>(c));
+        });
+    }
 }
 
 void eHuntingLodge::write(eWriteStream& dst) const {
     eResourceCollectBuildingBase::write(dst);
     dst << mSpawnTime;
-    dst.writeCharacter(mHunter);
+    std::vector<eHunter*> hs;
+    for(const auto& h : mHunters) {
+        if(h) hs.push_back(h.get());
+    }
+    dst << static_cast<int>(hs.size());
+    for(const auto h : hs) dst.writeCharacter(h);
+}
+
+int eHuntingLodge::hunterCount() {
+    mHunters.erase(std::remove_if(mHunters.begin(), mHunters.end(),
+                                  [](const stdptr<eHunter>& h) {
+        return !h;
+    }), mHunters.end());
+    return mHunters.size();
 }
 
 bool eHuntingLodge::spawn() {
     const auto t = centerTile();
     const auto h = e::make_shared<eHunter>(getBoard());
-    mHunter = h.get();
+    mHunters.push_back(h.get());
     h->setBothCityIds(cityId());
     h->setAtlantean(atlantean());
     h->changeTile(t);
