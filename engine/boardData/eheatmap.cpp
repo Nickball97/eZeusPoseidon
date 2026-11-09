@@ -85,6 +85,28 @@ void eHeatMap::addHeat(const eHeat& a,
     const int r = a.fRange;
     if(r <= 0) return;
     const double v = a.fValue;
+    if(a.fStep > 0) {
+        // Original rule: full value on the building and for the first
+        // fStep tiles around it, then +fStepSize every fStep tiles,
+        // up to fRange tiles away (distance measured in square rings).
+        for(int x = ax - r; x < ax + sw + r; x++) {
+            for(int y = ay - r; y < ay + sh + r; y++) {
+                const int ddx = x < ax ? ax - x :
+                                (x >= ax + sw ? x - (ax + sw - 1) : 0);
+                const int ddy = y < ay ? ay - y :
+                                (y >= ay + sh ? y - (ay + sh - 1) : 0);
+                const int dist = std::max(ddx, ddy);
+                if(dist > r) continue;
+                const int steps = dist == 0 ? 0 : (dist - 1)/a.fStep;
+                const double val = v + steps*a.fStepSize;
+                int dtx;
+                int dty;
+                eTileHelper::tileIdToDTileId(x, y, dtx, dty);
+                addHeat(dtx, dty, 2*val); // addHeat() halves its input
+            }
+        }
+        return;
+    }
     for(int x = ax - r; x <= ax + sw + r; x++) {
         for(int y = ay - r; y <= ay + sh + r; y++) {
             const double cx = ax + 0.5*sw;

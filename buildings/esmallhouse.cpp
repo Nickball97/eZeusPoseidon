@@ -300,44 +300,40 @@ bool eSmallHouse::lowFood() const {
     return mFood < cfood;
 }
 
-eHouseMissing eSmallHouse::missing() const {
+// Original Zeus house desirability (Model data, ALL HOUSES rows a and b):
+// reaching level L needs sEvolve[L]; a house already at level L or above
+// keeps it while appeal stays at or above sDevolve[L].
+// Levels: 0 hut, 1 shack, 2 hovel, 3 homestead, 4 tenement, 5 apartment,
+// 6 townhouse.
+static const double sSmallEvolve[7] = {-99, -10, 0, 10, 10, 20, 30};
+static const double sSmallDevolve[7] = {-99, -12, -2, -2, 5, 15, 25};
+
+bool eSmallHouse::appealFor(const int l) const {
     const double appeal = eHouseBase::appeal();
+    const double need = level() >= l ? sSmallDevolve[l] : sSmallEvolve[l];
+    return appeal >= need;
+}
+
+eHouseMissing eSmallHouse::missing() const {
     int nVenues = 0;
     if(mPhilosophers > 0) nVenues++;
     if(mActors > 0) nVenues++;
     if(mAthletes > 0) nVenues++;
     if(mCompetitors > 0) nVenues++;
-    if(mFood > 0) {
-        if(mWater > 0) {
-            if(nVenues > 0) {
-                if(mFleece > 0) {
-                    if(appeal > 2.0) {
-                        if(nVenues > 1) {
-                            if(mOil > 0) {
-                                if(appeal > 5.0) {
-                                    if(nVenues > 2) {
-                                        if(appeal > 8.0) {
-                                            return eHouseMissing::nothing;
-                                        }
-                                        return eHouseMissing::appeal;
-                                    }
-                                    return eHouseMissing::venues;
-                                }
-                                return eHouseMissing::appeal;
-                            }
-                            return eHouseMissing::oil;
-                        }
-                        return eHouseMissing::venues;
-                    }
-                    return eHouseMissing::appeal;
-                }
-                return eHouseMissing::fleece;
-            }
-            return eHouseMissing::venues;
-        }
-        return eHouseMissing::water;
-    }
-    return eHouseMissing::food;
+    if(!appealFor(1)) return eHouseMissing::appeal;
+    if(mFood <= 0) return eHouseMissing::food;
+    if(!appealFor(2)) return eHouseMissing::appeal;
+    if(mWater <= 0) return eHouseMissing::water;
+    if(nVenues <= 0) return eHouseMissing::venues;
+    if(mFleece <= 0) return eHouseMissing::fleece;
+    if(!appealFor(3)) return eHouseMissing::appeal;
+    if(nVenues <= 1) return eHouseMissing::venues;
+    if(!appealFor(4)) return eHouseMissing::appeal;
+    if(mOil <= 0) return eHouseMissing::oil;
+    if(!appealFor(5)) return eHouseMissing::appeal;
+    if(nVenues <= 2) return eHouseMissing::venues;
+    if(!appealFor(6)) return eHouseMissing::appeal;
+    return eHouseMissing::nothing;
 }
 
 void eSmallHouse::read(eReadStream& src) {
@@ -401,18 +397,17 @@ std::string eSmallHouse::sName(const int level) {
 }
 
 void eSmallHouse::updateLevel() {
-    const double appeal = eHouseBase::appeal();
     int nVenues = 0;
     if(mPhilosophers > 0) nVenues++;
     if(mActors > 0) nVenues++;
     if(mAthletes > 0) nVenues++;
     if(mCompetitors > 0) nVenues++;
-    if(mFood > 0) {
-        if(mWater > 0 && nVenues > 0) {
-            if(mFleece > 0 && appeal > 2.0) {
-                if(nVenues > 1) {
-                    if(mOil > 0 && appeal > 5.0) {
-                        if(nVenues > 2 && appeal > 8.0) {
+    if(mFood > 0 && appealFor(1)) {
+        if(mWater > 0 && nVenues > 0 && appealFor(2)) {
+            if(mFleece > 0 && appealFor(3)) {
+                if(nVenues > 1 && appealFor(4)) {
+                    if(mOil > 0 && appealFor(5)) {
+                        if(nVenues > 2 && appealFor(6)) {
                             return setLevel(6);
                         }
                         return setLevel(5);

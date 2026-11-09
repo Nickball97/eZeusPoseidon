@@ -61,6 +61,7 @@ private:
             const eTileSize size) const;
 
     void updateLevel();
+    bool appealFor(const int l) const;
 
     int mUpdateLevel = 0;
 

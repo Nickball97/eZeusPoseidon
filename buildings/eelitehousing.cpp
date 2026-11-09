@@ -280,50 +280,38 @@ void eEliteHousing::removeHorse() {
     updateLevel();
 }
 
-eHouseMissing eEliteHousing::missing() const {
+// Original Zeus elite house desirability (Model data, ALL HOUSES rows a
+// and b): reaching level L needs sEliteEvolve[L]; a house already at level
+// L or above keeps it while appeal stays at or above sEliteDevolve[L].
+// Levels: 0 abandoned, 1 residence, 2 mansion, 3 manor, 4 estate.
+static const double sEliteEvolve[5] = {-99, 50, 60, 70, 80};
+static const double sEliteDevolve[5] = {-99, 46, 56, 66, 76};
+
+bool eEliteHousing::appealFor(const int l) const {
     const double appeal = eHouseBase::appeal();
+    const double need = level() >= l ? sEliteDevolve[l] : sEliteEvolve[l];
+    return appeal >= need;
+}
+
+eHouseMissing eEliteHousing::missing() const {
     int nVenues = 0;
     if(mPhilosophers > 0) nVenues++;
     if(mActors > 0) nVenues++;
     if(mAthletes > 0) nVenues++;
     if(mCompetitors > 0) nVenues++;
-    if(mFood > 0) {
-        if(mFleece > 0) {
-            if(mOil > 0) {
-                if(nVenues > 2) {
-                    if(appeal > 5.0) {
-                        if(mArms > 0) {
-                            if(appeal > 7.0) {
-                                if(mWine > 0) {
-                                    if(appeal > 9.0) {
-                                        if(mHorses > 0) {
-                                            if(nVenues > 3) {
-                                                if(appeal > 10.) {
-                                                    return eHouseMissing::nothing;
-                                                }
-                                                return eHouseMissing::appeal;
-                                            }
-                                            return eHouseMissing::venues;
-                                        }
-                                        return eHouseMissing::horse;
-                                    }
-                                    return eHouseMissing::appeal;
-                                }
-                                return eHouseMissing::wine;
-                            }
-                            return eHouseMissing::appeal;
-                        }
-                        return eHouseMissing::arms;
-                    }
-                    return eHouseMissing::appeal;
-                }
-                return eHouseMissing::venues;
-            }
-            return eHouseMissing::oil;
-        }
-        return eHouseMissing::fleece;
-    }
-    return eHouseMissing::food;
+    if(mFood <= 0) return eHouseMissing::food;
+    if(mFleece <= 0) return eHouseMissing::fleece;
+    if(mOil <= 0) return eHouseMissing::oil;
+    if(nVenues <= 2) return eHouseMissing::venues;
+    if(!appealFor(1)) return eHouseMissing::appeal;
+    if(mArms <= 0) return eHouseMissing::arms;
+    if(!appealFor(2)) return eHouseMissing::appeal;
+    if(mWine <= 0) return eHouseMissing::wine;
+    if(!appealFor(3)) return eHouseMissing::appeal;
+    if(mHorses <= 0) return eHouseMissing::horse;
+    if(nVenues <= 3) return eHouseMissing::venues;
+    if(!appealFor(4)) return eHouseMissing::appeal;
+    return eHouseMissing::nothing;
 }
 
 void eEliteHousing::read(eReadStream& src) {
@@ -370,16 +358,15 @@ const eTextureCollection& eEliteHousing::getTextureCollection(
 }
 
 void eEliteHousing::updateLevel() {
-    const double appeal = eHouseBase::appeal();
     int nVenues = 0;
     if(mPhilosophers > 0) nVenues++;
     if(mActors > 0) nVenues++;
     if(mAthletes > 0) nVenues++;
     if(mCompetitors > 0) nVenues++;
-    if(mFood > 0 && mFleece > 0 && mOil > 0 && nVenues > 2 && appeal > 5.0) {
-        if(mArms > 0 && appeal > 7.0) {
-            if(mWine > 0 && appeal > 9.0) {
-                if(mHorses > 0 && nVenues > 3 && appeal > 10.0) {
+    if(mFood > 0 && mFleece > 0 && mOil > 0 && nVenues > 2 && appealFor(1)) {
+        if(mArms > 0 && appealFor(2)) {
+            if(mWine > 0 && appealFor(3)) {
+                if(mHorses > 0 && nVenues > 3 && appealFor(4)) {
                     return setLevel(4);
                 }
                 return setLevel(3);

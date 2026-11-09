@@ -46,6 +46,7 @@ public:
     static std::string sName(const int level);
 private:
     void updateLevel();
+    bool appealFor(const int l) const;
     void updateSatisfaction();
 
     void spawnCharacter(const stdsptr<eCharacter>& c);

@@ -4,39 +4,39 @@
 
 eHeat eHeatGetters::appeal(const eBuildingType type) {
     switch(type) {
-    case eBuildingType::wheatFarm: return {-3, 3};
+    case eBuildingType::wheatFarm: return {-3, 3, 1, 1};
     // Original model data: onion farm DES -4 RGE 3, carrot farm -2 / 2.
-    case eBuildingType::carrotsFarm: return {-2, 2};
-    case eBuildingType::onionsFarm: return {-4, 3};
-    case eBuildingType::growersLodge: return {-3, 2};
+    case eBuildingType::carrotsFarm: return {-2, 2, 1, 1};
+    case eBuildingType::onionsFarm: return {-4, 3, 2, 1};
+    case eBuildingType::growersLodge: return {-3, 2, 1, 1};
     case eBuildingType::oliveTree:
-    case eBuildingType::vine: return {1, 1};
-    case eBuildingType::orangeTree: return {1, 2};
-    case eBuildingType::cardingShed: return {-5, 3};
-    case eBuildingType::dairy: return {-5, 3};
+    case eBuildingType::vine: return {1, 1, 1, -1};
+    case eBuildingType::orangeTree: return {1, 2, 2, -1};
+    case eBuildingType::cardingShed: return {-5, 3, 1, 2};
+    case eBuildingType::dairy: return {-5, 3, 1, 2};
     case eBuildingType::urchinQuay:
-    case eBuildingType::fishery: return {-15, 4};
-    case eBuildingType::huntingLodge: return {-6, 4};
-    case eBuildingType::corral: return {-12, 5};
-    case eBuildingType::orangeTendersLodge: return {2, 2};
+    case eBuildingType::fishery: return {-15, 4, 1, 2};
+    case eBuildingType::huntingLodge: return {-6, 4, 2, -2};
+    case eBuildingType::corral: return {-12, 5, 2, 1};
+    case eBuildingType::orangeTendersLodge: return {2, 2, 1, -1};
 
-    case eBuildingType::timberMill: return {-5, 4};
-    case eBuildingType::masonryShop: return {-6, 4};
-    case eBuildingType::blackMarbleWorkshop: return {-6, 4};
-    case eBuildingType::mint:
-    case eBuildingType::foundry: return {-10, 6};
-    case eBuildingType::refinery: return {-10, 5};
-    case eBuildingType::sculptureStudio: return {-2, 2};
-    case eBuildingType::olivePress: return {-4, 4};
-    case eBuildingType::winery: return {4, 4};
-    case eBuildingType::armory: return {-8, 4};
-    case eBuildingType::tower: return {-4, 4};
+    case eBuildingType::timberMill: return {-5, 4, 1, 1};
+    case eBuildingType::masonryShop: return {-6, 4, 1, 1};
+    case eBuildingType::blackMarbleWorkshop: return {-6, 4, 1, 1};
+    case eBuildingType::mint: return {-10, 6, 2, 2};
+    case eBuildingType::foundry: return {-10, 6, 1, 1};
+    case eBuildingType::refinery: return {-10, 5, 1, 1};
+    case eBuildingType::sculptureStudio: return {-2, 2, 1, 1};
+    case eBuildingType::olivePress: return {-4, 4, 2, 2};
+    case eBuildingType::winery: return {4, 4, 1, -1};
+    case eBuildingType::armory: return {-8, 4, 1, 1};
+    case eBuildingType::tower: return {-4, 4, 4, 1};
 
-    case eBuildingType::granary: return {-12, 4};
-    case eBuildingType::warehouse: return {-2, 4};
+    case eBuildingType::granary: return {-12, 4, 1, 2};
+    case eBuildingType::warehouse: return {-2, 4, 4, 1};
     // Trading Post and Dock: DES -2 RGE 4 in the original model data. A
     // dock's storage part is also a tradePost in eZeus, so this covers both.
-    case eBuildingType::tradePost: return {-2, 4};
+    case eBuildingType::tradePost: return {-2, 4, 4, 1};
     case eBuildingType::foodVendor:
     case eBuildingType::fleeceVendor:
     case eBuildingType::oilVendor:
@@ -46,57 +46,57 @@ eHeat eHeatGetters::appeal(const eBuildingType type) {
     case eBuildingType::chariotVendor: return {-2, 2};
 
     case eBuildingType::horseRanch:
-    case eBuildingType::horseRanchEnclosure: return {-10, 4};
+    case eBuildingType::horseRanchEnclosure: return {-10, 4, 1, 1};
 
-    case eBuildingType::fountain: return {4, 4};
-    case eBuildingType::hospital: return {-2, 4};
+    case eBuildingType::fountain: return {4, 4, 2, -2};
+    case eBuildingType::hospital: return {-2, 4, 4, 0};
     case eBuildingType::maintenanceOffice: return {0, 0};
-    case eBuildingType::watchPost: return {-2, 2};
-    case eBuildingType::palace: return {18, 6};
-    case eBuildingType::taxOffice: return {-4, 2};
+    case eBuildingType::watchPost: return {-2, 2, 1, 1};
+    case eBuildingType::palace: return {18, 6, 3, -3};
+    case eBuildingType::taxOffice: return {-4, 2, 1, 1};
 
-    case eBuildingType::college: return {-5, 2};
-    case eBuildingType::podium: return {3, 3};
+    case eBuildingType::college: return {-5, 2, 1, -3};
+    case eBuildingType::podium: return {3, 3, 1, -1};
     case eBuildingType::gymnasium: return {0, 0};
     case eBuildingType::dramaSchool: return {0, 0};
-    case eBuildingType::theater: return {6, 3};
+    case eBuildingType::theater: return {6, 3, 1, -1};
     case eBuildingType::stadium: return {0, 0};
 
-    case eBuildingType::bibliotheke: return {3, 3};
-    case eBuildingType::university: return {-5, 3};
-    case eBuildingType::observatory: return {7, 4};
-    case eBuildingType::museum: return {12, 4};
+    case eBuildingType::bibliotheke: return {3, 3, 1, -1};
+    case eBuildingType::university: return {-5, 3, 1, -3};
+    case eBuildingType::observatory: return {7, 4, 1, -1};
+    case eBuildingType::museum: return {12, 4, 2, -3};
 
     case eBuildingType::doricColumn:
     case eBuildingType::ionicColumn:
-    case eBuildingType::corinthianColumn: return {4, 3};
+    case eBuildingType::corinthianColumn: return {4, 3, 1, -2};
 
-    case eBuildingType::avenue: return {3, 3};
+    case eBuildingType::avenue: return {3, 3, 1, -1};
 
-    case eBuildingType::commemorative: return {30, 6};
+    case eBuildingType::commemorative: return {30, 6, 2, -5};
     case eBuildingType::godMonument: return {35, 7};
 
-    case eBuildingType::park: return {3, 3};
+    case eBuildingType::park: return {3, 3, 1, -1};
 
-    case eBuildingType::bench: return {2, 4};
-    case eBuildingType::flowerGarden: return {8, 3};
-    case eBuildingType::gazebo: return {6, 6};
-    case eBuildingType::hedgeMaze: return {12, 4};
-    case eBuildingType::fishPond: return {18, 6};
+    case eBuildingType::bench: return {2, 4, 2, -1};
+    case eBuildingType::flowerGarden: return {8, 3, 1, -1};
+    case eBuildingType::gazebo: return {6, 6, 1, -1};
+    case eBuildingType::hedgeMaze: return {12, 4, 1, -1};
+    case eBuildingType::fishPond: return {18, 6, 1, -3};
 
-    case eBuildingType::waterPark: return {5, 4};
+    case eBuildingType::waterPark: return {5, 4, 1, -1};
 
-    case eBuildingType::birdBath: return {3, 3};
-    case eBuildingType::shortObelisk: return {6, 2};
-    case eBuildingType::tallObelisk: return {8, 2};
-    case eBuildingType::shellGarden: return {5, 5};
-    case eBuildingType::sundial: return {7, 4};
-    case eBuildingType::dolphinSculpture: return {12, 4};
-    case eBuildingType::orrery: return {9, 6};
-    case eBuildingType::spring: return {10, 5};
-    case eBuildingType::topiary: return {15, 3};
-    case eBuildingType::baths: return {15, 6};
-    case eBuildingType::stoneCircle: return {24, 4};
+    case eBuildingType::birdBath: return {3, 3, 1, -1};
+    case eBuildingType::shortObelisk: return {6, 2, 1, -1};
+    case eBuildingType::tallObelisk: return {8, 2, 1, 0};
+    case eBuildingType::shellGarden: return {5, 5, 1, 0};
+    case eBuildingType::sundial: return {7, 4, 1, -2};
+    case eBuildingType::dolphinSculpture: return {12, 4, 2, -3};
+    case eBuildingType::orrery: return {9, 6, 1, -1};
+    case eBuildingType::spring: return {10, 5, 2, -1};
+    case eBuildingType::topiary: return {15, 3, 1, 0};
+    case eBuildingType::baths: return {15, 6, 1, -1};
+    case eBuildingType::stoneCircle: return {24, 4, 2, -2};
 
     case eBuildingType::templeAphrodite:
     case eBuildingType::templeApollo:
@@ -111,16 +111,16 @@ eHeat eHeatGetters::appeal(const eBuildingType type) {
     case eBuildingType::templeHera:
     case eBuildingType::templeHermes:
     case eBuildingType::templePoseidon:
-    case eBuildingType::templeZeus: return {20, 6};
+    case eBuildingType::templeZeus: return {20, 6, 1, -2};
 
-    case eBuildingType::modestPyramid: return {15, 4};
-    case eBuildingType::pyramid: return {20, 4};
-    case eBuildingType::greatPyramid: return {25, 5};
-    case eBuildingType::majesticPyramid: return {30, 6};
+    case eBuildingType::modestPyramid: return {15, 4, 1, -2};
+    case eBuildingType::pyramid: return {20, 4, 1, -2};
+    case eBuildingType::greatPyramid: return {25, 5, 1, -2};
+    case eBuildingType::majesticPyramid: return {30, 6, 1, -2};
 
-    case eBuildingType::smallMonumentToTheSky: return {16, 4};
-    case eBuildingType::monumentToTheSky: return {20, 5};
-    case eBuildingType::grandMonumentToTheSky: return {25, 6};
+    case eBuildingType::smallMonumentToTheSky: return {16, 4, 1, -2};
+    case eBuildingType::monumentToTheSky: return {20, 5, 1, -2};
+    case eBuildingType::grandMonumentToTheSky: return {25, 6, 1, -2};
 
     case eBuildingType::minorShrineAphrodite: // 3x3
     case eBuildingType::minorShrineApollo:
@@ -135,7 +135,7 @@ eHeat eHeatGetters::appeal(const eBuildingType type) {
     case eBuildingType::minorShrineHera:
     case eBuildingType::minorShrineHermes:
     case eBuildingType::minorShrinePoseidon:
-    case eBuildingType::minorShrineZeus: return {20, 4};
+    case eBuildingType::minorShrineZeus: return {20, 4, 2, -2};
 
     case eBuildingType::shrineAphrodite: // 6x6
     case eBuildingType::shrineApollo:
@@ -150,7 +150,7 @@ eHeat eHeatGetters::appeal(const eBuildingType type) {
     case eBuildingType::shrineHera:
     case eBuildingType::shrineHermes:
     case eBuildingType::shrinePoseidon:
-    case eBuildingType::shrineZeus: return {25, 5};
+    case eBuildingType::shrineZeus: return {25, 5, 2, -2};
 
     case eBuildingType::majorShrineAphrodite: // 8x8
     case eBuildingType::majorShrineApollo:
@@ -165,15 +165,15 @@ eHeat eHeatGetters::appeal(const eBuildingType type) {
     case eBuildingType::majorShrineHera:
     case eBuildingType::majorShrineHermes:
     case eBuildingType::majorShrinePoseidon:
-    case eBuildingType::majorShrineZeus: return {35, 6};
+    case eBuildingType::majorShrineZeus: return {30, 6, 2, -2};
 
-    case eBuildingType::pyramidOfThePantheon: return {30, 6};
-    case eBuildingType::altarOfOlympus:  return {25, 5};
-    case eBuildingType::templeOfOlympus:  return {30, 6};
-    case eBuildingType::observatoryKosmika:  return {25, 6};
-    case eBuildingType::museumAtlantika: return {25, 6};
+    case eBuildingType::pyramidOfThePantheon: return {30, 6, 1, -2};
+    case eBuildingType::altarOfOlympus:  return {25, 5, 1, -2};
+    case eBuildingType::templeOfOlympus:  return {30, 6, 1, -3};
+    case eBuildingType::observatoryKosmika:  return {25, 6, 1, -1};
+    case eBuildingType::museumAtlantika: return {25, 6, 1, -1};
 
-    case eBuildingType::artisansGuild: return {-6, 3};
+    case eBuildingType::artisansGuild: return {-6, 3, 2, 1};
 
     case eBuildingType::achillesHall:
     case eBuildingType::atalantaHall:
@@ -182,11 +182,11 @@ eHeat eHeatGetters::appeal(const eBuildingType type) {
     case eBuildingType::jasonHall:
     case eBuildingType::odysseusHall:
     case eBuildingType::perseusHall:
-    case eBuildingType::theseusHall: return {15, 6};
+    case eBuildingType::theseusHall: return {15, 6, 2, -2};
 
-    case eBuildingType::triremeWharf: return {-12, 4};
+    case eBuildingType::triremeWharf: return {-12, 4, 2, 2};
 
-    case eBuildingType::chariotFactory: return {-10, 4};
+    case eBuildingType::chariotFactory: return {-10, 4, 1, 1};
 
     default: return {0, 0};
     }

@@ -414,7 +414,7 @@ bool eBoardCity::replace3By3AestheticByCommemorative() {
                     if(const auto h = dynamic_cast<eHouseBase*>(ub)) {
                         const double goodAppeal =
                                 type == eBuildingType::eliteHousing ?
-                                    10.1 : 8.1;
+                                    80. : 30.;
                         const double a = h->appeal();
                         const double missing = goodAppeal - a;
                         if(missing > mostMissingAppeal) {
