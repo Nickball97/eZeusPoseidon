@@ -609,6 +609,8 @@ public:
 
     void setEpisodeLost() const;
     bool episodeLost() const { return mEpisodeLost; }
+    // cheat "Ambrosia" (original Ctrl+Alt+C box): win when the next month starts
+    void cheatVictory() { mCheatVictory = true; }
     int tradingPartners() const;
 
     void earthquake(eTile* const startTile, const int size);
@@ -877,6 +879,7 @@ private:
     int mGoalsCheckTime = 0;
     std::vector<stdsptr<eEpisodeGoal>> mGoals;
     bool mGoalsFulfilled = false;
+    bool mCheatVictory = false; // not saved
 
     struct eEarthquake {
         eTile* fStartTile = nullptr;

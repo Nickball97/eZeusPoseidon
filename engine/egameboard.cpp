@@ -2429,6 +2429,12 @@ void eGameBoard::incTime(const int by) {
         }
     }
 
+    // cheat "Ambrosia": the episode is won when the next month starts
+    if(nextMonth && mCheatVictory) {
+        mCheatVictory = false;
+        mGoalsFulfilled = true;
+        mGoalsCheckTime = 5050;
+    }
     if(nextMonth) {
         mWorld.nextMonth(this);
     }

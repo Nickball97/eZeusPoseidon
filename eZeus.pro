@@ -672,6 +672,7 @@ SOURCES += \
         widgets/emultilinelabel.cpp \
         widgets/emultipleselectionwidget.cpp \
         widgets/enamewidget.cpp \
+        widgets/echeatwidget.cpp \
         widgets/enumlineedit.cpp \
         widgets/enumlineeditwidget.cpp \
         widgets/eokbutton.cpp \
@@ -2889,6 +2890,7 @@ HEADERS += \
     widgets/emultilinelabel.h \
     widgets/emultipleselectionwidget.h \
     widgets/enamewidget.h \
+    widgets/echeatwidget.h \
     widgets/enumlineedit.h \
     widgets/enumlineeditwidget.h \
     widgets/eokbutton.h \

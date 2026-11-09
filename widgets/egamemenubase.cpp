@@ -119,3 +119,11 @@ bool eGameMenuBase::mouseLeaveEvent(const eMouseEvent& e) {
     (void)e;
     return true;
 }
+
+bool eGameMenuBase::selectTab(const int i) {
+    if(i < 0 || i >= static_cast<int>(mButtons.size())) return false;
+    const auto b = mButtons[i];
+    if(!b->visible()) return false;
+    if(!b->checked()) b->trigger();
+    return true;
+}

@@ -108,6 +108,8 @@ public:
                  int& idX, int& idY) const;
 
     void setViewMode(const eViewMode m);
+    // the original's cheat codes (Ctrl+Alt+C); true when one was applied
+    bool applyCheat(const std::string& code);
     eViewMode viewMode() const { return mViewMode; }
 
     void viewFraction(const double fx, const double fy);
@@ -302,6 +304,8 @@ private:
     const int sMaxSpeedId = int(std::size(sSpeeds)) - 1;
 
     bool mPaused = false;
+    bool mCheatFireball = false; // "Fireballs from Heaven": next click
+    eViewMode mLastSpecialView = eViewMode::defaultView; // for Space
     bool mLocked = false;
     int mFrame{0};
     int mRotateFrame{0};

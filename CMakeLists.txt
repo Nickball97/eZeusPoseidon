@@ -2860,6 +2860,8 @@ add_executable(eZeus
     widgets/emultipleselectionwidget.h
     widgets/enamewidget.cpp
     widgets/enamewidget.h
+    widgets/echeatwidget.cpp
+    widgets/echeatwidget.h
     widgets/enumlineedit.cpp
     widgets/enumlineedit.h
     widgets/enumlineeditwidget.cpp

@@ -1,4 +1,5 @@
 #include "egamewidget.h"
+#include "echeatwidget.h"
 
 #include "engine/egameboard.h"
 #ifdef EZEUS_DEV_CHEATS
@@ -1795,6 +1796,68 @@ void eGameWidget::switchPause() {
 bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
     if(mLocked) return true;
     const auto k = e.key();
+    const bool alt = (SDL_GetModState() & KMOD_ALT) != 0;
+    // the original's hotkeys (Citadel of Poseidon, hotkeys.html)
+    if(k == SDL_Scancode::SDL_SCANCODE_C && e.ctrlPressed() && alt &&
+       !mBoard->editorMode()) {
+        // Ctrl+Alt+C: the cheat box
+        const auto cw = new eCheatWidget(window());
+        cw->initialize([this](const std::string& code) {
+            return applyCheat(code);
+        });
+        addWidget(cw);
+        cw->align(eAlignment::center);
+        window()->execDialog(cw);
+        return true;
+    }
+    if(!e.ctrlPressed() && !e.shiftPressed() && !alt) {
+        // 1-9, 0 and -: side panel tabs (7 is Culture, or Science in an
+        // Atlantean city)
+        int tab = -1;
+        switch(k) {
+        case SDL_Scancode::SDL_SCANCODE_1: tab = 0; break;
+        case SDL_Scancode::SDL_SCANCODE_2: tab = 1; break;
+        case SDL_Scancode::SDL_SCANCODE_3: tab = 2; break;
+        case SDL_Scancode::SDL_SCANCODE_4: tab = 3; break;
+        case SDL_Scancode::SDL_SCANCODE_5: tab = 4; break;
+        case SDL_Scancode::SDL_SCANCODE_6: tab = 5; break;
+        case SDL_Scancode::SDL_SCANCODE_7: tab = 6; break;
+        case SDL_Scancode::SDL_SCANCODE_8: tab = 7; break;
+        case SDL_Scancode::SDL_SCANCODE_9: tab = 8; break;
+        case SDL_Scancode::SDL_SCANCODE_0: tab = 9; break;
+        case SDL_Scancode::SDL_SCANCODE_MINUS: tab = 10; break;
+        default: break;
+        }
+        if(tab != -1) {
+            const bool r = mGm->selectTab(tab);
+            if(!r && tab == 6) mGm->selectTab(11);
+            return true;
+        }
+        // Home: due north; PgUp: counter-clockwise; PgDn: clockwise
+        if(k == SDL_Scancode::SDL_SCANCODE_HOME ||
+           k == SDL_Scancode::SDL_SCANCODE_PAGEUP ||
+           k == SDL_Scancode::SDL_SCANCODE_PAGEDOWN) {
+            const auto dir = mBoard->direction();
+            // eWorldDirection runs N, W, S, E: +1 is counter-clockwise
+            int i = static_cast<int>(dir);
+            if(k == SDL_Scancode::SDL_SCANCODE_HOME) i = 0;
+            else if(k == SDL_Scancode::SDL_SCANCODE_PAGEUP) i = (i + 1) % 4;
+            else i = (i + 3) % 4;
+            const auto nd = static_cast<eWorldDirection>(i);
+            if(nd != dir) setWorldDirection(nd);
+            return true;
+        }
+        // Space: switch between the normal view and the last special view
+        if(k == SDL_Scancode::SDL_SCANCODE_SPACE) {
+            if(mViewMode != eViewMode::defaultView) {
+                mLastSpecialView = mViewMode;
+                setViewMode(eViewMode::defaultView);
+            } else if(mLastSpecialView != eViewMode::defaultView) {
+                setViewMode(mLastSpecialView);
+            }
+            return true;
+        }
+    }
     if(k == SDL_Scancode::SDL_SCANCODE_KP_PLUS ||
        k == SDL_Scancode::SDL_SCANCODE_RIGHTBRACKET) {
         mSpeedId = std::clamp(mSpeedId + 1, 0, sMaxSpeedId);
@@ -1933,7 +1996,9 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
         } else {
             viewBookmark(4);
         }
-    } else if(k == SDL_Scancode::SDL_SCANCODE_ESCAPE) {
+    } else if(k == SDL_Scancode::SDL_SCANCODE_ESCAPE ||
+              (k == SDL_Scancode::SDL_SCANCODE_X && alt)) {
+        // Esc or Alt+X: the game menu (exit)
         if(!mMsgBox && !mBoard->editorMode()) {
             mBoard->waitUntilFinished();
             const auto menu = new eGameMainMenu(window());
@@ -2006,6 +2071,18 @@ bool eGameWidget::mousePressEvent(const eMouseEvent& e) {
         int tx;
         int ty;
         pixToId(e.x(), e.y(), tx, ty);
+        if(mCheatFireball) {
+            mCheatFireball = false;
+            mLeftPressed = false;
+            if(const auto t = mBoard->tile(tx, ty)) {
+                if(const auto b = t->underBuilding()) b->collapse();
+                const auto cs = t->characters();
+                for(const auto& c : cs) {
+                    if(c && !c->dead()) c->killWithCorpse();
+                }
+            }
+            return true;
+        }
         mPressedTX = tx;
         mPressedTY = ty;
         mPressedX = e.x();
@@ -2506,4 +2583,25 @@ void eGameWidget::openDialog(eWidget* const d) {
 
 void eGameWidget::updateRequestButtons() {
     mGm->updateRequestButtons();
+}
+
+// Cheat codes of the original (Citadel of Poseidon, cheats.html). The
+// cosmetic ones (Bowvine and Arrow, Cheese Puff, Mammaldrome) are not in.
+bool eGameWidget::applyCheat(const std::string& code) {
+    const auto pid = mBoard->personPlayer();
+    if(code == "Ambrosia") {
+        // victory: next month you go to the next episode
+        mBoard->cheatVictory();
+        return true;
+    } else if(code == "Delian Treasury") {
+        // 1000 drachmas more, up to 15,000
+        const int d = mBoard->drachmas(pid);
+        if(d < 15000) mBoard->setDrachmas(pid, std::min(15000, d + 1000));
+        return true;
+    } else if(code == "Fireballs from Heaven") {
+        // the next click destroys everything on that tile
+        mCheatFireball = true;
+        return true;
+    }
+    return false;
 }

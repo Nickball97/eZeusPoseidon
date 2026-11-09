@@ -28,6 +28,8 @@ public:
     void connectAndLayoutButtons();
     void layoutButtons();
     void connectButtons();
+    // the original's number-key shortcuts: open tab i (0 = first) if it's shown
+    bool selectTab(const int i);
 protected:
     bool mousePressEvent(const eMouseEvent& e) override;
     bool mouseReleaseEvent(const eMouseEvent& e) override;
