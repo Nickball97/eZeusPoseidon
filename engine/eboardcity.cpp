@@ -1710,7 +1710,9 @@ void eBoardCity::updateMaxSoldiers() {
             else if(l == 5) lvlMax = 12;
             else if(l == 6) lvlMax = 15;
             const int pop = ch->people();
-            const int popMax = pop/4;
+            // hovels and homesteads give 20% of their people as soldiers,
+            // bigger houses 25% (housing tables, Model files)
+            const int popMax = l <= 3 ? (2*pop + 5)/10 : pop/4;
             mMaxRabble += std::min(lvlMax, popMax);
         } else if(bt == eBuildingType::eliteHousing) {
             const auto eh = static_cast<eEliteHousing*>(b);
@@ -1956,7 +1958,11 @@ int eBoardCity::eliteHouses() const {
     int r = 0;
     for(const auto b : mTimedBuildings) {
         const auto bt = b->type();
-        if(bt == eBuildingType::eliteHousing) r++;
+        if(bt != eBuildingType::eliteHousing) continue;
+        // only lived-in houses count (Odysseus needs 8 with residents,
+        // Citadel of Poseidon, Trojan War ep. 4)
+        const auto h = static_cast<eEliteHousing*>(b);
+        if(h->people() > 0) r++;
     }
     return r;
 }

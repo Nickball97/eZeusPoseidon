@@ -10,6 +10,7 @@
 #include "engine/epathfinder.h"
 #include "etilehelper.h"
 #include "characters/actions/eheroaction.h"
+#include "fileIO/efileformat.h"
 #include "engine/eevent.h"
 #include "engine/eeventdata.h"
 #include "enumbers.h"
@@ -48,11 +49,14 @@ eHeroType eHerosHall::sHallTypeToHeroType(const eBuildingType type,
     return eHeroType::achilles;
 }
 
+// Achilles needs Hephaestus' sanctuary when the episode has it, even if
+// Athena's is also allowed (Citadel of Poseidon: Trojan War ep. 5, Two
+// Worlds Collide ep. 2), and Athena's otherwise (Zeus and Europa ep. 7).
 eGodType athenaHephaestus(eBoardCity& c) {
-    const bool athena = c.availableBuilding(eBuildingType::templeAthena) ||
-                        c.hasBuilding(eBuildingType::templeAthena);
-    if(athena) return eGodType::athena;
-    return eGodType::hephaestus;
+    const bool heph = c.availableBuilding(eBuildingType::templeHephaestus) ||
+                      c.hasBuilding(eBuildingType::templeHephaestus);
+    if(heph) return eGodType::hephaestus;
+    return eGodType::athena;
 }
 
 std::pair<eGodType, eGodType> athenaHermesZeusHades(eBoardCity& c) {
@@ -471,6 +475,9 @@ void eHerosHall::read(eReadStream& src) {
     src >> mPhilosophers;
     src >> mActors;
     src >> mAthletes;
+    if(src.formatVersion() >= eFileFormat::heroHallCurators) {
+        src >> mCompetitors;
+    }
     src >> mUpdateCulture;
     src >> mHeroOnQuest;
     src >> mSpawnWait;
@@ -486,6 +493,7 @@ void eHerosHall::write(eWriteStream& dst) const {
     dst << mPhilosophers;
     dst << mActors;
     dst << mAthletes;
+    dst << mCompetitors;
     dst << mUpdateCulture;
     dst << mHeroOnQuest;
     dst << mSpawnWait;
@@ -589,6 +597,7 @@ void eHerosHall::updateRequirementStatus(eHeroRequirement& hr) {
         sc += mPhilosophers > 0 ? 1 : 0;
         sc += mActors > 0 ? 1 : 0;
         sc += mAthletes > 0 ? 1 : 0;
+        sc += mCompetitors > 0 ? 1 : 0;
         break;
     case eHeroRequirementType::panHellenicGameWinHippodrome:
         if(atlentean) {
@@ -797,7 +806,10 @@ eHerosHall::eHerosHall(const eHeroType type, eGameBoard& board,
         addRequirement({eHeroRequirementType::wine, 24});
         break;
     case eHeroType::hercules:
-        addRequirement({eHeroRequirementType::hallCultureAccess, 3});
+        // every culture walker type must pass the hall: philosopher, actor,
+        // athlete and competitor (Atlantean: inventor, astronomer, scholar,
+        // curator), per the Citadel of Poseidon walkthroughs
+        addRequirement({eHeroRequirementType::hallCultureAccess, 4});
         addRequirement({eHeroRequirementType::panHellenicGameWinHippodrome, 1});
         addRequirement({eHeroRequirementType::cityGymnasiumObservatoryAccess, 3});
         addRequirement({eHeroRequirementType::people, 1500});
@@ -911,6 +923,7 @@ void eHerosHall::timeChanged(const int by) {
         mPhilosophers = std::max(0, mPhilosophers - 1);
         mActors = std::max(0, mActors - 1);
         mAthletes = std::max(0, mAthletes - 1);
+        mCompetitors = std::max(0, mCompetitors - 1);
     }
 
     if(mStage == eHeroSummoningStage::summoned) {
@@ -943,6 +956,9 @@ int eHerosHall::provide(const eProvide p, const int n) {
         break;
     case eProvide::gymnastScholar:
         value = &mAthletes;
+        break;
+    case eProvide::competitorCurator:
+        value = &mCompetitors;
         break;
     default:
         return eBuilding::provide(p, n);

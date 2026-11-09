@@ -137,6 +137,7 @@ private:
     int mPhilosophers = 0;
     int mActors = 0;
     int mAthletes = 0;
+    int mCompetitors = 0; // competitors (Greek) or curators (Atlantean)
 
     eHeroSummoningStage mStage = eHeroSummoningStage::none;
     int mArrivalCountdown = 15000;

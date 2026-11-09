@@ -15,6 +15,8 @@ namespace eFileFormat {
         monsterTarget,
         monsterTargets,
         multiCollectors,
+        heroHallCurators,
+        godHelpSecondResource,
 
         nextVersion
     };
