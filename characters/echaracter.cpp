@@ -44,8 +44,10 @@ bool eCharacter::canFight(eCharacter* const c) {
     const auto at = actionType();
     if(at == eCharacterActionType::fight ||
        at == eCharacterActionType::fight2) return false;
-    if(t == eCharacterType::disgruntled) {
-        if(ct == eCharacterType::watchman) return true;
+    if(t == eCharacterType::disgruntled || t == eCharacterType::mugger ||
+       t == eCharacterType::thief || t == eCharacterType::vandal) {
+        if(ct == eCharacterType::watchman ||
+           ct == eCharacterType::eliteCitizen) return true;
         else if(eRand::rand() % 10) return false;
     }
     if(isSoldier()) {

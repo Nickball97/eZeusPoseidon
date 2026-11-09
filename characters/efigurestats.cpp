@@ -159,6 +159,9 @@ bool eFigureStats::sGet(const eCharacterType type,
     case eT::gymnast: s = row(25, 0, 0, 0, 0, 0, 0, 6); return true; // Athlete
     case eT::competitor: s = row(25, 0, 0, 0, 0, 0, 0, 6); return true;
     case eT::disgruntled: s = row(12, 0, 0, 0, 0, 0, 0, 6); return true;
+    case eT::mugger:
+    case eT::thief:
+    case eT::vandal: s = row(10, 0, 0, 0, 0, 0, 0, 6); return true;
     case eT::sick: s = row(10, 0, 0, 0, 0, 0, 0, 1); return true; // Plagued Walker
     case eT::urchinGatherer: s = row(50, 0, 0, 8, 0, 0, 0, 6); return true;
     case eT::fishingBoat: s = row(50, 0, 0, 0, 0, 0, 0, 6); return true;

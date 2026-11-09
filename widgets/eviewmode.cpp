@@ -270,6 +270,9 @@ bool eViewModeHelpers::characterVisible(
 
     case eViewMode::problems: {
         return c == eCharacterType::disgruntled ||
+               c == eCharacterType::mugger ||
+               c == eCharacterType::thief ||
+               c == eCharacterType::vandal ||
                c == eCharacterType::sick;
     } break;
 
@@ -295,7 +298,10 @@ bool eViewModeHelpers::characterVisible(
     } break;
     case eViewMode::unrest: {
         return c == eCharacterType::watchman ||
-               c == eCharacterType::disgruntled;
+               c == eCharacterType::disgruntled ||
+               c == eCharacterType::mugger ||
+               c == eCharacterType::thief ||
+               c == eCharacterType::vandal;
     } break;
 
     case eViewMode::actors: {

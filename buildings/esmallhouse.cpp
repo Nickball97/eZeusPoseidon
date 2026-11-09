@@ -7,6 +7,7 @@
 #include "characters/esick.h"
 #include "characters/edisgruntled.h"
 #include "characters/actions/esickdisgruntledaction.h"
+#include "characters/actions/eoutlawaction.h"
 
 #include "buildings/epalace.h"
 
@@ -471,8 +472,16 @@ void eSmallHouse::spawnCharacter(const stdsptr<eCharacter>& c) {
     }
     c->changeTile(tile);
     if(!tile) return;
-    const auto a = e::make_shared<eSickDisgruntledAction>(c.get(), this);
-    c->setAction(a);
+    const auto ct = c->type();
+    if(ct == eCharacterType::mugger ||
+       ct == eCharacterType::thief ||
+       ct == eCharacterType::vandal) {
+        const auto a = e::make_shared<eOutlawAction>(c.get(), this);
+        c->setAction(a);
+    } else {
+        const auto a = e::make_shared<eSickDisgruntledAction>(c.get(), this);
+        c->setAction(a);
+    }
 }
 
 void eSmallHouse::spawnSick() {
@@ -488,7 +497,21 @@ void eSmallHouse::spawnSick() {
 
 void eSmallHouse::spawnDisgruntled() {
     if(mDisg) mDisg->kill();
-    const auto c = e::make_shared<eDisgruntled>(getBoard());
+    // The unhappier the house, the worse the walker it sends out: the Zeus
+    // manual ranks disgruntled citizens, then muggers, thieves and vandals
+    // as the most dangerous. The satisfaction cut-offs are not in any
+    // source (eZeus choice).
+    stdsptr<eDisgruntled> c;
+    auto& board = getBoard();
+    if(mSatisfaction >= 40) {
+        c = e::make_shared<eDisgruntled>(board);
+    } else if(mSatisfaction >= 25) {
+        c = e::make_shared<eMugger>(board);
+    } else if(mSatisfaction >= 10) {
+        c = e::make_shared<eThief>(board);
+    } else {
+        c = e::make_shared<eVandal>(board);
+    }
     mDisg = c.get();
     const auto cid = cityId();
     mDisg->setOnCityId(cid);

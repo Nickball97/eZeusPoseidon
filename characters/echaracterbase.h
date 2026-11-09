@@ -167,7 +167,11 @@ enum class eCharacterType {
     eliteCitizen,
     trireme,
     enemyBoat,
-    orichalcMiner
+    orichalcMiner,
+
+    mugger,
+    thief,
+    vandal
 };
 
 class eCharacterBase {

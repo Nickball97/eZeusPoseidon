@@ -72,6 +72,9 @@ private:
     // a lived-in elite house sends out a nobleman who roams the streets
     // and stops disgruntled citizens and outlaws (Zeus manual)
     void spawnNoble();
+public:
+    // a thief takes the goods and food kept in this house (Zeus manual)
+    void robbed();
     stdptr<eCharacter> mNoble;
     int mNobleWait = 0;
 };

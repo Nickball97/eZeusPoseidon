@@ -176,7 +176,13 @@ std::shared_ptr<eTexture> gCharPortrait(
         return zp.getTexture(21);
 
     case eCharacterType::disgruntled:
+        return zp.getTexture(22);
+    case eCharacterType::thief:
         return zp.getTexture(23);
+    case eCharacterType::mugger:
+        return zp.getTexture(27);
+    case eCharacterType::vandal:
+        return zp.getTexture(29);
 
     case eCharacterType::fishingBoat:
         return zp.getTexture(25);
@@ -296,6 +302,9 @@ std::string gCharName(const eCharacterType c, const int seedId) {
     case eCharacterType::homeless:
     case eCharacterType::sick:
     case eCharacterType::healer:
+    case eCharacterType::mugger:
+    case eCharacterType::thief:
+    case eCharacterType::vandal:
     case eCharacterType::disgruntled:
     case eCharacterType::actor:
     case eCharacterType::philosopher:
@@ -489,7 +498,13 @@ std::string gCharOccupation(
         return eLanguage::zeusText(64, 21) + " " + cname;
 
     case eCharacterType::disgruntled:
+        return eLanguage::zeusText(64, 22);
+    case eCharacterType::thief:
         return eLanguage::zeusText(64, 23);
+    case eCharacterType::mugger:
+        return eLanguage::zeusText(64, 27);
+    case eCharacterType::vandal:
+        return eLanguage::zeusText(64, 29);
 
     case eCharacterType::fishingBoat:
         return eLanguage::zeusText(64, 25);
@@ -822,9 +837,10 @@ eCharMessage gCharMessage(eCharacter * const c) {
         }
         groupId = 203;
     } break;
+    case eCharacterType::mugger:
+    case eCharacterType::thief:
+    case eCharacterType::vandal:
     case eCharacterType::disgruntled: {
-        // groupId = 206;
-        // groupId = 207;
         const auto limit = board.immigrationLimit(cid);
         if(enemyImmortal) {
             stringId = 0;
@@ -845,8 +861,12 @@ eCharMessage gCharMessage(eCharacter * const c) {
         } else {
             stringId = 1;
         }
-        groupId = 208;
-        // groupId = 209;
+        switch(c->type()) {
+        case eCharacterType::vandal: groupId = 206; break;
+        case eCharacterType::thief: groupId = 207; break;
+        case eCharacterType::mugger: groupId = 208; break;
+        default: groupId = 209; break;
+        }
     } break;
     case eCharacterType::peddler: {
         groupId = 229;

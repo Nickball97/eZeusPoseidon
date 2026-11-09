@@ -7,8 +7,12 @@
 
 eSickDisgruntledAction::eSickDisgruntledAction(eCharacter* const c,
                                                eBuilding* const ch) :
-    eActionWithComeback(c, ch ? ch->centerTile() : nullptr,
-                        eCharActionType::sickDisgruntledAction),
+    eSickDisgruntledAction(c, ch, eCharActionType::sickDisgruntledAction) {}
+
+eSickDisgruntledAction::eSickDisgruntledAction(eCharacter* const c,
+                                               eBuilding* const ch,
+                                               const eCharActionType type) :
+    eActionWithComeback(c, ch ? ch->centerTile() : nullptr, type),
     mBuilding(ch) {
     setFinishOnComeback(true);
 }

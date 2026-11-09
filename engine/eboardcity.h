@@ -286,6 +286,8 @@ public:
     int population() const { return mPopData.population(); }
 
     int eliteHouses() const;
+    // nearest elite house with residents, for thieves and vandals
+    eBuilding* nearestEliteHouse(const int tx, const int ty) const;
     eSanctuary* sanctuary(const eGodType god) const;
     eHerosHall* heroHall(const eHeroType hero) const;
     int countBanners(const eBannerType bt) const;

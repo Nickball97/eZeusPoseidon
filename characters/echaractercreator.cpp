@@ -240,6 +240,12 @@ stdsptr<eCharacter> eCharacter::sCreate(
         return e::make_shared<eHomeless>(board);
     case eCharacterType::disgruntled:
         return e::make_shared<eDisgruntled>(board);
+    case eCharacterType::mugger:
+        return e::make_shared<eMugger>(board);
+    case eCharacterType::thief:
+        return e::make_shared<eThief>(board);
+    case eCharacterType::vandal:
+        return e::make_shared<eVandal>(board);
     case eCharacterType::sick:
         return e::make_shared<eSick>(board);
 

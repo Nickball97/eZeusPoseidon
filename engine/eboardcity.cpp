@@ -2640,3 +2640,23 @@ void eBoardCity::setFriendlyGods(const std::vector<eGodType>& gods) {
     addRootGameEvent(e);
     e->loadResources();
 }
+
+eBuilding* eBoardCity::nearestEliteHouse(const int tx, const int ty) const {
+    eBuilding* best = nullptr;
+    int bestDist = __INT_MAX__;
+    for(const auto b : mTimedBuildings) {
+        if(b->type() != eBuildingType::eliteHousing) continue;
+        const auto h = static_cast<eHouseBase*>(b);
+        if(h->people() <= 0) continue;
+        const auto ct = b->centerTile();
+        if(!ct) continue;
+        const int dx = ct->x() - tx;
+        const int dy = ct->y() - ty;
+        const int d = dx*dx + dy*dy;
+        if(d < bestDist) {
+            bestDist = d;
+            best = b;
+        }
+    }
+    return best;
+}

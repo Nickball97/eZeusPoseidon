@@ -377,3 +377,12 @@ void eEliteHousing::updateLevel() {
     }
     setLevel(0);
 }
+
+void eEliteHousing::robbed() {
+    mFood = 0;
+    mFleece = 0;
+    mOil = 0;
+    mWine = 0;
+    mArms = 0;
+    updateLevel();
+}

@@ -10,6 +10,10 @@ public:
     eSickDisgruntledAction(eCharacter* const c,
                            eBuilding* const ch);
     // also used for an elite house's nobleman (eEliteHousing)
+protected:
+    eSickDisgruntledAction(eCharacter* const c, eBuilding* const ch,
+                           const eCharActionType type);
+public:
 
     bool decide() override;
 
