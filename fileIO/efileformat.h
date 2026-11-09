@@ -21,6 +21,7 @@ namespace eFileFormat {
         domesticatedYearly,
         growerHarvesters,
         artisansSecond,
+        sanctuaryGuardian,
 
         nextVersion
     };

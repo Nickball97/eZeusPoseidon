@@ -215,6 +215,7 @@ SOURCES += \
         characters/actions/etraderaction.cpp \
         characters/actions/etriremeaction.cpp \
         characters/actions/ekrakendefenderaction.cpp \
+        characters/actions/eguardiandefenderaction.cpp \
         characters/actions/eoutlawaction.cpp \
         characters/actions/ewaitaction.cpp \
         characters/actions/ewolfaction.cpp \
@@ -916,6 +917,7 @@ HEADERS += \
     characters/actions/etraderaction.h \
     characters/actions/etriremeaction.h \
     characters/actions/ekrakendefenderaction.h \
+    characters/actions/eguardiandefenderaction.h \
     characters/actions/eoutlawaction.h \
     characters/actions/ewaitaction.h \
     characters/actions/ewolfaction.h \

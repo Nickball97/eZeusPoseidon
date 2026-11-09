@@ -88,6 +88,7 @@ public:
     // Poseidon's sanctuaries (Greek and Atlantean) send the Kraken to
     // patrol the city's waters (Zeus manual; Citadel per Nicolás)
     void spawnKraken();
+    void spawnGuardian();
 
     bool sacrificing() const;
 private:
@@ -101,6 +102,9 @@ private:
     int mOracleTimer = 10000000;
     stdptr<eCharacter> mKraken;
     int mKrakenWait = 0;
+    // Ares' Dragon or Hades' Cerberus guarding the city
+    stdptr<eCharacter> mGuardian;
+    int mGuardianWait = 0;
 
     std::vector<eTile*> mWarriorTiles;
     std::vector<eTile*> mSpecialTiles;

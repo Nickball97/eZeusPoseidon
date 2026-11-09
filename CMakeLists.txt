@@ -431,6 +431,8 @@ add_executable(eZeus
     characters/actions/etriremeaction.h
     characters/actions/ekrakendefenderaction.cpp
     characters/actions/ekrakendefenderaction.h
+    characters/actions/eguardiandefenderaction.cpp
+    characters/actions/eguardiandefenderaction.h
     characters/actions/eoutlawaction.cpp
     characters/actions/eoutlawaction.h
     characters/actions/ewaitaction.cpp

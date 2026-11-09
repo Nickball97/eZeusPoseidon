@@ -33,6 +33,8 @@
 #include "gameEvents/egodattackevent.h"
 #include "characters/actions/ekillcharacterfinishfail.h"
 #include "characters/actions/ekrakendefenderaction.h"
+#include "characters/actions/eguardiandefenderaction.h"
+#include "characters/monsters/ecalydonianboar.h"
 #include "characters/monsters/ecalydonianboar.h"
 
 #include "buildings/eresourcebuilding.h"
@@ -95,6 +97,7 @@ void eSanctuary::erase() {
         if(c) c->incTerrainState();
     }
     if(mKraken) mKraken->kill();
+    if(mGuardian) mGuardian->kill();
     eMonument::erase();
 }
 
@@ -397,6 +400,14 @@ void eSanctuary::timeChanged(const int by) {
             spawnKraken();
         }
     }
+    if(!mGuardian && finished() &&
+       (godType() == eGodType::ares || godType() == eGodType::hades)) {
+        mGuardianWait -= by;
+        if(mGuardianWait <= 0) {
+            mGuardianWait = 5000;
+            spawnGuardian();
+        }
+    }
 
     if(mAskedForHelp) {
         const int checkInterval = 1000;
@@ -480,6 +491,11 @@ void eSanctuary::read(eReadStream& src) {
             mKraken = c;
         });
     }
+    if(src.formatVersion() >= eFileFormat::sanctuaryGuardian) {
+        src.readCharacter(&board, [this](eCharacter* const c) {
+            mGuardian = c;
+        });
+    }
 }
 
 void eSanctuary::write(eWriteStream& dst) const {
@@ -504,6 +520,7 @@ void eSanctuary::write(eWriteStream& dst) const {
     }
     dst << mOracleTimer;
     dst.writeCharacter(mKraken);
+    dst.writeCharacter(mGuardian);
 }
 
 std::vector<eTile*> eSanctuary::warriorTiles() const {
@@ -732,6 +749,23 @@ void eSanctuary::spawnKraken() {
     const auto a = e::make_shared<eKrakenDefenderAction>(k.get());
     k->setAction(a);
     mKraken = k.get();
+}
+
+void eSanctuary::spawnGuardian() {
+    const auto ct = centerTile();
+    if(!ct) return;
+    auto& board = getBoard();
+    const auto cid = cityId();
+    stdsptr<eCharacter> g;
+    if(godType() == eGodType::ares) g = e::make_shared<eDragon>(board);
+    else g = e::make_shared<eCerberus>(board);
+    g->setBothCityIds(cid);
+    // start on the nearest walkable road
+    const auto t = eTileHelper::closestRoad(ct->x(), ct->y(), board);
+    g->changeTile(t ? t : ct);
+    const auto a = e::make_shared<eGuardianDefenderAction>(g.get());
+    g->setAction(a);
+    mGuardian = g.get();
 }
 
 // Original marble and wood each sanctuary needs after placement, Zeus +
