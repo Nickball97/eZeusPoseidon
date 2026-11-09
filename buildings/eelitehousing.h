@@ -60,11 +60,13 @@ private:
     const eTextureCollection& getTextureCollection(
             const eTileSize size) const;
 
-    void updateLevel();
+    void updateLevel(const bool timed = false);
+    void stepToward(const int target, const bool timed);
     bool appealFor(const int l) const;
     bool cultureFor(const int l) const;
 
     int mUpdateLevel = 0;
+    int mFailedChecks = 0; // level checks failed in a row
 
     int mWine = 0;
     int mArms = 0;

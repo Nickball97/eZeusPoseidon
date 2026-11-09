@@ -24,6 +24,7 @@ namespace eFileFormat {
         sanctuaryGuardian,
         cityMoodCrime,
         cityPlague,
+        eliteFailedChecks,
 
         nextVersion
     };

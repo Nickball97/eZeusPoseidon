@@ -248,10 +248,12 @@ void eEliteHousing::timeChanged(const int by) {
             spawnNoble();
         }
     }
-    const int lupdate = 1000;
+    // checked every cycle (16 a month), as houses_evolve does
+    mUpdateLevel += by;
+    const int lupdate = (365*eNumbers::sDayLength)/(12*16);
     if(mUpdateLevel > lupdate) {
         mUpdateLevel -= lupdate;
-        updateLevel();
+        updateLevel(true);
     }
     eHouseBase::timeChanged(by);
 }
@@ -339,6 +341,9 @@ void eEliteHousing::read(eReadStream& src) {
         });
         src >> mNobleWait;
     }
+    if(src.formatVersion() >= eFileFormat::eliteFailedChecks) {
+        src >> mFailedChecks;
+    }
 }
 
 void eEliteHousing::write(eWriteStream& dst) const {
@@ -349,6 +354,7 @@ void eEliteHousing::write(eWriteStream& dst) const {
     dst << mHorses;
     dst.writeCharacter(mNoble);
     dst << mNobleWait;
+    dst << mFailedChecks;
 }
 
 std::string eEliteHousing::sName(const int level) {
@@ -370,20 +376,37 @@ const eTextureCollection& eEliteHousing::getTextureCollection(
     }
 }
 
-void eEliteHousing::updateLevel() {
+// Original elite houses (exe 0x004FE9C0 ... 0x004FEC30): one level at a
+// time, and a level is lost only after 10 failed checks in a row.
+void eEliteHousing::stepToward(const int target, const bool timed) {
+    if(target > mLevel) {
+        mFailedChecks = 0;
+        setLevel(mLevel + 1);
+    } else if(target < mLevel) {
+        if(!timed) return;
+        if(++mFailedChecks >= 10) {
+            mFailedChecks = 0;
+            setLevel(mLevel - 1);
+        }
+    } else if(timed) {
+        mFailedChecks = 0;
+    }
+}
+
+void eEliteHousing::updateLevel(const bool timed) {
     if(mFood > 0 && mFleece > 0 && mOil > 0 && cultureFor(1) && appealFor(1)) {
         if(mArms > 0 && cultureFor(2) && appealFor(2)) {
             if(mWine > 0 && cultureFor(3) && appealFor(3)) {
                 if(mHorses > 0 && cultureFor(4) && appealFor(4)) {
-                    return setLevel(4);
+                    return stepToward(4, timed);
                 }
-                return setLevel(3);
+                return stepToward(3, timed);
             }
-            return setLevel(2);
+            return stepToward(2, timed);
         }
-        return setLevel(1);
+        return stepToward(1, timed);
     }
-    setLevel(0);
+    stepToward(0, timed);
 }
 
 // Original thief (exe 0x005C00C0): from each good he takes a quarter of

@@ -22,7 +22,7 @@ Read with Ghidra 12.2 from Nicolás's Steam `zeus.exe` (same build as GOG: compi
 - Drift toward the middle: mood under 11 +4, 11–20 +3, 21–30 +2, 31–40 +1, 41–60 0, 61–70 −1, 71–80 −2, 81–90 −3, above 90 −4. Below 41 the drift only stops a fall, it never pushes the mood up past it; above 60, likewise for a rise.
 
 ## Houses
-- A house devolves only after failing its needs on 3 checks in a row (12 for the elite type at `0x004FE900`); a passing check resets the count.
+- A common house devolves only after failing its needs on 3 checks in a row (types 3–8, verified for 3, 4, 5 and 8); elite residence to estate after 10 (`0x004FE9C0` … `0x004FEC30`); the devolved elite type counts to 12 (`0x004FE900`). A passing check resets the count, and a house moves one level per check.
 
 ## Appeal (from zeus-poseidon-arm64 docs/engine/terrain.md §7, applied 9 Nov 2026)
 - Spread ring by ring from the footprint, at most 6 rings; the footprint itself gets nothing; each tile clamped to −100..100.
@@ -103,3 +103,6 @@ Cures every sick house, removes the plague walkers and raises city health by 50.
 
 ## Guardians
 The Dragon and Cerberus use the single "Monster" row (500 HP, attack 50, armor 10).
+
+## Fire and collapse (partly read, `0x00492260`, step 44, every cycle)
+Per building (not on fire): a damage counter grows by the Model damage risk (column h) each cycle; it is reset for some houses and for tiles with terrain flag 0x10000. While below 1000, a 1-in-8 draw adds Model fire risk (column g) times a second factor to a fire counter; past 999 the building catches fire (with a message, rate-limited). Not applied: the second factor and the collapse branch need a closer read.
