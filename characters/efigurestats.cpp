@@ -202,21 +202,26 @@ bool eFigureStats::sGet(const eCharacterType type,
     case eT::cattle1: case eT::cattle2:
     case eT::cattle3: case eT::bull: s = cattle(d); return true;
 
-    // gods, monsters and heroes: eZeus decides who they kill and that
-    // nothing hurts them, so only their speed ("God", "Monster", "Hero")
+    // gods, monsters and heroes: rows "God", "Monster" and "Hero" (the
+    // same at every difficulty; Citadel of Poseidon figures.html agrees).
+    // Soldiers can now wear them down (Nicolás); see eCharacter::defend.
     case eT::aphrodite: case eT::apollo: case eT::ares: case eT::artemis:
     case eT::athena: case eT::atlas: case eT::demeter: case eT::dionysus:
     case eT::hades: case eT::hephaestus: case eT::hera: case eT::hermes:
     case eT::poseidon: case eT::zeus:
+        s = row(200, 100, 20, 0, 0, 0, 0, 7);
+        return true;
     case eT::calydonianBoar: case eT::cerberus: case eT::chimera:
     case eT::cyclops: case eT::dragon: case eT::echidna: case eT::harpies:
     case eT::hector: case eT::hydra: case eT::kraken: case eT::maenads:
     case eT::medusa: case eT::minotaur: case eT::scylla: case eT::sphinx:
     case eT::talos:
+        s = row(500, 50, 10, 10, 0, 0, 0, 7);
+        return true;
     case eT::achilles: case eT::atalanta: case eT::bellerophon:
     case eT::hercules: case eT::jason: case eT::odysseus:
     case eT::perseus: case eT::theseus:
-        s = speedOnly(7);
+        s = row(300, 50, 10, 10, 0, 0, 0, 7);
         return true;
     default:
         return false;

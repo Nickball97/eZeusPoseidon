@@ -6,6 +6,7 @@
 #include "characters/actions/esoldieraction.h"
 #include "characters/actions/egodaction.h"
 #include "vec2.h"
+#include "characters/efigurestats.h"
 
 void eDefendAttackCityAction::read(eReadStream& src) {
     auto& board = eGodMonsterAction::board();
@@ -135,7 +136,8 @@ void eDefendAttackCityAction::increment(const int by) {
                             mAttackTarget->dead() ||
                             mAttackTime > 1000;
         if(mAttackTarget && !mAttackTarget->dead()) {
-            const double att = by*c->attack();
+            // attack less armor, as in every other fight (eFigureStats)
+            const double att = eFigureStats::sDamage(c, mAttackTarget.get(), false, by);
             const bool d = mAttackTarget->defend(att);
             if(d) finishAttack = true;
         }
