@@ -447,6 +447,8 @@ add_executable(eZeus
     characters/actions/godHelp/eareshelpaction.h
     characters/actions/godHelp/eartemishelpaction.cpp
     characters/actions/godHelp/eartemishelpaction.h
+    characters/actions/godHelp/eartemishuntaction.cpp
+    characters/actions/godHelp/eartemishuntaction.h
     characters/actions/godHelp/eathenahelpaction.cpp
     characters/actions/godHelp/eathenahelpaction.h
     characters/actions/godHelp/eatlashelpaction.cpp

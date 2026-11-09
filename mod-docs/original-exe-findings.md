@@ -69,7 +69,7 @@ The tax mood factor uses the "no taxes" row when tax coverage is below 11% (`0x0
 - **Hermes:** cart pushers, storehouse workers and deliverymen get speed code ×1.33 (6 → 7 = 1.25×); merchants, donkeys and trade ships ×1.5 (`0x004E1B20`).
 - **Apollo:** +20 to the city's Pan-Hellenic games score (`0x00565D40`).
 - **Hera:** +3% to the yearly births (`0x00566D40`).
-- **Artemis:** the wolf's action (`0x004BD4A0`) calls `0x0056AF80`. When a wolf attacks, or its victim has just died, and her sanctuary is finished (record 0xEF5EA8), Artemis (god 4) is found, or spawned at her sanctuary, and sent to attack the wolf (state 0x4A). Applied in a lighter form: a wolf dies right after its kill in a city with her finished sanctuary. Artemis isn't shown.
+- **Artemis:** the wolf's action (`0x004BD4A0`) calls `0x0056AF80`. When a wolf attacks, or its victim has just died, and her sanctuary is finished (record 0xEF5EA8), Artemis (god 4) is found, or spawned at her sanctuary, and sent to attack the wolf (state 0x4A). Replaced by Nicolás's mod rule (9 Nov 2026): once her sanctuary is finished, Artemis, while out on her rounds, hunts down every wolf in her city with her arrows (eArtemisHuntAction), and that city's wolf dens stop producing wolves (eWolfSpawner). This is not the original rule.
 - Not yet read: Ares (`0x0046DAA0`), Hades (`0x00546E80`), Zeus.
 
 ## Births and deaths (verified in code, `0x00566D40`, once a year)

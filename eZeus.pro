@@ -223,6 +223,7 @@ SOURCES += \
         characters/actions/godHelp/eapollohelpaction.cpp \
         characters/actions/godHelp/eareshelpaction.cpp \
         characters/actions/godHelp/eartemishelpaction.cpp \
+        characters/actions/godHelp/eartemishuntaction.cpp \
         characters/actions/godHelp/eathenahelpaction.cpp \
         characters/actions/godHelp/eatlashelpaction.cpp \
         characters/actions/godHelp/edemeterhelpaction.cpp \
@@ -925,6 +926,7 @@ HEADERS += \
     characters/actions/godHelp/eapollohelpaction.h \
     characters/actions/godHelp/eareshelpaction.h \
     characters/actions/godHelp/eartemishelpaction.h \
+    characters/actions/godHelp/eartemishuntaction.h \
     characters/actions/godHelp/eathenahelpaction.h \
     characters/actions/godHelp/eatlashelpaction.h \
     characters/actions/godHelp/edemeterhelpaction.h \

@@ -19,6 +19,7 @@
 #include "characters/actions/godHelp/eapollohelpaction.h"
 #include "characters/actions/godHelp/eareshelpaction.h"
 #include "characters/actions/godHelp/eartemishelpaction.h"
+#include "characters/actions/godHelp/eartemishuntaction.h"
 #include "characters/actions/godHelp/eathenahelpaction.h"
 #include "characters/actions/godHelp/eatlashelpaction.h"
 #include "characters/actions/godHelp/edemeterhelpaction.h"
@@ -390,6 +391,23 @@ void eSanctuary::timeChanged(const int by) {
         mSpawnWait -= by;
         if(mSpawnWait <= 0) {
             spawnPatrolingGod();
+        }
+    }
+
+    // Nicolás's mod rule: Artemis, when out on her rounds, hunts down the
+    // wolves left in her city (wolf dens there stop, see eWolfSpawner)
+    if(godType() == eGodType::artemis && mGod && !mGodAbroad && finished()) {
+        mWolfHuntCheck += by;
+        if(mWolfHuntCheck > 1000) {
+            mWolfHuntCheck = 0;
+            const auto a = mGod->action();
+            const bool rounds = a &&
+                a->type() == eCharActionType::godWorshippedAction;
+            if(rounds && mGod->tile() &&
+               eArtemisHuntAction::sWolf(getBoard(), cityId())) {
+                const auto h = e::make_shared<eArtemisHuntAction>(mGod.get());
+                mGod->setAction(h);
+            }
         }
     }
 

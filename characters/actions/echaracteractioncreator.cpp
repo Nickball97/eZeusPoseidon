@@ -35,6 +35,7 @@
 
 #include "godHelp/eaphroditehelpaction.h"
 #include "godHelp/eartemishelpaction.h"
+#include "godHelp/eartemishuntaction.h"
 #include "godHelp/eathenahelpaction.h"
 #include "godHelp/eatlashelpaction.h"
 #include "godHelp/edemeterhelpaction.h"
@@ -132,6 +133,8 @@ stdsptr<eCharacterAction> eCharacterAction::sCreate(
         return e::make_shared<eAresHelpAction>(c);
     case eCharActionType::artemisHelpAction:
         return e::make_shared<eArtemisHelpAction>(c);
+    case eCharActionType::artemisHuntAction:
+        return e::make_shared<eArtemisHuntAction>(c);
     case eCharActionType::athenaHelpAction:
         return e::make_shared<eAthenaHelpAction>(c);
     case eCharActionType::atlasHelpAction:

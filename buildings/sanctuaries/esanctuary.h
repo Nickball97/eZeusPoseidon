@@ -94,6 +94,7 @@ public:
 private:
     stdptr<eGod> mGod;
     bool mGodAbroad = false;
+    int mWolfHuntCheck = 0; // not saved
     int mSpawnWait = 0;
 
     bool mAskedForHelp = false;

@@ -32,7 +32,8 @@ enum class eGodActType {
     lookForPlague,
     lookForEvict,
     lookForTargetedBless,
-    lookForTargetedAttack
+    lookForTargetedAttack,
+    lookForWolf
 };
 
 class eGodAct {
