@@ -1,5 +1,7 @@
 #include "esanctuary.h"
 
+#include <cmath>
+
 #include "engine/egameboard.h"
 #include "characters/gods/egod.h"
 #include "characters/actions/egodworshippedaction.h"
@@ -730,4 +732,70 @@ void eSanctuary::spawnKraken() {
     const auto a = e::make_shared<eKrakenDefenderAction>(k.get());
     k->setAction(a);
     mKraken = k.get();
+}
+
+// Original marble and wood each sanctuary needs after placement, Zeus +
+// Poseidon values (Citadel of Poseidon, sanctuary.html; where the site
+// gives two numbers, the second, Poseidon one, per Nicolás). The Citadel
+// of Poseidon already matches (231 marble, 52 wood).
+static bool sOriginalTotals(const eBuildingType type, int& marble, int& wood) {
+    switch(type) {
+    case eBuildingType::templeZeus: marble = 137; wood = 24; return true;
+    case eBuildingType::templePoseidon: marble = 103; wood = 20; return true;
+    case eBuildingType::templeHades: marble = 132; wood = 24; return true;
+    case eBuildingType::templeHera: marble = 88; wood = 20; return true;
+    case eBuildingType::templeDemeter: marble = 110; wood = 20; return true;
+    case eBuildingType::templeAthena: marble = 55; wood = 16; return true;
+    case eBuildingType::templeArtemis: marble = 63; wood = 20; return true;
+    case eBuildingType::templeApollo: marble = 76; wood = 16; return true;
+    case eBuildingType::templeAtlas: marble = 76; wood = 20; return true;
+    case eBuildingType::templeAres: marble = 40; wood = 12; return true;
+    case eBuildingType::templeHephaestus: marble = 44; wood = 12; return true;
+    case eBuildingType::templeAphrodite: marble = 37; wood = 12; return true;
+    case eBuildingType::templeHermes: marble = 35; wood = 12; return true;
+    case eBuildingType::templeDionysus: marble = 31; wood = 12; return true;
+    default: return false;
+    }
+}
+
+void eSanctuary::applyOriginalMaterialTotals() {
+    const auto t = type();
+    if(t == eBuildingType::templePoseidon && atlantean()) return; // Citadel
+    int marble;
+    int wood;
+    if(!sOriginalTotals(t, marble, wood)) return;
+    int baseMarble = 0;
+    int baseWood = 0;
+    for(const auto& e : mElements) {
+        if(!e) continue;
+        for(const auto& c : e->costs()) {
+            baseMarble += c.fMarble + c.fBlackMarble;
+            baseWood += c.fWood;
+        }
+    }
+    // Round the running total, not each piece, so the sum is exact and a
+    // 1-marble floor tile is not doubled.
+    const auto scaler = [](const int target, const int base) {
+        return [target, base, cum = 0, charged = 0](const int v) mutable {
+            if(base <= 0 || v <= 0) return v;
+            cum += v;
+            const int now = static_cast<int>(
+                std::round(static_cast<double>(target)*cum/base));
+            const int r = now - charged;
+            charged = now;
+            return r;
+        };
+    };
+    auto sm = scaler(marble, baseMarble);
+    auto sw = scaler(wood, baseWood);
+    for(const auto& e : mElements) {
+        if(!e) continue;
+        auto costs = e->costs();
+        for(auto& c : costs) {
+            c.fMarble = sm(c.fMarble);
+            c.fBlackMarble = sm(c.fBlackMarble);
+            c.fWood = sw(c.fWood);
+        }
+        e->setCosts(costs);
+    }
 }

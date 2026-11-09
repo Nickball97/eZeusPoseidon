@@ -20,6 +20,7 @@ namespace eFileFormat {
         huntingLodgeHunters,
         domesticatedYearly,
         growerHarvesters,
+        artisansSecond,
 
         nextVersion
     };

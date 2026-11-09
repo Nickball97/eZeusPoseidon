@@ -4211,6 +4211,7 @@ bool eGameBoard::buildSanctuary(const int minX, const int maxX,
         }
     }
 
+    if(!editorDisplay) b->applyOriginalMaterialTotals();
     b->buildingProgressed();
 
     return true;

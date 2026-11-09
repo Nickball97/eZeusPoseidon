@@ -32,6 +32,10 @@ public:
 
     void buildingProgressed() override;
 
+    // Scales the pieces' marble and wood so the whole sanctuary costs the
+    // original totals. Call once, after all pieces are registered.
+    void applyOriginalMaterialTotals();
+
     void read(eReadStream& src) override;
     void write(eWriteStream& dst) const override;
 
