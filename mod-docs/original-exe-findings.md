@@ -140,3 +140,15 @@ The Dragon and Cerberus use the single "Monster" row (500 HP, attack 50, armor 1
 - Output storage caps by building type: 200 by default; winery, oil press and others 300; sculpture studio 400; 500 and 800 for some types; corral 600.
 - Corral (`0x004F9E90`): a slaughter takes 16 cycles (1 month) and gives 200 (2 loads). The next cow leaves the pen once 8 cycles have passed and the slaughter is done. Applied: corral_processing_period = 1 month, corral_kill_period = half a month.
 - Corral fetching (`0x004F9960`): it tries to send a Rancher for cattle every 1, 4, 8, 16 or 32 cycles depending on staff (100%, 75%, 50%, 25%, less). At most 2 are out, and cattle held plus out stay under 3. Not applied, because eZeus doesn't cap how many fetchers are out, so a 1-cycle period would flood the map.
+
+## Service building walker timing (verified in code, step 31 `0x0048CFB0`, applied 9 Nov 2026)
+- Service buildings send one walker at a time. Once it's back, a counter (+0x32) counts cycles until the next leaves. The wait depends on staffing (full / 75%+ / 50%+ / 25%+ / any):
+  - tax office, superintendent's office, guard post: 1 / 2 / 4 / 8 / 16 cycles
+  - fountain: 2 / 4 / 8 / 16 / 30
+  - infirmary, theater, stadium: 4 / 8 / 16 / 30 / 45
+  - podium: 9 / 16 / 31 / 51 / 101
+  - gymnasium: 5 / 6 / 11 / 18 / 31
+- Culture venues allow 1 walker out at a time, 2 if blessed. The agora and the Atlantean buildings use their own functions (not read). eZeus keeps its own timing for them.
+- Workshops (winery, olive press, sculpture studio, armory) now use the 10/8/6/4/2 staffing steps (see Workshops above).
+- Taxes (`0x00488250`, monthly): a house the tax collector has visited pays rate x people x Model column 18 (tax multiplier) x 2 x 50/100 (the difficulty factor `0x005F7F1C` is 50 on every difficulty) / 100. That is rate x people x multiplier, the same as eZeus. A blessed tax office's collector marks houses to pay x4 once (`0x004A67C0` flag +0x84). This is not in eZeus.
+- Sheep and goats (`0x004F8D80`): wool +9 a month, ready at 100 (a year). A shearing gives 100 (1 load). This matches eZeus.

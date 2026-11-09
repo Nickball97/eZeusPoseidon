@@ -60,7 +60,18 @@ void eProcessingBuilding::timeChanged(const int by) {
             mTakeCart = spawnCart(eCartActionTypeSupport::take);
             mTakeCart->setMaxDistance(eNumbers::sProcessingBuildingMaxResourceTakeDistance);
         }
-        mProcessTime += by*effectiveness();
+        // the original works in staffing steps (exe 0x0048CFB0): full staff
+        // 10 a cycle, 75%+ 8, 50%+ 6, 25%+ 4, any 2
+        double eff = effectiveness();
+        const double filled = vacanciesFilledFraction();
+        if(filled > 0.) {
+            const double step = filled >= 1. ? 1. :
+                                filled >= 0.75 ? 0.8 :
+                                filled >= 0.5 ? 0.6 :
+                                filled >= 0.25 ? 0.4 : 0.2;
+            eff *= step/filled;
+        }
+        mProcessTime += by*eff;
         if(mProcessTime > mProcessWaitTime) {
             mProcessTime -= mProcessWaitTime;
             if(mRawCount >= mRawUse) {

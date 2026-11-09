@@ -70,11 +70,57 @@ ePatrolBuildingBase::~ePatrolBuildingBase() {
     if(mChar) mChar->kill();
 }
 
+// Cycles (16 a month) a building waits, once its walker is back, before
+// sending the next, by staffing: full, 75%+, 50%+, 25%+, any (original exe
+// step 31, 0x0048CFB0). 0 where the original's rule isn't known.
+static int sSpawnWaitCycles(const eBuildingType type, const int step) {
+    static const int sService[5] = {1, 2, 4, 8, 16};
+    static const int sFountain[5] = {2, 4, 8, 16, 30};
+    static const int sVenue[5] = {4, 8, 16, 30, 45};
+    static const int sPodium[5] = {9, 16, 31, 51, 101};
+    static const int sGym[5] = {5, 6, 11, 18, 31};
+    switch(type) {
+    case eBuildingType::taxOffice:
+    case eBuildingType::maintenanceOffice:
+    case eBuildingType::watchPost:
+        return sService[step];
+    case eBuildingType::fountain:
+        return sFountain[step];
+    case eBuildingType::hospital:
+    case eBuildingType::theater:
+    case eBuildingType::stadium:
+        return sVenue[step];
+    case eBuildingType::podium:
+        return sPodium[step];
+    case eBuildingType::gymnasium:
+        return sGym[step];
+    default:
+        return 0;
+    }
+}
+
 void ePatrolBuildingBase::timeChanged(const int by) {
     if(mSpawnPatrolers && enabled()) {
         if(!mChar) {
-            mSpawnTime += by*effectiveness();
-            if(mSpawnTime > mWaitTime) {
+            double waitTime = mWaitTime;
+            double rate = effectiveness();
+            const double filled = vacanciesFilledFraction();
+            if(filled > 0.) {
+                const int step = filled >= 1. ? 0 :
+                                 filled >= 0.75 ? 1 :
+                                 filled >= 0.5 ? 2 :
+                                 filled >= 0.25 ? 3 : 4;
+                const int cycles = sSpawnWaitCycles(type(), step);
+                if(cycles > 0) {
+                    const int cycle = (365*eNumbers::sDayLength)/(12*16);
+                    waitTime = cycles*cycle;
+                    // staffing is in the wait itself; a blessing still
+                    // speeds it up
+                    rate /= filled;
+                }
+            }
+            mSpawnTime += by*rate;
+            if(mSpawnTime > waitTime) {
                 mSpawnTime = 0;
                 // blessed: walkers come twice as often (sBlessMultiplier);
                 // two such walkers make one extra, which uses it up
