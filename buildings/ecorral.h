@@ -2,6 +2,7 @@
 #define ECORRAL_H
 
 #include "eresourcebuildingbase.h"
+#include "characters/echaracter.h"
 
 class eCorral : public eResourceBuildingBase {
 public:
@@ -34,6 +35,8 @@ private:
     double mTakeWait = 0;
     double mKillWait = 0;
     double mReplaceWait = 0;
+    // cattle fetchers out (not saved; after loading only new ones count)
+    std::vector<stdptr<eCharacter>> mFetchers;
 };
 
 #endif // ECORRAL_H
