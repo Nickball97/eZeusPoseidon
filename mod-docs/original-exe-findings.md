@@ -104,5 +104,7 @@ Cures every sick house, removes the plague walkers and raises city health by 50.
 ## Guardians
 The Dragon and Cerberus use the single "Monster" row (500 HP, attack 50, armor 10).
 
-## Fire and collapse (partly read, `0x00492260`, step 44, every cycle)
-Per building (not on fire): a damage counter grows by the Model damage risk (column h) each cycle; it is reset for some houses and for tiles with terrain flag 0x10000. While below 1000, a 1-in-8 draw adds Model fire risk (column g) times a second factor to a fire counter; past 999 the building catches fire (with a message, rate-limited). Not applied: the second factor and the collapse branch need a closer read.
+## Fire and collapse (verified in code, `0x00492260`, step 44, every cycle; applied 9 Nov 2026)
+- Damage counter += Model damage risk (column h) each cycle (×11 while burning); reset for houses with at most 1 resident, the vacant elite type, and terrain 0x10000; collapse at 1000. With damage risk 10: 100 cycles, about 6 months (the site's "60 ÷ risk months").
+- Fire counter: on a 1-in-8 draw, += Model fire risk (column g) × random 1–5 (+3 more during a fire disaster mode); empty houses and buildings with no fire risk reset it; fire at 1000.
+- The maintenance walker (figure 8, `0x004A5D90`) lowers both counters by 50 (Model row 121 BUILD_SUPER_OFFICE column j) for buildings within 2 tiles each time he passes.

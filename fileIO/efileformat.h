@@ -25,6 +25,7 @@ namespace eFileFormat {
         cityMoodCrime,
         cityPlague,
         eliteFailedChecks,
+        buildingRiskCounters,
 
         nextVersion
     };

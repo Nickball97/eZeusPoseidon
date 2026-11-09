@@ -410,6 +410,12 @@ private:
     double mHp = 1000;
 
     int mMaintance = 100;
+    // original fire and damage counters (exe 0x00492260): a building
+    // catches fire or collapses when one reaches 1000
+    int mDamageCounter = 0;
+    int mFireCounter = 0;
+    int mRiskCycle = 0;
+    bool riskCycle(const int by);
 
     bool mOnFire = false;
 

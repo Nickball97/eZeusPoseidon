@@ -8,6 +8,7 @@
 #include "eruins.h"
 
 #include "buildings/esmallhouse.h"
+#include "fileIO/efileformat.h"
 #include "buildings/eelitehousing.h"
 #include "buildings/eaestheticsbuilding.h"
 
@@ -48,9 +49,14 @@ eTextureSpace eBuilding::getTextureSpace(const int tx, const int ty,
 int eBuilding::provide(const eProvide p, const int n) {
     (void)n;
     if(p == eProvide::maintanance) {
-        const int nn = 100 - mMaintance;
-        mMaintance += nn;
-        return nn;
+        // the original maintenance walker lowers both counters by the
+        // maintenance office's risk reducer (Model row 121 column j = 50)
+        // for buildings within 2 tiles (exe 0x004A5D90)
+        mDamageCounter = std::max(0, mDamageCounter - 50);
+        mFireCounter = std::max(0, mFireCounter - 50);
+        const int old = mMaintance;
+        mMaintance = std::clamp(100 - std::max(mDamageCounter, mFireCounter)/10, 0, 100);
+        return std::max(0, mMaintance - old);
     }
     return 0;
 }
@@ -2404,57 +2410,8 @@ void eBuilding::incTime(const int by) {
                 setOnFire(false);
             }
         }
-    } else if(eRand::rand() % (eNumbers::sMaintenanceDecrementPeriod/by) == 0) {
-        if(!isEmptyHome()) {
-            mMaintance = std::max(0, mMaintance - 1);
-        }
-    } else if(!isEmptyHome()) {
-        const auto pid = playerId();
-        const auto diff = b.difficulty(pid);
-        int fireRisk = eDifficultyHelpers::fireRisk(diff, mType);
-        if(mType == eBuildingType::eliteHousing) {
-            // manors and estates burn less (Model FRI by elite level)
-            const auto h = static_cast<const eHouseBase*>(this);
-            const int d = static_cast<int>(diff);
-            static const int sManor[5] = {5, 10, 10, 12, 15};
-            static const int sEstate[5] = {2, 5, 5, 8, 10};
-            if(h->level() == 3) fireRisk = sManor[d];
-            else if(h->level() >= 4) fireRisk = sEstate[d];
-        }
-        {
-            // Forge of Hephaestus finished: "no risk of fire" (Citadel of
-            // Poseidon)
-            const auto s = b.sanctuary(cityId(), eGodType::hephaestus);
-            if(s && s->finished()) fireRisk = 0;
-        }
-        if(fireRisk && by && sFlammable(type())) {
-            const double pm = eNumbers::sFireRiskPeriodMultiplier;
-            const double pbi = eNumbers::sFireRiskPeriodBaseIncrement;
-            const double pe = eNumbers::sFireRiskPeriodExponent;
-            const int m4 = pm*pow(pbi + mMaintance, pe);
-            const int firePeriod = m4/(by*fireRisk);
-            if(firePeriod && eRand::rand() % firePeriod == 0) {
-                setOnFire(true);
-                eEventData ed(cityId());
-                ed.fTile = centerTile();
-                b.event(eEvent::fire, ed);
-            }
-        }
-        const int damageRisk = eDifficultyHelpers::damageRisk(diff, mType);
-        if(damageRisk && by) {
-            const double pm = eNumbers::sCollapseRiskPeriodMultiplier;
-            const double pbi = eNumbers::sCollapseRiskPeriodBaseIncrement;
-            const double pe = eNumbers::sCollapseRiskPeriodExponent;
-            const int m4 = pm*pow(pbi + mMaintance, pe);
-            const int damagePeriod = m4/(by*damageRisk);
-            if(damagePeriod && eRand::rand() % damagePeriod == 0) {
-                eEventData ed(cityId());
-                ed.fTile = centerTile();
-                b.event(eEvent::collapse, ed);
-                collapse();
-                return;
-            }
-        }
+    } else {
+        if(riskCycle(by)) return;
     }
     timeChanged(by);
 }
@@ -2708,6 +2665,11 @@ void eBuilding::read(eReadStream& src) {
     src >> mBlessed;
     src >> mBlessTime;
     src >> mOnFire;
+    if(src.formatVersion() >= eFileFormat::buildingRiskCounters) {
+        src >> mDamageCounter;
+        src >> mFireCounter;
+        src >> mRiskCycle;
+    }
 }
 
 void eBuilding::write(eWriteStream& dst) const {
@@ -2732,6 +2694,9 @@ void eBuilding::write(eWriteStream& dst) const {
     dst << mBlessed;
     dst << mBlessTime;
     dst << mOnFire;
+    dst << mDamageCounter;
+    dst << mFireCounter;
+    dst << mRiskCycle;
 }
 
 void eBuilding::setIOID(const int id) {
@@ -2766,4 +2731,71 @@ void eBuilding::spendBlessing(const double amount) {
         mBlessed = 0;
         mBlessTime = 0;
     }
+}
+
+// Original fire and collapse (exe 0x00492260, step 44, every cycle):
+// - the damage counter grows by the Model damage risk (column h); at 1000
+//   the building collapses;
+// - on a 1-in-8 draw the fire counter grows by the fire risk (column g)
+//   times 1-5; at 1000 the building catches fire;
+// - houses with at most one resident keep no damage, empty houses no fire;
+//   maintenance walkers lower both by 50 (see provide).
+// Returns true when the building collapsed.
+bool eBuilding::riskCycle(const int by) {
+    auto& b = getBoard();
+    const int cycle = (365*eNumbers::sDayLength)/(12*16);
+    mRiskCycle += by;
+    while(mRiskCycle >= cycle) {
+        mRiskCycle -= cycle;
+        const bool house = mType == eBuildingType::commonHouse ||
+                           mType == eBuildingType::eliteHousing;
+        const int people = house ? static_cast<const eHouseBase*>(this)->people() : 0;
+        const auto pid = playerId();
+        const auto diff = b.difficulty(pid);
+
+        const int damageRisk = eDifficultyHelpers::damageRisk(diff, mType);
+        mDamageCounter += damageRisk;
+        if(house && people <= 1) mDamageCounter = 0;
+        if(mDamageCounter >= 1000) {
+            mDamageCounter = 0;
+            eEventData ed(cityId());
+            ed.fTile = centerTile();
+            b.event(eEvent::collapse, ed);
+            collapse();
+            return true;
+        }
+
+        int fireRisk = eDifficultyHelpers::fireRisk(diff, mType);
+        if(mType == eBuildingType::eliteHousing) {
+            // manors and estates burn less (Model FRI by elite level)
+            const auto h = static_cast<const eHouseBase*>(this);
+            const int d = static_cast<int>(diff);
+            static const int sManor[5] = {5, 10, 10, 12, 15};
+            static const int sEstate[5] = {2, 5, 5, 8, 10};
+            if(h->level() == 3) fireRisk = sManor[d];
+            else if(h->level() >= 4) fireRisk = sEstate[d];
+        }
+        {
+            // Forge of Hephaestus finished: no risk of fire (exe 0x00433D50)
+            const auto s = b.sanctuary(cityId(), eGodType::hephaestus);
+            if(s && s->finished()) fireRisk = 0;
+        }
+        if(!sFlammable(mType)) fireRisk = 0;
+        if(eRand::rand() % 8 == 0) {
+            if((house && people <= 0) || fireRisk == 0) {
+                mFireCounter = 0;
+            } else {
+                mFireCounter += fireRisk*(1 + eRand::rand() % 5);
+            }
+        }
+        if(mFireCounter >= 1000) {
+            mFireCounter = 0;
+            setOnFire(true);
+            eEventData ed(cityId());
+            ed.fTile = centerTile();
+            b.event(eEvent::fire, ed);
+        }
+        mMaintance = std::clamp(100 - std::max(mDamageCounter, mFireCounter)/10, 0, 100);
+    }
+    return false;
 }
