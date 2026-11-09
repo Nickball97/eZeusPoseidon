@@ -1179,10 +1179,13 @@ void eGameWidget::paintEvent(ePainter& p) {
                     } else {
                         coll = &trrTexs.fAppeal;
                     }
-                    const double app = am.heat(dtx, dty);
-                    const double mult = app > 0 ? 1 : -1;
-                    const double appS = mult*pow(abs(app), 0.75);
-                    int appId = (int)std::round(appS + 2.);
+                    // original colour bands (exe 0x0044BCF0): -11 or less 0,
+                    // -10 .. 69 appeal/10 + 2, 70 or more 9
+                    const int app = static_cast<int>(am.heat(dtx, dty));
+                    int appId;
+                    if(app <= -11) appId = 0;
+                    else if(app >= 70) appId = 9;
+                    else appId = app/10 + 2;
                     appId = std::clamp(appId, 0, 9);
                     const auto tex = coll->getTexture(appId);
                     tp.drawTexture(rx + da, ry + da, tex, eAlignment::top);

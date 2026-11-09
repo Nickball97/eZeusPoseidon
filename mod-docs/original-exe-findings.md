@@ -86,3 +86,8 @@ Population changes by a share set by city health: 91+ +6%, 81–90 +4%, 71–80 
 
 ## Trireme wharf (verified in code, `0x0048CFB0`)
 Progress per cycle by staffing (10 / 8 / 6 / 4 / 2); a ship is launched past 319, so 32 cycles (2 months) at full staff. Needs 200+ units of a material in stock to progress.
+
+## Roads, ground and the appeal view (verified in code)
+- Roads on slopes use the paved image when the tile's appeal is above 4 (`0x004A0480`, called from the slope road picker `0x0045E110`); eZeus uses the same rule for all roads. Flat road selection was not traced.
+- Plain ground picks one of four looks by appeal: below 0, 0–15, 16–29, 30+ (`0x004A0450`, `0x004A0190`). Not in eZeus.
+- Appeal view colour (`0x0044BCF0`): −11 or less → 0; −10 … 69 → appeal/10 + 2; 70+ → 9; a tile at 0 with no building is not coloured.

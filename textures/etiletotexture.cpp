@@ -398,7 +398,8 @@ std::shared_ptr<eTexture> eTileToTexture::get(eTile* const tile,
                     const int dx = tile->dx();
                     const int dy = tile->dy();
                     const double appeal = board.appeal(dx, dy);
-                    const bool highAppeal = appeal > 3;
+                    // paved above appeal 4 (original exe 0x004A0480)
+                    const bool highAppeal = appeal > 4;
                     if(highAppeal) {
                         id = 93 + relId;
                     } else {

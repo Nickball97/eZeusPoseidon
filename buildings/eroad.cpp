@@ -322,7 +322,8 @@ std::shared_ptr<eTexture> eRoad::getTexture(const eTileSize size) const {
         const double a = b.appeal(dx, dy);
 
         const eTextureCollection* coll;
-        if(a > 3) {
+        // paved above appeal 4 (original exe 0x004A0480)
+        if(a > 4) {
             coll = &pcoll;
         } else {
             coll = &rcoll;
