@@ -3,6 +3,7 @@
 #include "engine/egameboard.h"
 #include "engine/eguidedmovepathtask.h"
 #include "characters/etaxcollector.h"
+#include "eavenue.h"
 
 #include <algorithm>
 
@@ -182,11 +183,30 @@ bool ePatrolBuildingBase::spawn() {
            bt == eBuildingType::grandAgora) {
             t = centerTile();
         } else {
-            const auto ts = surroundingRoad(false, true);
-            if(!ts.empty()) {
-                const int tss = ts.size();
-                if(++mSpawnRoadId >= tss) mSpawnRoadId = 0;
-                t = ts[mSpawnRoadId];
+            // the first road touching the building, searching clockwise
+            // from its north (top) corner, is always the exit (Citadel of
+            // Poseidon, walker distances: exit points)
+            const auto& board = getBoard();
+            const auto tr = tileRect();
+            std::vector<std::pair<int, int>> order;
+            for(int x = tr.x; x < tr.x + tr.w; x++) order.push_back({x, tr.y - 1});
+            for(int y = tr.y; y < tr.y + tr.h; y++) order.push_back({tr.x + tr.w, y});
+            for(int x = tr.x + tr.w - 1; x >= tr.x; x--) order.push_back({x, tr.y + tr.h});
+            for(int y = tr.y + tr.h - 1; y >= tr.y; y--) order.push_back({tr.x - 1, y});
+            for(const auto& xy : order) {
+                const auto tt = board.tile(xy.first, xy.second);
+                if(!tt) continue;
+                if(tt->hasRoad()) {
+                    t = tt;
+                    break;
+                }
+                if(tt->hasAvenue()) {
+                    const auto a = static_cast<eAvenue*>(tt->underBuilding());
+                    if(const auto r = a->road()) {
+                        t = r;
+                        break;
+                    }
+                }
             }
         }
         if(!t) return false;

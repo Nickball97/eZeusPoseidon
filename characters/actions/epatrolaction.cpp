@@ -4,6 +4,7 @@
 #include "engine/etile.h"
 #include "epatrolmoveaction.h"
 #include "buildings/epatrolbuildingbase.h"
+#include "engine/egameboard.h"
 
 ePatrolAction::ePatrolAction(eCharacter* const c,
                              ePatrolBuildingBase* const b,
@@ -85,5 +86,20 @@ void ePatrolAction::patrol() {
 }
 
 void ePatrolAction::goBackDecision(const stdsptr<eWalkableObject>& w) {
+    // walkers from fountains and infirmaries return to the road tile
+    // directly north of the building, the one touching only its corner
+    // (Citadel of Poseidon, walker distances)
+    if(mBuilding) {
+        const auto bt = mBuilding->type();
+        if(bt == eBuildingType::fountain || bt == eBuildingType::hospital) {
+            const auto tr = mBuilding->tileRect();
+            const auto t = board().tile(tr.x - 1, tr.y - 1);
+            if(t && t->hasRoad()) {
+                setStartTile(t);
+                goBack(w);
+                return;
+            }
+        }
+    }
     goBack(mBuilding, w);
 }

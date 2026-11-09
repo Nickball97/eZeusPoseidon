@@ -39,6 +39,7 @@ public:
                 const stdsptr<eWalkableObject>& walkable);
 
     eTile* startTile() const { return mStartTile; }
+    void setStartTile(eTile* const t) { mStartTile = t; }
 private:
     void goBackInternal(stdsptr<eWalkableObject> walkable);
     void teleportDecision();

@@ -499,12 +499,21 @@ int eDifficultyHelpers::buildingCost(
     return std::round(mult*base);
 }
 
-// Market stalls keep eZeus's formula for fire risk: the original puts the
-// risk on the agora (vendors 0), eZeus models stalls as separate buildings.
+// The original puts the fire risk on the agora as one building (6/12/12/12/20)
+// and gives its stalls none (Model rows BUILD_AGORA_* and BUILD_*_VENDOR).
 // FRI per difficulty (beginner, mortal, hero, titan, olympian), column
 // "FRI" of the original Model/Zeus_Model_*.txt (VeryEasy..Impossible).
 bool originalFireRisk(const eBuildingType type, std::array<int, 5>& r) {
     switch(type) {
+    case eBuildingType::commonAgora: r = {6, 12, 12, 12, 20}; return true; // BUILD_AGORA_SMALL
+    case eBuildingType::grandAgora: r = {6, 12, 12, 12, 20}; return true; // BUILD_AGORA_LARGE
+    case eBuildingType::foodVendor:
+    case eBuildingType::fleeceVendor:
+    case eBuildingType::oilVendor:
+    case eBuildingType::wineVendor:
+    case eBuildingType::armsVendor:
+    case eBuildingType::horseTrainer:
+    case eBuildingType::chariotVendor: r = {0, 0, 0, 0, 0}; return true; // BUILD_*_VENDOR
     case eBuildingType::commonHouse: r = {8, 12, 15, 18, 20}; return true; // BUILD_HOUSE1_HUT
     case eBuildingType::eliteHousing: r = {8, 12, 15, 18, 20}; return true; // BUILD_ELITE_VACANT
     case eBuildingType::flowerGarden: r = {0, 0, 0, 0, 0}; return true; // BUILD_FLOWER_GARDEN

@@ -1,4 +1,5 @@
 #include "emoveaction.h"
+#include "enumbers.h"
 
 #include "../echaracter.h"
 #include "walkable/ewalkableobject.h"
@@ -102,7 +103,11 @@ void eMoveAction::increment(const int by) {
         const auto s = c->getBoard().sanctuary(c->cityId(), eGodType::hermes);
         if(s && s->finished()) speed *= cart ? 1.25 : 1.5;
     }
-    moveBy(speed*0.005 * by);
+    // a normal walker covers 54.4 tiles a month (Citadel of Poseidon
+    // speed.html; original exe: speed code 6 moves one of a tile's 15 steps
+    // per walker tick, 816 ticks a month)
+    static const double sTilesPerTick = 54.4*12/(365.*eNumbers::sDayLength);
+    moveBy(speed*sTilesPerTick*by);
 }
 
 void eMoveAction::read(eReadStream& src) {
