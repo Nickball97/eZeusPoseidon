@@ -16,6 +16,7 @@
 
 #include "characters/ecentaurhorseman.h"
 #include "characters/ecentaurarcher.h"
+#include "characters/efigurestats.h"
 
 #include "characters/epersianhoplite.h"
 #include "characters/epersianhorseman.h"
@@ -107,20 +108,22 @@ void eInvasionHandler::disembark() {
             infantry = use;
         }
     }
-    {
-        const int use = std::min(mRem, mCavalryLeft);
-        if(use > 0) {
-            mRem -= use;
-            mCavalryLeft -= use;
-            cavalry = use;
-        }
-    }
+    // hoplites land first, then archers/rabble, then cavalry (Citadel of
+    // Poseidon, enemy_appearance.html)
     {
         const int use = std::min(mRem, mArchersLeft);
         if(use > 0) {
             mRem -= use;
             mArchersLeft -= use;
             archers = use;
+        }
+    }
+    {
+        const int use = std::min(mRem, mCavalryLeft);
+        if(use > 0) {
+            mRem -= use;
+            mCavalryLeft -= use;
+            cavalry = use;
         }
     }
     {
@@ -1048,6 +1051,13 @@ void eInvasionHandler::spawnBoat() {
     const auto b = e::make_shared<eEnemyBoat>(mBoard);
     b->setCityId(cid);
     b->setOnCityId(ocid);
+    // transports have 100 hit points, Mayan 200 and Phoenician 150
+    // (Model "... Transport" rows; Citadel of Poseidon enemy_figures)
+    b->setFigureStatsApplied();
+    eFigureStats::sApply(b.get(), true);
+    const auto nat = mCity->nationality();
+    if(nat == eNationality::mayan) b->setHP(2*b->hp());
+    else if(nat == eNationality::phoenician) b->setHP(1.5*b->hp());
     b->changeTile(mBoatsTile);
     const auto a = e::make_shared<eMoveToAction>(b.get());
     a->setStateRelevance(eStateRelevance::terrain);
