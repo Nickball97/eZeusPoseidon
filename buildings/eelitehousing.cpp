@@ -166,14 +166,18 @@ int eEliteHousing::provide(const eProvide p, const int n) {
         value = &mWine;
         max = 16;
         break;
-    case eProvide::arms:
-        max = 4;
+    case eProvide::arms: {
+        // armor storage by level (Model "ALL HOUSES" rows)
+        static const int sMax[] = {0, 2, 2, 4, 4};
+        max = sMax[std::clamp(mLevel, 0, 4)];
         value = &mArms;
-        break;
-    case eProvide::horses:
-        max = 4;
+    } break;
+    case eProvide::horses: {
+        // horse storage by level (Model "ALL HOUSES" rows)
+        static const int sMax[] = {0, 1, 2, 4, 4};
+        max = sMax[std::clamp(mLevel, 0, 4)];
         value = &mHorses;
-        break;
+    } break;
 
     case eProvide::philosopherInventor:
         value = &mPhilosophers;
@@ -254,7 +258,9 @@ void eEliteHousing::timeChanged(const int by) {
 void eEliteHousing::nextMonth() {
     mPaidTaxesLastMonth = mPaidTaxes;
     mPaidTaxes = 0;
-    const int cfood = round((mPeople + mHorses)*0.25);
+    // a quarter unit each, rounded down: Residence 1, Mansion 2 a month
+    // (consumption.html)
+    const int cfood = (mPeople + mHorses)/4;
     const int cfleece = 2;
     const int coil = 2;
     const int cwine = mLevel > 1 ? 2 : 0;

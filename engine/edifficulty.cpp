@@ -958,8 +958,9 @@ int eDifficultyHelpers::taxMultiplier(
         if(level < 3) {
             return 1;
         } else if(level == 3) {
-            if(diff == eDifficulty::titan ||
-               diff == eDifficulty::olympian) {
+            // homestead: 1 only on Titan (tax.html and the Model files;
+            // Olympian is 2)
+            if(diff == eDifficulty::titan) {
                 return 1;
             } else {
                 return 2;
