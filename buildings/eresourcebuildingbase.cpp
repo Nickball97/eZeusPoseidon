@@ -27,9 +27,19 @@ void eResourceBuildingBase::timeChanged(const int by) {
     if(enabled()) {
         if(!mCart) {
             mCart = spawnCart(eCartActionTypeSupport::give);
-            mCart->setMaxDistance(eNumbers::sResourceBuildingMaxResourceGiveDistance);
+            const auto t = type();
+            const bool farm = t == eBuildingType::wheatFarm ||
+                              t == eBuildingType::carrotsFarm ||
+                              t == eBuildingType::onionsFarm;
+            // farms deliver up to about 300 tiles (Citadel of Poseidon,
+            // industrytable.html); other buildings keep eZeus's limit
+            mCart->setMaxDistance(farm ? 300 :
+                eNumbers::sResourceBuildingMaxResourceGiveDistance);
         } else if(mCart && mCart->waiting() && mResource > 0) {
-            const int a = mCart->add(mResType, mResource);
+            // a fishery's deliveryman carries one load at a time (Citadel
+            // of Poseidon, Perseus and Medusa ep. 2)
+            const bool one = type() == eBuildingType::fishery;
+            const int a = mCart->add(mResType, one ? 1 : mResource);
             mResource -= a;
         }
     }

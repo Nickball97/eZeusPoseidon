@@ -98,13 +98,30 @@ int eVendor::count(const eResourceType type) const {
     return 0;
 }
 
+// Agora stock (Citadel of Poseidon, walkers/agora.html): the food vendor
+// holds up to 8 loads; fleece, oil and wine vendors fetch 4 loads and
+// another 2 when the stock drops below 200 units.
+int eVendor::maxStock() const {
+    switch(mResType) {
+    case eResourceType::food: return 8*mResMult;
+    case eResourceType::fleece:
+    case eResourceType::oliveOil:
+    case eResourceType::wine: return 4*mResMult;
+    default: return mMaxResource;
+    }
+}
+
 int eVendor::spaceLeft(const eResourceType type) const {
     if(type != mResType) return 0;
-    return (mMaxResource - mResource)/mResMult;
+    return std::max(0, (maxStock() - mResource)/mResMult);
 }
 
 void eVendor::timeChanged(const int by) {
     if(enabled()) {
+        if(mCart && mResType == eResourceType::food) {
+            // "takes 8 loads on the very first trip" (walkers/agora.html)
+            mCart->setMaxCount(8);
+        }
         if(!mCart) {
             mCart = spawnCart(eCartActionTypeSupport::take);
             switch(mResType) {
@@ -154,6 +171,14 @@ void eVendor::timeChanged(const int by) {
 
 std::vector<eCartTask> eVendor::cartTasks() const {
     if(!mVendorEnabled) return {};
+    switch(mResType) {
+    case eResourceType::fleece:
+    case eResourceType::oliveOil:
+    case eResourceType::wine:
+        if(mResource >= 2*mResMult) return {};
+        break;
+    default: break;
+    }
     const int space = spaceLeft(mResType);
 
     if(space > 0) {

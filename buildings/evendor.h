@@ -54,6 +54,7 @@ public:
 
     void setResMult(const int m) { mResMult = m; }
     void setMaxRes(const int m) { mMaxResource = m; }
+    int maxStock() const;
 
     bool vendorEnabled() const { return mVendorEnabled; }
     void setVendorEnabled(const bool e) { mVendorEnabled = e; }
