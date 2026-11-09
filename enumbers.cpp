@@ -416,7 +416,9 @@ void eNumbers::sLoad(const std::string& path) {
     // a culture walker's visit lasts 96 cycles (6 months) in the original
     // (exe 0x00484D20 counts down, walkers set 96): 8 steps of 12 cycles
     loadI("house_culture_decrement_period_i", sHouseCultureDecrementPeriod, (365*sDayLength)/16, 1, 1000000);
-    loadI("house_water_decrement_period_i", sHouseWaterDecrementPeriod, 7500, 1, 1000000);
+    // a water bearer's visit lasts 96 cycles (6 months) in the original
+    // (0x004A65A0 sets 96): 8 steps of 12 cycles
+    loadI("house_water_decrement_period_i", sHouseWaterDecrementPeriod, (365*sDayLength)/16, 1, 1000000);
     // a healer's visit (hygiene 100) wears off by 1 a cycle, about 6
     // months, as the original's 96-cycle healer counter (0x004A66B0)
     loadI("house_hygiene_decrement_period_i", sHouseHygieneDecrementPeriod, (365*sDayLength)/(12*16), 1, 1000000);

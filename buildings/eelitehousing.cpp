@@ -310,12 +310,14 @@ bool eEliteHousing::appealFor(const int l) const {
     return appeal >= need - aphroditeAppealBonus();
 }
 
-// culture/science points for level L; an estate also needs a working
-// stadium (Atlantean: museum) in the city (Model column e)
+// culture/science points for level L; an estate also needs a visit from
+// a competitor (Atlantean: curator) (Model column e)
 bool eEliteHousing::cultureFor(const int l) const {
     const auto d = getBoard().difficulty(playerId());
     if(culturePoints() < eHouseModel::eliteCulture(d, l)) return false;
-    if(l >= 4 && !hasCultureBonusBuilding()) return false;
+    // an estate needs a competitor (Atlantean: curator) visit (original
+    // exe 0x004843D0 checks Model column e against that visit counter)
+    if(l >= 4 && competitorsCurators() <= 0) return false;
     return true;
 }
 

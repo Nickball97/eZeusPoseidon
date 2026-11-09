@@ -76,8 +76,11 @@ bool eHouseBase::hasCultureBonusBuilding() const {
 int eHouseBase::culturePoints() const {
     const bool atl = atlantean();
     int p = 0;
-    if(mPhilosophers > 0) p += atl ? 20 : 15;
-    if(mActors > 0) p += 25;
+    // original exe 0x00484DE0: philosopher 15, actor 25, athlete 20,
+    // competitor 20; Atlantean inventor 25, astronomer 20, scholar 15,
+    // curator 20
+    if(mPhilosophers > 0) p += atl ? 25 : 15;
+    if(mActors > 0) p += atl ? 20 : 25;
     if(mAthletes > 0) p += atl ? 15 : 20;
     if(mCompetitors > 0) p += 20;
     if(hasCultureBonusBuilding()) p += 10;

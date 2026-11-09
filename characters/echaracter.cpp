@@ -213,8 +213,10 @@ void eCharacter::changeTile(eTile* const t, const bool prepend) {
     if(t) t->addCharacter(tsptr, prepend);
     else deleteLater();
     if(t && mProvide != eProvide::none && mProvideCount > 0) {
-        for(const int x : {-1, 0, 1}) {
-            for(const int y : {-1, 0, 1}) {
+        // every service walker reaches 2 tiles each way (original exe
+        // 0x004A60E0 and siblings scan a 5x5 square)
+        for(const int x : {-2, -1, 0, 1, 2}) {
+            for(const int y : {-2, -1, 0, 1, 2}) {
                 const auto tt = t->tileRel<eTile>(x, y);
                 if(!tt) continue;
                 if(const auto b = tt->underBuilding()) {
