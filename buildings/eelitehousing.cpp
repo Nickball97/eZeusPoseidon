@@ -310,15 +310,13 @@ bool eEliteHousing::appealFor(const int l) const {
     return appeal >= need - aphroditeAppealBonus();
 }
 
-// culture/science points for level L; an estate also needs a visit from
-// a competitor (Atlantean: curator) (Model column e)
+// culture/science points for level L. Nicolás's call (9 Nov 2026): an
+// estate needs only its points, no stadium or competitor visit, although
+// the original exe (0x004843D0, Model column e) also asks for a
+// competitor (Atlantean: curator) visit
 bool eEliteHousing::cultureFor(const int l) const {
     const auto d = getBoard().difficulty(playerId());
-    if(culturePoints() < eHouseModel::eliteCulture(d, l)) return false;
-    // an estate needs a competitor (Atlantean: curator) visit (original
-    // exe 0x004843D0 checks Model column e against that visit counter)
-    if(l >= 4 && competitorsCurators() <= 0) return false;
-    return true;
+    return culturePoints() >= eHouseModel::eliteCulture(d, l);
 }
 
 eHouseMissing eEliteHousing::missing() const {
