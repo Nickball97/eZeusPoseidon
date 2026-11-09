@@ -428,7 +428,7 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("heros_hall_arrival_period_i", sHerosHallArrivalPeriod, 15000, 1, 1000000);
     loadI("heros_hall_spawn_period_i", sHerosHallSpawnPeriod, 5000, 1, 1000000);
 
-    loadI("horse_ranch_wheat_use_period_i", sHorseRanchWheatUsePeriod, 1000, 1, 1000000);
+    loadI("horse_ranch_wheat_use_period_i", sHorseRanchWheatUsePeriod, (365*sDayLength)/12, 1, 1000000);
     loadI("horse_ranch_horse_spawn_period_i", sHorseRanchHorseSpawnPeriod, sSixPerYear, 1, 1000000);
 
     loadI("patroler_max_distance_i", sPatrolerMaxDistance, 40, 5, 1000);

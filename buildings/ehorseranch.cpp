@@ -64,7 +64,9 @@ void eHorseRanch::timeChanged(const int by) {
             mWheatTime += by;
             if(mWheatTime > eNumbers::sHorseRanchWheatUsePeriod) {
                 mWheatTime = 0;
-                mWheat -= 10;
+                // Each horse in the ranch eats 10 units of wheat (Citadel
+                // of Poseidon) a month (Nicolás); 100 units = 1 load.
+                mWheat = std::max(0, mWheat - 10*horseCount());
             }
             mHorseTime += by;
             if(mHorseTime > eNumbers::sHorseRanchHorseSpawnPeriod) {
