@@ -27,3 +27,17 @@ Read with Ghidra 12.2 from Nicolás's Steam `zeus.exe` (same build as GOG: compi
 ## Appeal (from zeus-poseidon-arm64 docs/engine/terrain.md §7, applied 9 Nov 2026)
 - Spread ring by ring from the footprint, at most 6 rings; the footprint itself gets nothing; each tile clamped to −100..100.
 - A building's appeal is the highest over its footprint (+10 when an unidentified flag is set).
+
+## Outlaws' behaviour (verified in code)
+- Action table per figure type at `0x0063969C` (40 bytes each): disgruntled `0x004B5A20`, thief `0x004B5B70`, mugger `0x004B68B0`, vandal `0x004B6A00`.
+- **Thief** heads for an elite home (`0x005C0630`). There he takes, from each good, a quarter of the stock or half the level's Model storage number if larger (food: column q, horses: g, armor: n), shows message 19:167 and leaves (`0x005C00C0`).
+- **Vandal** heads for an elite home, stands there for a countdown of 51 steps, then destroys it and shows 19:168 (`0x005C0360`).
+- A thief or vandal who finds no elite home leaves, and his house sends a **mugger** instead (`0x005BFF90` with figure 27).
+- **Mugger:** when his attack countdown ends, the victim is removed (dies); no chance roll found.
+- **Disgruntled citizen:** only roams.
+
+## Sixth mood factor (likely military service)
+`0x00566E70` counts the city's rabble, hoplite and horse companies (figure types 11–13) carrying a flag (probably out of their forts or away), once the city has had 2+ months of peace: 0 → 0, 1–2 → −1, 3–5 → −2, 6–8 → −3, 9–12 → −4, 13+ → −5.
+
+## Plague
+The plague walker (figure 66) calls an empty function on each tile, so in the original it spreads nothing as it walks.

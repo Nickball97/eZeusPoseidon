@@ -103,9 +103,9 @@ void eOutlawAction::tryMugging() {
     for(const auto& v : t->characters()) {
         if(!v || v.get() == c || v->dead()) continue;
         if(!sMuggable(v->type())) continue;
-        // a mugging is not always deadly: "might even kill a few"
+        // the original mugger (exe 0x004B68B0) always kills his victim
         eSounds::playAttackSound(c);
-        if(eRand::rand() % 4 == 0) v->killWithCorpse();
+        v->killWithCorpse();
         mStage = 2;
         goBackDecision(eWalkableObject::sCreateDefault());
         return;

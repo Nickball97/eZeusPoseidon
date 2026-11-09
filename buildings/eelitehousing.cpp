@@ -386,11 +386,24 @@ void eEliteHousing::updateLevel() {
     setLevel(0);
 }
 
+// Original thief (exe 0x005C00C0): from each good he takes a quarter of
+// what the house holds, or half the house level's storage number from the
+// Model file if that is more (food: column q, horses: g, armor: n; the
+// other goods' numbers are 1 and so add nothing).
 void eEliteHousing::robbed() {
-    mFood = 0;
-    mFleece = 0;
-    mOil = 0;
-    mWine = 0;
-    mArms = 0;
+    static const int sFood[5] = {0, 75, 100, 150, 200};
+    static const int sHorses[5] = {0, 1, 2, 4, 4};
+    static const int sArms[5] = {0, 2, 2, 4, 4};
+    const int l = std::clamp(mLevel, 0, 4);
+    const auto steal = [](int& stock, const int floor) {
+        const int t = std::max(stock/4, floor);
+        stock = std::max(0, stock - t);
+    };
+    steal(mFood, sFood[l]/2);
+    steal(mFleece, 0);
+    steal(mOil, 0);
+    steal(mWine, 0);
+    steal(mArms, sArms[l]/2);
+    steal(mHorses, sHorses[l]/2);
     updateLevel();
 }
