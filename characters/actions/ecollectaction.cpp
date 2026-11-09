@@ -48,9 +48,7 @@ void eCollectAction::increment(const int by) {
         board.ifVisible(c->tile(), [cType]() {
             if(cType == eCharacterType::marbleMiner) {
                 eSounds::playStoneCutterSound();
-            } else if(cType == eCharacterType::bronzeMiner ||
-              cType == eCharacterType::orichalcMiner) {
-        // orichalc is mined exactly like bronze (Citadel of Poseidon)
+            } else if(cType == eCharacterType::bronzeMiner) {
                 eSounds::playCopperMinerSound();
             } else if(cType == eCharacterType::silverMiner) {
                 eSounds::playSilverMinerSound();
@@ -62,7 +60,9 @@ void eCollectAction::increment(const int by) {
     int period = 10000;
     if(cType == eCharacterType::marbleMiner) {
         period = eNumbers::sMarbleCollectTime;
-    } else if(cType == eCharacterType::bronzeMiner) {
+    } else if(cType == eCharacterType::bronzeMiner ||
+              cType == eCharacterType::orichalcMiner) {
+        // orichalc is mined exactly like bronze (Citadel of Poseidon)
         period = eNumbers::sBronzeCollectTime;
     } else if(cType == eCharacterType::silverMiner) {
         period = eNumbers::sSilverCollectTime;

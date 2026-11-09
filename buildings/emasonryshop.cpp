@@ -27,10 +27,8 @@ eMasonryShop::eMasonryShop(eGameBoard& board, const eCityId cid) :
     eGameTextures::loadMasonryShop();
     setAddResource(false);
     setRawInc(8);
-    // Hewing a block takes 2 months and each slab about 1 month, yet a
-    // shop makes up to 12 slabs a year (Citadel of Poseidon), so the
-    // quarryman sets out while 2 slabs are still to be cut.
-    setRawCountCollect(2);
+    // The hewer sets out when only 3 slabs are left (Citadel of Poseidon).
+    setRawCountCollect(3);
 }
 
 std::vector<eOverlay>
