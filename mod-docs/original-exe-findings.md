@@ -96,7 +96,7 @@ Progress per cycle by staffing (10 / 8 / 6 / 4 / 2); a ship is launched past 319
 Bands 4–10, 12–22, 24–34, 36–58, 60–98, 100–198, 200+: mood +1, +1, +1, +1, +1, +2, −5 at each mood update while working (`0x0056FDC0`); income 10, 20, 40, 60, 100, 200, 500 and horses 4, 4, 8, 8, 12, 12, 24 (as the site says); two more columns (0,1,1,1,2,3,0 and 0,0,0,1,1,3,15) not identified.
 
 ## Debt
-The month counter rises each month in debt and resets when the treasury is positive; every 12 months a message is shown and the year counter rises (`0x00483B20`). After 36 months in debt the episode is lost (goal check `0x00526990`, message 0xB91). eZeus only shows one message after the first year and has no loss; not changed (decision for Nicolás).
+The month counter rises each month in debt and resets when the treasury is positive; every 12 months a message is shown and the year counter rises (`0x00483B20`). After 36 months in debt the episode is lost (goal check `0x00526990`, message 0xB91). Applied 9 Nov 2026 (Nicolás: yes): eZeus now warns every full year in debt and loses the episode at 36 months.
 
 ## Apollo's blessing (verified in code, `0x004C5690`)
 Cures every sick house, removes the plague walkers and raises city health by 50.

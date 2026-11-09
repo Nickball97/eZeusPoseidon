@@ -22,11 +22,17 @@ void eBoardPlayer::nextMonth() {
         mFinances.nextYear();
     }
     if(mDrachmas < 0) {
-        const bool sameMonth = date.month() == mInDebtSince.month();
-        const bool oneYear = date.year() - mInDebtSince.year() == 1;
-        if(sameMonth && oneYear) {
+        // Original (exe 0x00483B20, 0x00526990): a warning every full year
+        // in debt, and the episode is lost after 36 months in debt.
+        const int months = 12*(date.year() - mInDebtSince.year()) +
+                           static_cast<int>(date.month()) -
+                           static_cast<int>(mInDebtSince.month());
+        if(months > 0 && months % 12 == 0) {
             eEventData ed(mId);
             mBoard.event(eEvent::debtAnniversary, ed);
+        }
+        if(months >= 36 && isPerson()) {
+            mBoard.setEpisodeLost();
         }
     } else if(!isPerson()) {
         giftAllies();
