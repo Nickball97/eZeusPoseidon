@@ -4,6 +4,8 @@
 #include "walkable/ewalkableobject.h"
 
 #include "vec2.h"
+#include "engine/egameboard.h"
+#include "buildings/sanctuaries/esanctuary.h"
 
 eMoveAction::eMoveAction(eCharacter* const c,
                          const stdsptr<eWalkableObject>& tileWalkable,
@@ -87,7 +89,14 @@ void eMoveAction::increment(const int by) {
     }
 
     const auto c = character();
-    moveBy(c->speed()*0.005 * by);
+    double speed = c->speed();
+    if(c->type() == eCharacterType::cartTransporter) {
+        // Hermes' Refuge finished: deliverymen move at 68 tiles a month
+        // instead of 54.4, 1.25x (Citadel of Poseidon, speed.html)
+        const auto s = c->getBoard().sanctuary(c->cityId(), eGodType::hermes);
+        if(s && s->finished()) speed *= 1.25;
+    }
+    moveBy(speed*0.005 * by);
 }
 
 void eMoveAction::read(eReadStream& src) {

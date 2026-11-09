@@ -2421,6 +2421,12 @@ void eBuilding::incTime(const int by) {
             if(h->level() == 3) fireRisk = sManor[d];
             else if(h->level() >= 4) fireRisk = sEstate[d];
         }
+        {
+            // Forge of Hephaestus finished: "no risk of fire" (Citadel of
+            // Poseidon)
+            const auto s = b.sanctuary(cityId(), eGodType::hephaestus);
+            if(s && s->finished()) fireRisk = 0;
+        }
         if(fireRisk && by && sFlammable(type())) {
             const double pm = eNumbers::sFireRiskPeriodMultiplier;
             const double pbi = eNumbers::sFireRiskPeriodBaseIncrement;

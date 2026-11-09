@@ -24,6 +24,9 @@ public:
     void write(eWriteStream& dst) const override;
 private:
     stdptr<eArtisan> mArtisan;
+    // with the Pillar of Atlas finished "artisans' guilds send out 2
+    // artisans" (Citadel of Poseidon)
+    stdptr<eArtisan> mArtisan2;
 
     const int mWaitTime = eNumbers::sArtisanWaitTime;
     double mSpawnTime = mWaitTime;
