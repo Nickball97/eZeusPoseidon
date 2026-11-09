@@ -23,7 +23,7 @@ Note: Manor wine needs no fix. eZeus elite levels start at 0 (unevolved), so Man
 
 ## 1. Sanctuary costs
 
-- First rebase piece costs so each sanctuary's totals match the original game (that becomes Beginner). Original totals (marble · wood): Zeus 145·28, Hades 140·28, Demeter 110·20, Poseidon 103·20, Hera 88·20, Apollo 88·22, Atlas 76·20, Athena 67·22, Artemis 63·20, Hephaestus 48·14, Ares 44·14, Aphrodite 41·14, Hermes 39·14, Dionysus 35·14 (HeavenGames: https://zeus.heavengames.com/gameinfo/sanctuaries/). Sculpture counts already match.
+- Rebase done 9 Nov 2026: each sanctuary is rescaled at placement to the Zeus + Poseidon totals (marble · wood): Zeus 137·24, Hades 132·24, Demeter 110·20, Poseidon 103·20, Hera 88·20, Apollo 76·16, Atlas 76·20, Athena 55·16, Artemis 63·20, Hephaestus 44·12, Ares 40·12, Aphrodite 37·12, Hermes 35·12, Dionysus 31·12 (Citadel of Poseidon, sanctuary.html; Nicolás chose the Poseidon numbers over the Zeus-only ones 145·28 etc.). See `eSanctuary::applyOriginalMaterialTotals`; the difficulty multipliers below go on top of that.
 - Multipliers by difficulty: marble (and black marble) ×1 / 1.25 / 1.5 / 1.75 / 2; wood ×1 / 1.5 / 2 / 2.5 / 3. Sculpture, and the marble paid to place the sanctuary, unchanged. Orichalc multiplier: open decision.
 - Add `sanctMarbleMultiplier` / `sanctWoodMultiplier` in `engine/edifficulty.cpp`.
 - Scale at use time in `buildings/sanctuaries/esanctbuilding.cpp` (stage checks, consumption, and the total-cost function the info panel uses). Pyramids save their base costs to the save file, so scaling at construction would double-scale on load.
