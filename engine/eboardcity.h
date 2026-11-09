@@ -1,6 +1,7 @@
 #ifndef EBOARDCITY_H
 #define EBOARDCITY_H
 
+#include <algorithm>
 #include "ecityid.h"
 #include "ewagerate.h"
 #include "etaxrate.h"
@@ -187,6 +188,9 @@ public:
     int popularity() const { return mPopularity; }
     // City mood (the original's sentiment), 0-100, starts at 60
     int mood() const { return mMood; }
+    // Apollo's blessing raises city health by 50 (exe 0x004C5690)
+    void incCityHealth(const int by)
+    { mCityHealth = std::clamp(mCityHealth + by, 0, 100); }
     int health() const { return mHealth; }
     int maintanance() const { return mMaintanance; }
 

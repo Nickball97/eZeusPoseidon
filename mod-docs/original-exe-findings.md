@@ -16,7 +16,7 @@ Read with Ghidra 12.2 from Nicolás's Steam `zeus.exe` (same build as GOG: compi
   - **wages:** none −10, very low −5, low −2, normal 0, high +2, very high +4 (table `0x00641F20`);
   - **unemployment:** under 5% +1; 5–10% 0; 11–17% −1; 18–25% −2; 26% or more −3;
   - **food:** the average over houses of +2 for a fed house, −1, −2, −3 for a house unfed 1, 2, 3+ updates in a row;
-  - **debt:** −2 after the first month in debt, −5 after two, −9 after three or more, and −2 more while the treasury is negative;
+  - **debt:** −2 after the first full year in debt, −5 after two years, −9 after three, and −2 more while the treasury is negative (the month counter adds a year every 12, `0x00483B20`);
   - **a sixth factor** (`0x00566E70`) from counts kept by `0x004DDD70` (figures of types 11–13), −1 to −5; not identified yet.
 - Below 350 people, negative factors count as 0.
 - Drift toward the middle: mood under 11 +4, 11–20 +3, 21–30 +2, 31–40 +1, 41–60 0, 61–70 −1, 71–80 −2, 81–90 −3, above 90 −4. Below 41 the drift only stops a fall, it never pushes the mood up past it; above 60, likewise for a rise.
@@ -91,3 +91,15 @@ Progress per cycle by staffing (10 / 8 / 6 / 4 / 2); a ship is launched past 319
 - Roads on slopes use the paved image when the tile's appeal is above 4 (`0x004A0480`, called from the slope road picker `0x0045E110`); eZeus uses the same rule for all roads. Flat road selection was not traced.
 - Plain ground picks one of four looks by appeal: below 0, 0–15, 16–29, 30+ (`0x004A0450`, `0x004A0190`). Not in eZeus.
 - Appeal view colour (`0x0044BCF0`): −11 or less → 0; −10 … 69 → appeal/10 + 2; 70+ → 9; a tile at 0 with no building is not coloured.
+
+## Hippodrome (verified in code, table `0x006429F0`, 5 numbers per length band)
+Bands 4–10, 12–22, 24–34, 36–58, 60–98, 100–198, 200+: mood +1, +1, +1, +1, +1, +2, −5 at each mood update while working (`0x0056FDC0`); income 10, 20, 40, 60, 100, 200, 500 and horses 4, 4, 8, 8, 12, 12, 24 (as the site says); two more columns (0,1,1,1,2,3,0 and 0,0,0,1,1,3,15) not identified.
+
+## Debt
+The month counter rises each month in debt and resets when the treasury is positive; every 12 months a message is shown and the year counter rises (`0x00483B20`). After 36 months in debt the episode is lost (goal check `0x00526990`, message 0xB91). eZeus only shows one message after the first year and has no loss; not changed (decision for Nicolás).
+
+## Apollo's blessing (verified in code, `0x004C5690`)
+Cures every sick house, removes the plague walkers and raises city health by 50.
+
+## Guardians
+The Dragon and Cerberus use the single "Monster" row (500 HP, attack 50, armor 10).

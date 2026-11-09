@@ -4,16 +4,22 @@
 #include "engine/eplague.h"
 #include "buildings/esmallhouse.h"
 #include "eiteratesquare.h"
+#include "engine/egameboard.h"
+#include "engine/eboardcity.h"
 
 eApolloHelpAction::eApolloHelpAction(eCharacter* const c) :
     eGodAction(c, eCharActionType::apolloHelpAction) {}
 
 bool eApolloHelpAction::decide() {
     switch(mStage) {
-    case eApolloHelpStage::none:
+    case eApolloHelpStage::none: {
         mStage = eApolloHelpStage::appear;
+        // the original blessing also raises city health by 50 (exe
+        // 0x004C5690)
+        const auto c = board().boardCityWithId(cityId());
+        if(c) c->incCityHealth(50);
         appear();
-        break;
+    } break;
     case eApolloHelpStage::appear:
         goToTarget();
         break;

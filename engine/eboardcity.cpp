@@ -2748,7 +2748,9 @@ void eBoardCity::updateMood() {
         }
         food = neg(food);
     }
-    // debt: months in debt and a negative treasury
+    // debt: full years in debt (the original counts months in debt and
+    // adds a year every 12, exe 0x00483B20; 0x00566EF0) and a negative
+    // treasury
     int debt = 0;
     if(p && p->drachmas() < 0) {
         const auto& now = mBoard.date();
@@ -2756,9 +2758,10 @@ void eBoardCity::updateMood() {
         const int months = 12*(now.year() - since.year()) +
                            static_cast<int>(now.month()) -
                            static_cast<int>(since.month());
-        if(months > 2) debt -= 4;
-        if(months > 1) debt -= 3;
-        if(months > 0) debt -= 2;
+        const int years = months/12;
+        if(years > 2) debt -= 4;
+        if(years > 1) debt -= 3;
+        if(years > 0) debt -= 2;
         debt -= 2;
     }
     // (the original's sixth factor, from figure counts, is not identified)
@@ -2781,6 +2784,18 @@ void eBoardCity::updateMood() {
         if(sum >= 0) change = sum + drift < 0 ? 0 : sum + drift;
     }
     mMood = std::clamp(mMood + change, 0, 100);
+    // a working hippodrome changes the mood by its length (exe
+    // 0x0056FDC0, table 0x006429F0): 4-98 +1, 100-198 +2, 200+ -5
+    for(const auto& h : mHippodromes) {
+        if(!h || !h->working()) continue;
+        const int len = h->length();
+        if(len <= 3) continue;
+        if(len >= 200) mMood -= 5;
+        else if(len >= 100) mMood += 2;
+        else mMood += 1;
+        break;
+    }
+    mMood = std::clamp(mMood, 0, 100);
 }
 
 // Monthly health target (original exe 0x00566C00): the population-weighted
