@@ -69,6 +69,12 @@ private:
     eBuilding* mUnpackBuilding = this;
 
     int mRouteTimer = 0;
+    // traders out on this route (not saved; after loading the cap counts
+    // only new ones)
+    std::vector<stdptr<eCharacter>> mTraders;
+
+    // how many traders may be out at once: 1-3 by the route's volume
+    int maxTraders() const;
 };
 
 #endif // ETRADEPOST_H

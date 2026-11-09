@@ -70,7 +70,8 @@ The tax mood factor uses the "no taxes" row when tax coverage is below 11% (`0x0
 - **Apollo:** +20 to the city's Pan-Hellenic games score (`0x00565D40`).
 - **Hera:** +3% to the yearly births (`0x00566D40`).
 - **Artemis:** the wolf's action (`0x004BD4A0`) calls `0x0056AF80`. When a wolf attacks, or its victim has just died, and her sanctuary is finished (record 0xEF5EA8), Artemis (god 4) is found, or spawned at her sanctuary, and sent to attack the wolf (state 0x4A). Replaced by Nicolás's mod rule (9 Nov 2026): once her sanctuary is finished, Artemis, while out on her rounds, hunts down every wolf in her city with her arrows (eArtemisHuntAction), and that city's wolf dens stop producing wolves (eWolfSpawner). This is not the original rule.
-- Not yet read: Ares (`0x0046DAA0`), Hades (`0x00546E80`), Zeus.
+- **Hermes, trade visits** (`0x005B9EE0`, every cycle, record 0xEF5F44): a route's next trader waits 4 cycles (caravan) or 30 cycles (trade ship) while it has a free trader slot. Hermes' sanctuary: x0.66. A route allows 1-3 traders at once: each traded good (city +0x60+i) counts 1 (under 13), 2 (13-24) or 3 (25+), averaged and rounded up. Applied in eTradePost. Before, eZeus sent one trader every 30000 ticks with no cap.
+- Ares (`0x0046DAA0`): that check is in the request handler (sending Ares on troop requests), not a city bonus. Hades (`0x00546E80`): sanctuary layout geometry, not a bonus. Zeus: not yet found.
 
 ## Births and deaths (verified in code, `0x00566D40`, once a year)
 Population changes by a share set by city health: 91+ +6%, 81–90 +4%, 71–80 +3%, 61–70 +2%, 51–60 +1%, 41–50 0; 40 or less: −1% while the health target is 31+, otherwise −2% (21–40), −3% (11–20), −5% (1–10). Hera +3%.
