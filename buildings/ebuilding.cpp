@@ -2411,7 +2411,16 @@ void eBuilding::incTime(const int by) {
     } else if(!isEmptyHome()) {
         const auto pid = playerId();
         const auto diff = b.difficulty(pid);
-        const int fireRisk = eDifficultyHelpers::fireRisk(diff, mType);
+        int fireRisk = eDifficultyHelpers::fireRisk(diff, mType);
+        if(mType == eBuildingType::eliteHousing) {
+            // manors and estates burn less (Model FRI by elite level)
+            const auto h = static_cast<const eHouseBase*>(this);
+            const int d = static_cast<int>(diff);
+            static const int sManor[5] = {5, 10, 10, 12, 15};
+            static const int sEstate[5] = {2, 5, 5, 8, 10};
+            if(h->level() == 3) fireRisk = sManor[d];
+            else if(h->level() >= 4) fireRisk = sEstate[d];
+        }
         if(fireRisk && by && sFlammable(type())) {
             const double pm = eNumbers::sFireRiskPeriodMultiplier;
             const double pbi = eNumbers::sFireRiskPeriodBaseIncrement;

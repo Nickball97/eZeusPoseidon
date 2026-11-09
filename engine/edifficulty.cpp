@@ -969,6 +969,9 @@ int eDifficultyHelpers::taxMultiplier(
             return 2;
         }
     } else if(type == eBuildingType::eliteHousing) {
+        // an abandoned elite house pays no tax (Model: vacant and
+        // devolved rows have tax multiplier 0)
+        if(level <= 0) return 0;
         switch(diff) {
         case eDifficulty::beginner:
             return 22;

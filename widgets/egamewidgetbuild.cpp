@@ -1,4 +1,5 @@
 #include "egamewidget.h"
+#include "buildings/ehousemodel.h"
 
 #include "eiteratesquare.h"
 #include "engine/egameboard.h"
@@ -1059,6 +1060,48 @@ bool eGameWidget::buildMouseRelease() {
             if(!t1) return true;
             const bool cb = mBoard->canBuild(t1->x() + 1, t1->y() + 1, 4, 4, mEditorMode, cid, pid);
             if(!cb) return true;
+            if(!mEditorMode) {
+                // Before an elite home can be placed the storehouses must
+                // hold 2 crates of food, 1 skein of fleece and 1 jug of oil,
+                // and the area needs high appeal (game text 19:204-207;
+                // Citadel of Poseidon, housing.html and Zeus and Europa
+                // ep. 3). The goods are only checked, not used.
+                const auto warn = [&](const int id, const int n) {
+                    auto text = eLanguage::zeusText(19, id);
+                    eStringHelpers::replace(text, "[warning_amount]",
+                                            std::to_string(n));
+                    showTip(cid, text);
+                };
+                const auto vcid = mViewedCityId;
+                if(mBoard->resourceCount(vcid, eResourceType::food) < 2) {
+                    warn(204, 2);
+                    return true;
+                }
+                if(mBoard->resourceCount(vcid, eResourceType::fleece) < 1) {
+                    warn(205, 1);
+                    return true;
+                }
+                if(mBoard->resourceCount(vcid, eResourceType::oliveOil) < 1) {
+                    warn(206, 1);
+                    return true;
+                }
+                double sum = 0;
+                int n = 0;
+                for(int x = t1->x() + 1; x < t1->x() + 5; x++) {
+                    for(int y = t1->y() + 1; y < t1->y() + 5; y++) {
+                        const auto t = mBoard->tile(x, y);
+                        if(!t) continue;
+                        sum += mBoard->appeal(t->dx(), t->dy());
+                        n++;
+                    }
+                }
+                const auto diff = mBoard->difficulty(pid);
+                const int need = eHouseModel::eliteEvolve(diff, 1);
+                if(n == 0 || sum/n < need) {
+                    showTip(cid, eLanguage::zeusText(19, 207));
+                    return true;
+                }
+            }
             r = mBoard->build(t1->x() + 1, t1->y() + 1, 4, 4, cid, pid, mEditorMode, [&]() {
                 return e::make_shared<eEliteHousing>(*mBoard, mViewedCityId);
             });
