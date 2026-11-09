@@ -108,3 +108,10 @@ The Dragon and Cerberus use the single "Monster" row (500 HP, attack 50, armor 1
 - Damage counter += Model damage risk (column h) each cycle (×11 while burning); reset for houses with at most 1 resident, the vacant elite type, and terrain 0x10000; collapse at 1000. With damage risk 10: 100 cycles, about 6 months (the site's "60 ÷ risk months").
 - Fire counter: on a 1-in-8 draw, += Model fire risk (column g) × random 1–5 (+3 more during a fire disaster mode); empty houses and buildings with no fire risk reset it; fire at 1000.
 - The maintenance walker (figure 8, `0x004A5D90`) lowers both counters by 50 (Model row 121 BUILD_SUPER_OFFICE column j) for buildings within 2 tiles each time he passes.
+
+## Culture and healer visits (verified in code, applied 9 Nov 2026)
+- Step 35 (`0x00484D20`) lowers each house's access counters by 1 every cycle (house bytes +0x6c, +0x6d, +0x6f, +0x70, +0x71, +0x77, +0x78).
+- A philosopher or other culture walker (`0x004A60E0`) and a healer (`0x004A66B0`) set the counter to 96. A visit therefore lasts 96 cycles, 6 months.
+- Step 36 (`0x00484DE0`) adds up the culture points from those counters: Greek 20/15/20/25, Atlantean 20/20/15/25, plus 10 for the bonus building.
+- In eZeus: a culture visit fills 8 steps of 1/16 year each (6 months). Healer care (100) now drops by 1 a cycle (about 6 months) whatever the food and water.
+- Fixed an eZeus bug: small houses counted the culture timer twice, so visits wore off in half the time.

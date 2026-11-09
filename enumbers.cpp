@@ -413,9 +413,13 @@ void eNumbers::sLoad(const std::string& path) {
     loadD("collapse_risk_period_base_increment_d", sCollapseRiskPeriodBaseIncrement, 10, 1, 1000);
     loadD("collapse_risk_period_exponent_d", sCollapseRiskPeriodExponent, 4, 1, 9);
 
-    loadI("house_culture_decrement_period_i", sHouseCultureDecrementPeriod, 20000, 1, 1000000);
+    // a culture walker's visit lasts 96 cycles (6 months) in the original
+    // (exe 0x00484D20 counts down, walkers set 96): 8 steps of 12 cycles
+    loadI("house_culture_decrement_period_i", sHouseCultureDecrementPeriod, (365*sDayLength)/16, 1, 1000000);
     loadI("house_water_decrement_period_i", sHouseWaterDecrementPeriod, 7500, 1, 1000000);
-    loadI("house_hygiene_decrement_period_i", sHouseHygieneDecrementPeriod, 25000, 1, 1000000);
+    // a healer's visit (hygiene 100) wears off by 1 a cycle, about 6
+    // months, as the original's 96-cycle healer counter (0x004A66B0)
+    loadI("house_hygiene_decrement_period_i", sHouseHygieneDecrementPeriod, (365*sDayLength)/(12*16), 1, 1000000);
     loadD("house_heal_plague_period_multiplier_d", sHouseHealPlaguePeriodMultiplier, 10, 1, 100);
     loadD("house_heal_plague_period_base_multiplier_d", sHouseHealPlaguePeriodBaseMultiplier, 1000, 1, 100000);
     loadD("house_heal_plague_period_exponent_d", sHouseHealPlaguePeriodExponent, 4, 1, 9);

@@ -149,7 +149,6 @@ void eSmallHouse::timeChanged(const int by) {
         eHouseBase::timeChanged(by);
         return;
     }
-    mUpdateCulture += by;
     if(mUpdateWater > eNumbers::sHouseWaterDecrementPeriod) {
         mUpdateWater = 0;
         mWater = std::max(0, mWater - 1);
@@ -157,10 +156,8 @@ void eSmallHouse::timeChanged(const int by) {
     mUpdateHygiene += by;
     if(mUpdateHygiene > eNumbers::sHouseHygieneDecrementPeriod) {
         mUpdateHygiene = 0;
-        const int subWater = (100 - mWaterSatisfaction)/20;
-        const int subFood = (100 - mFoodSatisfaction)/20;
-        const int sub = 5 + subWater + subFood;
-        mHygiene = std::max(0, mHygiene - sub);
+        // 1 a cycle, whatever the food and water (original healer counter)
+        mHygiene = std::max(0, mHygiene - 1);
     }
 
     auto& b = getBoard();
