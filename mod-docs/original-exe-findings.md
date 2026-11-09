@@ -129,3 +129,8 @@ The Dragon and Cerberus use the single "Monster" row (500 HP, attack 50, armor 1
 - Culture points (`0x00484DE0`): Greek competitor 20, philosopher 15, athlete 20, actor 25. Atlantean curator 20, astronomer 20, scholar 15, inventor 25. eZeus had inventor and astronomer swapped.
 - Model house columns as the getter `0x00433D80` reads them (21 per row): 0 devolve appeal, 1 evolve appeal, 2 culture, 3 water, 4 stadium/museum (Estate only: needs a competitor or curator visit, `0x004843D0`) [not applied: Nicolás chose culture points only for the Estate, 9 Nov 2026], 5 soldiers %, 6 max horses, 7 horses needed, 8 food types, 9 fleece, 10 oil, 11 wine, 12 arms, 13 max armor, 14 crime increment, 15 crime base. The file header's enum numbers skip 4, so they are one off from here on.
 - Not resolved: the house water flag (+0x35, "water sup"/"well sup"/"no water" in the debug view) that the needs check reads. Its link to the Water Bearer counter is not shown.
+
+## Walker roaming distance (verified in code, 9 Nov 2026; no change needed)
+- Each roaming walker's action sets a limit at figure +0x42 and counts up +0x44 until it reaches the limit, then heads home. The limits are: culture walkers (`0x004B4370`) and tax collector (`0x004AF550`) 3072; healer (`0x004B78A0`) and water bearer (`0x004C0BC0`) 2304; peddler (`0x004B6720`), superintendent (`0x004AF930`) and watchman (`0x004C0CF0`) 3840.
+- Units: the counter grows by the walker's speed each tick (`0x004D6790`), and a walker moves speed/6 sub-steps a tick, so 6 per sub-step. A tile is 15 sub-steps (`0x004D69B0`), so 90 per tile.
+- In tiles that is about 34, 26 and 43. eZeus uses HeavenGames' measured 35, 27 and 44 with the same groups. They agree within a tile, so these are kept.
