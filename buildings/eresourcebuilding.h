@@ -21,6 +21,9 @@ public:
     void sanctuaryErase();
 
     static bool sIsResourceBuilding(const eBuildingType type);
+    // Grapes are harvested in October-December and olives in January-March
+    // (Citadel of Poseidon). Oranges: no season known, always.
+    static bool sHarvestSeason(const eBuildingType type, const int month);
 
     eResourceBuildingType type() const { return mType; }
 
@@ -37,6 +40,7 @@ public:
     void read(eReadStream& src) override;
     void write(eWriteStream& dst) const override;
 private:
+    bool mWasInSeason = false; // not saved; spots the end of a season
     const eResourceBuildingType mType;
     const int mRipePeriod;
     bool mSanctuary = false;

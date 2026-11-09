@@ -4,6 +4,9 @@
 #include "characters/actions/ecarttransporteraction.h"
 #include "characters/actions/egroweraction.h"
 #include "enumbers.h"
+#include "fileIO/efileformat.h"
+#include "engine/egameboard.h"
+#include "eresourcebuilding.h"
 
 #include <algorithm>
 
@@ -28,6 +31,9 @@ eGrowersLodge::eGrowersLodge(eGameBoard& board, const eGrowerType type,
 eGrowersLodge::~eGrowersLodge() {
     if(mCart) mCart->kill();
     if(mGrower) mGrower->kill();
+    for(const auto& h : mHarvesters) {
+        if(h) h->kill();
+    }
 }
 
 std::shared_ptr<eTexture> eGrowersLodge::getTexture(const eTileSize size) const {
@@ -126,6 +132,19 @@ void eGrowersLodge::timeChanged(const int by) {
                 if(mSpawnTime > eNumbers::sGrowerSpawnWaitTime) {
                     mSpawnTime = 0;
                     spawnGrower(&eGrowersLodge::mGrower);
+                }
+            }
+            if(harvestSeason() && harvesterCount() < 2) {
+                mHarvestSpawnTime += by*effectiveness();
+                if(mHarvestSpawnTime > eNumbers::sGrowerSpawnWaitTime) {
+                    mHarvestSpawnTime = 0;
+                    mHarvesters.push_back(spawnGrowerChar());
+                }
+            } else if(!harvestSeason()) {
+                // after the season the extra harvesters go home once they
+                // carry no fruit
+                for(const auto& h : mHarvesters) {
+                    if(h && h->grapes() == 0 && h->olives() == 0) h->kill();
                 }
             }
         }
@@ -237,6 +256,15 @@ void eGrowersLodge::read(eReadStream& src) {
     src.readCharacter(&getBoard(), [this](eCharacter* const c) {
         mGrower = static_cast<eGrower*>(c);
     });
+    if(src.formatVersion() >= eFileFormat::growerHarvesters) {
+        int n;
+        src >> n;
+        for(int i = 0; i < n; i++) {
+            src.readCharacter(&getBoard(), [this](eCharacter* const c) {
+                if(c) mHarvesters.push_back(static_cast<eGrower*>(c));
+            });
+        }
+    }
 }
 
 void eGrowersLodge::write(eWriteStream& dst) const {
@@ -249,9 +277,15 @@ void eGrowersLodge::write(eWriteStream& dst) const {
     dst.writeCharacter(mCart);
     dst << mSpawnTime;
     dst.writeCharacter(mGrower);
+    std::vector<eGrower*> hs;
+    for(const auto& h : mHarvesters) {
+        if(h) hs.push_back(h.get());
+    }
+    dst << static_cast<int>(hs.size());
+    for(const auto h : hs) dst.writeCharacter(h);
 }
 
-bool eGrowersLodge::spawnGrower(const eGrowerPtr grower) {
+eGrower* eGrowersLodge::spawnGrowerChar() {
     const auto t = centerTile();
     const auto g = e::make_shared<eGrower>(getBoard());
     g->setGrowerType(mType);
@@ -260,8 +294,27 @@ bool eGrowersLodge::spawnGrower(const eGrowerPtr grower) {
     const auto a = e::make_shared<eGrowerAction>(
                        mType, this, g.get());
     g->setAction(a);
-    this->*grower = g.get();
+    return g.get();
+}
+
+bool eGrowersLodge::spawnGrower(const eGrowerPtr grower) {
+    this->*grower = spawnGrowerChar();
     return true;
+}
+
+int eGrowersLodge::harvesterCount() {
+    mHarvesters.erase(std::remove_if(mHarvesters.begin(), mHarvesters.end(),
+                                     [](const stdptr<eGrower>& g) {
+        return !g;
+    }), mHarvesters.end());
+    return mHarvesters.size();
+}
+
+bool eGrowersLodge::harvestSeason() const {
+    if(mType != eGrowerType::grapesAndOlives) return false;
+    const int m = static_cast<int>(getBoard().date().month());
+    return eResourceBuilding::sHarvestSeason(eBuildingType::vine, m) ||
+           eResourceBuilding::sHarvestSeason(eBuildingType::oliveTree, m);
 }
 
 void eGrowersLodge::setNoTarget(const bool t) {

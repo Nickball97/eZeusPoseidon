@@ -56,8 +56,15 @@ private:
     stdptr<eCartTransporter> mCart;
 
     double mSpawnTime = 1000000;
+    double mHarvestSpawnTime = 0;
 
     stdptr<eGrower> mGrower;
+    // "The growers' lodge sends out 3 harvesters in the harvest time"
+    // (Citadel of Poseidon): two more join the tender in season
+    std::vector<stdptr<eGrower>> mHarvesters;
+    int harvesterCount();
+    bool harvestSeason() const;
+    eGrower* spawnGrowerChar();
 };
 
 #endif // EGROWERSLODGE_H
