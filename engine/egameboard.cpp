@@ -12,6 +12,8 @@
 
 #include "characters/esoldier.h"
 #include "characters/esoldierbanner.h"
+#include "characters/esheep.h"
+#include "characters/egoat.h"
 
 #include "buildings/etradepost.h"
 
@@ -3720,7 +3722,8 @@ bool eGameBoard::canBuildBase(const int minX, const int maxX,
                               const ePlayerId pid,
                               const bool fertile,
                               const bool flat,
-                              const int allowedWater) const {
+                              const int allowedWater,
+                              const bool animalsMove) const {
     if(pid != cityIdToPlayerId(cid) && !mEditorMode) return false;
     int waterCount = 0;
     bool fertileFound = false;
@@ -3729,7 +3732,12 @@ bool eGameBoard::canBuildBase(const int minX, const int maxX,
             const auto t = tile(x, y);
             if(!t) return false;
             if(t->cityId() != cid) return false;
-            if(t->underBuilding()) return false;
+            if(const auto ub = t->underBuilding()) {
+                const auto ubt = ub->type();
+                const bool animal = ubt == eBuildingType::sheep ||
+                                    ubt == eBuildingType::goat;
+                if(!animal || !animalsMove) return false;
+            }
             const auto& banners = t->banners();
             for(const auto& b : banners) {
                 if(!b->buildable()) return false;
@@ -3834,7 +3842,7 @@ bool eGameBoard::buildBase(const int minX, const int minY,
     const bool cb = canBuildBase(minX, maxX + 1, minY, maxY + 1,
                                  editorDisplay,
                                  cid, pid, fertile, flat,
-                                 allowWater);
+                                 allowWater, true);
     if(!cb) return false;
     if(!bc) return false;
     const auto b = bc();
@@ -3854,6 +3862,23 @@ bool eGameBoard::buildBase(const int minX, const int minY,
     centerTile(minX, minY, sw, sh, tx, ty);
     const auto tile = this->tile(tx, ty);
     if(!tile) return false;
+    // sheep and goats in the way wander off (eZeus issue 4)
+    struct eMovedAnimal { eBuildingType fType; int fX; int fY; };
+    std::vector<eMovedAnimal> movedAnimals;
+    for(int x = minX; x <= maxX; x++) {
+        for(int y = minY; y <= maxY; y++) {
+            const auto t = this->tile(x, y);
+            if(!t) continue;
+            const auto ub = t->underBuilding();
+            if(!ub) continue;
+            const auto ubt = ub->type();
+            if(ubt != eBuildingType::sheep &&
+               ubt != eBuildingType::goat) continue;
+            const auto& r = ub->tileRect();
+            movedAnimals.push_back({ubt, r.x, r.y});
+            ub->erase();
+        }
+    }
     b->setCenterTile(tile);
     b->setTileRect({minX, minY, sw, sh});
     for(int x = minX; x <= maxX; x++) {
@@ -3864,6 +3889,9 @@ bool eGameBoard::buildBase(const int minX, const int minY,
                 b->addUnderBuilding(t);
             }
         }
+    }
+    for(const auto& m : movedAnimals) {
+        rebuildAnimalNear(m.fType, m.fX, m.fY, pid, cid, editorDisplay);
     }
 
     if(!editorDisplay) {
@@ -3902,6 +3930,19 @@ bool eGameBoard::buildAnimal(eTile* const tile,
                              const bool editorDisplay) {
     const int tx = tile->x();
     const int ty = tile->y();
+    {   // an animal never pushes another animal away
+        int minX;
+        int minY;
+        int maxX;
+        int maxY;
+        sBuildTiles(minX, minY, maxX, maxY, tx, ty, 1, 2);
+        for(int x = minX; x < maxX; x++) {
+            for(int y = minY; y < maxY; y++) {
+                const auto t = this->tile(x, y);
+                if(t && t->underBuilding()) return false;
+            }
+        }
+    }
     const bool cb = canBuild(tx, ty, 1, 2, editorDisplay, cid, pid, true, true);
     if(!cb) return false;
     const auto sh = creator(*this);
@@ -4191,4 +4232,29 @@ eDistrictIdTmp::eDistrictIdTmp(eGameBoard& board) :
 
 eDistrictIdTmp::~eDistrictIdTmp() {
     mBoard.setCurrentDistrictId(mTmpId);
+}
+
+void eGameBoard::rebuildAnimalNear(const eBuildingType type,
+                                   const int x, const int y,
+                                   const ePlayerId pid, const eCityId cid,
+                                   const bool editorDisplay) {
+    const auto creator = [type](eGameBoard& board) -> stdsptr<eCharacter> {
+        if(type == eBuildingType::goat) return e::make_shared<eGoat>(board);
+        return e::make_shared<eSheep>(board);
+    };
+    bool found = false;
+    for(int k = 1; k < 12 && !found; k++) {
+        eIterateSquare::iterateSquare(k, [&](const int dx, const int dy) {
+            const auto t = tile(x + dx, y + dy);
+            if(!t) return false;
+            found = buildAnimal(t, type, creator, cid, pid, editorDisplay);
+            return found;
+        });
+    }
+    // moving an animal is free
+    if(found && !editorDisplay) {
+        const auto diff = difficulty(pid);
+        const int cost = eDifficultyHelpers::buildingCost(diff, type);
+        incDrachmas(pid, cost, eFinanceTarget::construction);
+    }
 }

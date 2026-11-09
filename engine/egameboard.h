@@ -692,7 +692,8 @@ public:
                       const ePlayerId pid,
                       const bool fertile = false,
                       const bool flat = false,
-                      const int allowedWater = 0) const;
+                      const int allowedWater = 0,
+                      const bool animalsMove = false) const;
     bool canBuild(const int tx, const int ty,
                   const int sw, const int sh,
                   const bool forestAllowed,
@@ -718,6 +719,12 @@ public:
                    const bool fertile = false,
                    const bool flat = false,
                    const int allowWater = 0);
+    // sheep and goats standing where something is built wander off to
+    // the nearest free meadow instead of blocking it (eZeus issue 4)
+    void rebuildAnimalNear(const eBuildingType type,
+                           const int x, const int y,
+                           const ePlayerId pid, const eCityId cid,
+                           const bool editorDisplay);
     bool build(const int tx, const int ty,
                const int sw, const int sh,
                const eCityId cid,

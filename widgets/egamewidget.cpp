@@ -1274,7 +1274,9 @@ bool eGameWidget::roadPath(std::vector<eOrientation>& path) {
         if(!tr) return false;
         const auto bt = t->underBuildingType();
         const bool r = bt == eBuildingType::road ||
-                       bt == eBuildingType::none;
+                       bt == eBuildingType::none ||
+                       bt == eBuildingType::sheep ||
+                       bt == eBuildingType::goat;
         if(!r) return false;
         if(!t->walkableElev() && t->isElevationTile()) return false;
         return true;
