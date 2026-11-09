@@ -80,6 +80,9 @@ static int sSpawnWaitCycles(const eBuildingType type, const int step) {
     static const int sVenue[5] = {4, 8, 16, 30, 45};
     static const int sPodium[5] = {9, 16, 31, 51, 101};
     static const int sGym[5] = {5, 6, 11, 18, 31};
+    // agora (0x0040D620): staffed by its stalls in the original; eZeus
+    // agoras have no staff of their own, so they count as full
+    static const int sAgora[5] = {3, 4, 5, 6, 11};
     switch(type) {
     case eBuildingType::taxOffice:
     case eBuildingType::maintenanceOffice:
@@ -95,6 +98,9 @@ static int sSpawnWaitCycles(const eBuildingType type, const int step) {
         return sPodium[step];
     case eBuildingType::gymnasium:
         return sGym[step];
+    case eBuildingType::commonAgora:
+    case eBuildingType::grandAgora:
+        return sAgora[step];
     default:
         return 0;
     }

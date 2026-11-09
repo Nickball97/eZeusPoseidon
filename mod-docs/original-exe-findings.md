@@ -148,7 +148,10 @@ The Dragon and Cerberus use the single "Monster" row (500 HP, attack 50, armor 1
   - infirmary, theater, stadium: 4 / 8 / 16 / 30 / 45
   - podium: 9 / 16 / 31 / 51 / 101
   - gymnasium: 5 / 6 / 11 / 18 / 31
-- Culture venues allow 1 walker out at a time, 2 if blessed. The agora and the Atlantean buildings use their own functions (not read). eZeus keeps its own timing for them.
+- Agora (`0x0040D620`): 3 / 4 / 5 / 6 / 11 cycles, staffed by its stalls. eZeus agoras have no staff of their own, so they use 3.
+- Culture venues allow 1 walker out at a time, 2 if blessed. The Atlantean buildings use their own functions (not read) and keep eZeus timing.
+- Agora deliveries (`0x0040D160`): food up to residents / 2 per type each visit, capped at 2 x residents. Goods up to Model need x 4 (2x2 or larger) x 2 (x2 more for elite homes): 8, or 16 for elite. This matches eZeus.
+- Superintendent (`0x004A5D90`): lowers fire and damage risk by Model row 121 column j (50). This matches eZeus.
 - Workshops (winery, olive press, sculpture studio, armory) now use the 10/8/6/4/2 staffing steps (see Workshops above).
 - Taxes (`0x00488250`, monthly): a house the tax collector has visited pays rate x people x Model column 18 (tax multiplier) x 2 x 50/100 (the difficulty factor `0x005F7F1C` is 50 on every difficulty) / 100. That is rate x people x multiplier, the same as eZeus. A blessed tax office's collector marks houses to pay x4 once (`0x004A67C0` flag +0x84). Applied: a blessed tax office sends one blessed collector, whose houses pay 4 times their tax (the flag is not saved, so a game reloaded mid-round loses it).
 - Sheep and goats (`0x004F8D80`): wool +9 a month, ready at 100 (a year). A shearing gives 100 (1 load). This matches eZeus.
