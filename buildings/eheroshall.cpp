@@ -52,6 +52,16 @@ eHeroType eHerosHall::sHallTypeToHeroType(const eBuildingType type,
 // Achilles needs Hephaestus' sanctuary when the episode has it, even if
 // Athena's is also allowed (Citadel of Poseidon: Trojan War ep. 5, Two
 // Worlds Collide ep. 2), and Athena's otherwise (Zeus and Europa ep. 7).
+// Gymnasium / observatory coverage band for the status text; the original
+// needs above 89% (exe 0x004FBC20 case 5), band 4.
+int coverageBand(const int ac) {
+    if(ac > 89) return 4;
+    if(ac >= 75) return 3;
+    if(ac >= 50) return 2;
+    if(ac >= 25) return 1;
+    return 0;
+}
+
 eGodType athenaHephaestus(eBoardCity& c) {
     const bool heph = c.availableBuilding(eBuildingType::templeHephaestus) ||
                       c.hasBuilding(eBuildingType::templeHephaestus);
@@ -609,10 +619,10 @@ void eHerosHall::updateRequirementStatus(eHeroRequirement& hr) {
     case eHeroRequirementType::cityGymnasiumObservatoryAccess: {
         if(atlentean) {
             const int ac = board.dramaAstronomyCoverage(cid);
-            sc = ac/24;
+            sc = coverageBand(ac);
         } else {
             const int ac = board.athleticsLearningCoverage(cid);
-            sc = ac/24;
+            sc = coverageBand(ac);
         }
     } break;
     case eHeroRequirementType::people:
@@ -632,12 +642,14 @@ void eHerosHall::updateRequirementStatus(eHeroRequirement& hr) {
         break;
 
     case eHeroRequirementType::popularity: {
+        // original: popularity (city mood) above 89 (exe 0x004FBC20 case 8)
         const int p = board.popularity(cid);
         sc = p/10;
     } break;
     case eHeroRequirementType::health: {
+        // original: health above 79 (exe 0x004FBC20 case 9)
         const int p = board.health(cid);
-        sc = p/7;
+        sc = p/8;
     } break;
     case eHeroRequirementType::eliteHouses:
         sc = board.eliteHouses(cid);
@@ -685,7 +697,10 @@ void eHerosHall::updateRequirementStatus(eHeroRequirement& hr) {
                 return false;
             };
 
-            for(int k = 0; k < 10; k++) {
+            // original: a palace tile within 5 tiles of the hall (exe
+            // 0x004FBB20 called with 5); rings counted from the hall's
+            // centre, so 1 more for its own half-width
+            for(int k = 0; k <= 6; k++) {
                 eIterateSquare::iterateSquare(k, prcsTile, 1);
                 if(found) break;
             }
@@ -697,14 +712,16 @@ void eHerosHall::updateRequirementStatus(eHeroRequirement& hr) {
         }
     } break;
     case eHeroRequirementType::appeal: {
+        // original: the hall's appeal above 60 (exe 0x004FBC20 case 13);
+        // the lower bands only pick the status text
         const double a = eBuilding::appeal();
-        if(a < 12.) {
+        if(a < 20.) {
             sc = 0;
-        } else if(a < 14.5) {
+        } else if(a < 35.) {
             sc = 1;
-        } else if(a < 15.5) {
+        } else if(a < 50.) {
             sc = 2;
-        } else if(a < 17.) {
+        } else if(a <= 60.) {
             sc = 3;
         } else {
             sc = 4;
@@ -758,8 +775,9 @@ void eHerosHall::updateRequirementStatus(eHeroRequirement& hr) {
         sc = board.banners(cid).size();
         break;
     case eHeroRequirementType::taxes: {
+        // original: tax coverage above 88% (exe 0x004FBC20 case 17)
         const int tc = board.taxesCoverage(cid);
-        sc = tc/22;
+        sc = tc > 88 ? 4 : std::min(3, tc/22);
     } break;
     case eHeroRequirementType::bronzeOrichalc:
         if(atlentean) {
@@ -811,7 +829,7 @@ eHerosHall::eHerosHall(const eHeroType type, eGameBoard& board,
         // curator), per the Citadel of Poseidon walkthroughs
         addRequirement({eHeroRequirementType::hallCultureAccess, 4});
         addRequirement({eHeroRequirementType::panHellenicGameWinHippodrome, 1});
-        addRequirement({eHeroRequirementType::cityGymnasiumObservatoryAccess, 3});
+        addRequirement({eHeroRequirementType::cityGymnasiumObservatoryAccess, 4});
         addRequirement({eHeroRequirementType::people, 1500});
         addRequirement({eHeroRequirementType::wine, 32});
         break;
@@ -823,7 +841,7 @@ eHerosHall::eHerosHall(const eHeroType type, eGameBoard& board,
         addRequirement({eHeroRequirementType::wine, 16});
         break;
     case eHeroType::odysseus:
-        addRequirement({eHeroRequirementType::popularity, 8});
+        addRequirement({eHeroRequirementType::popularity, 9});
         addRequirement({eHeroRequirementType::health, 10});
         addRequirement({eHeroRequirementType::eliteHouses, 8});
         addRequirement({eHeroRequirementType::oil, 32});

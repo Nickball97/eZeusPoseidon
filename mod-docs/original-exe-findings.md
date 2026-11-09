@@ -41,3 +41,14 @@ Read with Ghidra 12.2 from Nicolás's Steam `zeus.exe` (same build as GOG: compi
 
 ## Plague
 The plague walker (figure 66) calls an empty function on each tile, so in the original it spreads nothing as it walks.
+
+## Plague outbreaks (verified in code, `0x00447FF0`, `0x004481B0`, `0x00448490`, `0x00448220`)
+- City health starts at 80. Each cycle a 4-digit random draw (0–9999) against a chance from the health band (table `0x005F84A8`): health under 10 → 300 (3%), 10–19 → 250, 20–29 → 200, 30–44 → 100, 45–59 → 50, 60–74 → 25, 75–99 → 0.
+- Outbreaks are capped: at most ceil(chance × 384 / 10000) counted over a period (and half that by one counter), and none while one is running.
+- An outbreak picks up to 40% of the lived-in houses, those with the highest disease score (a per-house value, +20 when a flag is set), and infects them: each loses part of its people and sends out 3 plague walkers (timer 600). How the per-house score grows was not traced.
+
+## Hero hall requirements (verified in code, `0x004FBC20`)
+Applied 9 Nov 2026: popularity (city mood) above 89; health above 79; gymnasium/observatory coverage above 89%; tax coverage above 88%; the hall's appeal above 60; a palace tile within 5 tiles of the hall (`0x004FBB20`); walls: no path from the hall to the map's entry points.
+
+## Tax coverage
+The tax mood factor uses the "no taxes" row when tax coverage is below 11% (`0x00567120`).
