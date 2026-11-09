@@ -34,7 +34,8 @@ void eUrchinQuay::timeChanged(const int by) {
                 mStateCount = 0;
                 mState = eUrchinQuayState::waiting;
                 // a blessed urchin quay brings in 4 times this catch
-                addProduced(eResourceType::urchin, useBlessing(3));
+                // one load per trip (original exe 0x00430400)
+                addProduced(eResourceType::urchin, useBlessing(1));
                 updateDisabled();
             }
         } break;

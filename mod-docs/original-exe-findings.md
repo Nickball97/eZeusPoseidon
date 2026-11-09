@@ -73,3 +73,16 @@ The tax mood factor uses the "no taxes" row when tax coverage is below 11% (`0x0
 
 ## Births and deaths (verified in code, `0x00566D40`, once a year)
 Population changes by a share set by city health: 91+ +6%, 81–90 +4%, 71–80 +3%, 61–70 +2%, 51–60 +1%, 41–50 0; 40 or less: −1% while the health target is 31+, otherwise −2% (21–40), −3% (11–20), −5% (1–10). Hera +3%.
+
+## Immigration and emigration (verified in code, `0x00567450`, every cycle)
+- Rate by city mood: 71+ 100, 61–70 75, 50–60 50, 36–49 0, 26–35 −8, 16–25 −17, under 16 −25.
+- Positive: ceil(rate × 12 / 100) newcomers per cycle (12 / 9 / 6), arriving in groups of 4. Negative, with 101+ people: ceil(|rate| × 12 / 100) leave per cycle (1 / 3 / 3), in groups of 4, from the lowest houses first, at most 4 from one house (`0x00486AB0`). Two-cycle pause after switching between the two.
+- Aphrodite's sanctuary stops emigration (her record is checked in `0x00486AB0`).
+- There is no separate "unhappy house leaves" rule.
+
+## Fishing and urchins (verified in code)
+- Fishing boat (`0x004B5F10`): catching takes 408 walker ticks at full staff (half a month at 816 ticks a month), 816 / 1224 / 1632 / 2040 at 75 / 50 / 25 / under 25% staffing; Poseidon's sanctuary: ×0.66. Unloading 204 ticks at full staff (204 more per lower band). Each catch is 1 load.
+- Urchin gatherer (`0x004302D0`, `0x00430400`): 408 ticks per trip, +100 units (1 load) per trip, quay holds 500 units.
+
+## Trireme wharf (verified in code, `0x0048CFB0`)
+Progress per cycle by staffing (10 / 8 / 6 / 4 / 2); a ship is launched past 319, so 32 cycles (2 months) at full staff. Needs 200+ units of a material in stock to progress.

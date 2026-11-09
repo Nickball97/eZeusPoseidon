@@ -197,25 +197,8 @@ void eSmallHouse::timeChanged(const int by) {
         }
     }
 
-    {
-        const auto s = b.sanctuary(cid, eGodType::aphrodite);
-        const bool aphr = s && s->finished();
-        if(!aphr) {
-            const double pm = eNumbers::sHouseLeaveRiskPeriodMultiplier;
-            const double pbi = eNumbers::sHouseLeaveRiskPeriodBaseIncrement;
-            const double pe = eNumbers::sHouseLeaveRiskPeriodExponent;
-            const int m4 = pm*pow(pbi + mSatisfaction, pe);
-            const auto pid = playerId();
-            const auto diff = b.difficulty(pid);
-            const double leaveRisk = eDifficultyHelpers::crimeRisk(diff);
-            if(leaveRisk > 0. && by) {
-                const int leavePeriod = std::round(m4/(by*leaveRisk));
-                if(leavePeriod && eRand::rand() % leavePeriod == 0) {
-                    leave();
-                }
-            }
-        }
-    }
+    // (people now leave the city through the original's mood-based
+    // emigration in eBoardCity::emigrationCycle, not house by house)
 
     mUpdateLevel += by;
     // checked every cycle (16 a month), as houses_evolve does

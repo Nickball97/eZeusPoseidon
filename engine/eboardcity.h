@@ -610,6 +610,9 @@ private:
     void plagueOutbreak();
     // yearly births and deaths by health (original exe 0x00566D40)
     void yearlyBirthsDeaths();
+    // people leaving when the mood is low (original exe 0x00567450)
+    void emigrationCycle();
+    int mEmigrantsPending = 0; // not saved; under 4 people
     int mHealth = 0;
     int mMaintanance = 0;
     int mExcessiveMilitaryServiceCount = 0;

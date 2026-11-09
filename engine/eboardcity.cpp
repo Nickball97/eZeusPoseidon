@@ -2822,6 +2822,7 @@ void eBoardCity::updateHealthTarget() {
 // <75 25, else none (table 0x005F84A8); at most one a month and about
 // chance*384/20000 a year.
 void eBoardCity::healthCycle() {
+    emigrationCycle();
     if(mCityHealth < mHealthTarget) mCityHealth++;
     else if(mCityHealth > mHealthTarget) mCityHealth--;
     static const int sBand[7][2] = {{10, 300}, {20, 250}, {30, 200},
@@ -2921,5 +2922,40 @@ void eBoardCity::yearlyBirthsDeaths() {
         if(house->people() <= 0) continue;
         if(pct > 0) n -= house->moveIn(n);
         else n -= house->kill(n);
+    }
+}
+
+// Emigration, every cycle (original exe 0x00567450, 0x00486AB0): with
+// 101+ people and the mood below 36, people leave: 1 a cycle at 26-35,
+// 3 below 26, in groups of 4 from the lowest houses first (at most 4 from
+// one house). Aphrodite's finished sanctuary stops it.
+void eBoardCity::emigrationCycle() {
+    const int pop = mPopData.population();
+    int n = 0;
+    if(mMood < 26) n = 3;
+    else if(mMood < 36) n = 1;
+    if(pop < 101) n = 0;
+    const auto as = sanctuary(eGodType::aphrodite);
+    if(as && as->finished()) n = 0;
+    if(n <= 0) {
+        mEmigrantsPending = 0;
+        return;
+    }
+    mEmigrantsPending += n;
+    if(mEmigrantsPending < 4) return;
+    int left = mEmigrantsPending;
+    mEmigrantsPending = 0;
+    std::vector<eHouseBase*> hs(mHouses.begin(), mHouses.end());
+    std::stable_sort(hs.begin(), hs.end(),
+                     [](eHouseBase* const a, eHouseBase* const b) {
+        const bool ea = a->type() == eBuildingType::eliteHousing;
+        const bool eb = b->type() == eBuildingType::eliteHousing;
+        if(ea != eb) return !ea;
+        return a->level() < b->level();
+    });
+    for(const auto h : hs) {
+        if(left <= 0) break;
+        if(h->people() <= 0) continue;
+        left -= h->emigrate(std::min(4, left));
     }
 }

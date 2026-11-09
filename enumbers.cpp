@@ -394,7 +394,9 @@ void eNumbers::sLoad(const std::string& path) {
 
     loadI("urchin_quay_unpack_time_i", sUrchinQuayUnpackTime, 10000, 1, 1000000);
     loadI("fishery_boat_build_time_i", sFisheryBoatBuildTime, 40000, 1, 1000000);
-    loadI("fishery_unpack_time_i", sFisheryUnpackTime, 10000, 1, 1000000);
+    // original fishing boat (exe 0x004B5F10), full staff: half a month to
+    // catch, a quarter to unload (816 walker ticks a month)
+    loadI("fishery_unpack_time_i", sFisheryUnpackTime, (365*sDayLength)/48, 1, 1000000);
 
     loadI("hunting_lodge_wait_period_i", sHuntingLodgeWaitPeriod, 5000, 1, 1000000);
 
@@ -475,8 +477,9 @@ void eNumbers::sLoad(const std::string& path) {
     // silver is mined like bronze (Citadel of Poseidon)
     loadI("silver_collect_period_i", sSilverCollectTime, 6000, 1, 1000000);
     loadI("wood_collect_period_i", sWoodCollectTime, 6000, 1, 1000000);
-    loadI("fish_collect_period_i", sFishCollectTime, 10000, 1, 1000000);
-    loadI("urchin_collect_period_i", sUrchinCollectTime, 10000, 1, 1000000);
+    loadI("fish_collect_period_i", sFishCollectTime, (365*sDayLength)/24, 1, 1000000);
+    // urchin gatherer: half a month per trip (exe 0x004302D0)
+    loadI("urchin_collect_period_i", sUrchinCollectTime, (365*sDayLength)/24, 1, 1000000);
 
     loadI("grower_max_distance_i", sGrowerMaxDistance, 40, 5, 1000);
     loadI("grower_max_groom_i", sGrowerMaxGroom, 5, 1, 1000);
@@ -593,8 +596,8 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("resource_building_max_resource_give_distance_i", sResourceBuildingMaxResourceGiveDistance, 60, 5, 1000);
     loadI("processing_building_max_resource_take_distance_i", sProcessingBuildingMaxResourceTakeDistance, 60, 5, 1000);
     loadI("trireme_wharf_max_resource_take_distance_i", sTriremeWharfMaxResourceTakeDistance, 60, 5, 1000);
-    // one ship = 2 wood + 2 armor in 2 stages; total build time kept at
-    // eZeus's old 300,000 ticks until a source number turns up
-    loadI("trireme_wharf_build_time_i", sTriremeWharfBuildTime, 150000, 1, 1000000);
+    // one ship = 2 wood + 2 armor in 2 stages; the original builds it in
+    // 32 cycles at full staff, 2 months (exe 0x0048CFB0, trireme wharf)
+    loadI("trireme_wharf_build_time_i", sTriremeWharfBuildTime, (365*sDayLength)/12, 1, 1000000);
     loadI("trireme_wharf_build_stages_i", sTriremeWharfBuildStages, 2, 1, 10);
 }

@@ -83,10 +83,14 @@ void eCollectAction::increment(const int by) {
     if(cType == eCharacterType::fishingBoat ||
        cType == eCharacterType::urchinGatherer) {
         // With Poseidon's sanctuary finished, his Kraken convinces fish
-        // and urchins to be caught faster (Zeus manual); 3/4 of the
-        // usual time per Nicolás
+        // and urchins to be caught faster (Zeus manual). Fishing boats:
+        // 66% of the time (original exe 0x004B5F10); urchins: 3/4 (Nicolás,
+        // no number found for them)
         const auto s = c->getBoard().sanctuary(c->cityId(), eGodType::poseidon);
-        if(s && s->finished()) period = period*3/4;
+        if(s && s->finished()) {
+            period = cType == eCharacterType::fishingBoat ?
+                     period*66/100 : period*3/4;
+        }
     }
     if(mTime > period) {
         mTile->decResource(1);

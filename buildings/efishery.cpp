@@ -42,7 +42,8 @@ void eFishery::timeChanged(const int by) {
                 mStateCount = 0;
                 mState = eFisheryState::waiting;
                 // a blessed fishery brings in 4 times this catch
-                addProduced(eResourceType::fish, useBlessing(3));
+                // one load per catch (original exe 0x004B5F10)
+                addProduced(eResourceType::fish, useBlessing(1));
                 updateDisabled();
             }
         } break;
