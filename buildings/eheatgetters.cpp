@@ -1,6 +1,7 @@
 #include "eheatgetters.h"
 
 #include "characters/gods/egodtype.h"
+#include "characters/monsters/emonstertarget.h"
 
 eHeat eHeatGetters::appeal(const eBuildingType type) {
     switch(type) {
@@ -438,4 +439,49 @@ eHeat eHeatGetters::notFertile(eTileBase* const tile) {
     } else {
         return {2, 8};
     }
+}
+
+bool eHeatGetters::isMonsterTarget(const eMonsterTarget t,
+                                   const eBuildingType bt) {
+    using eBT = eBuildingType;
+    switch(t) {
+    case eMonsterTarget::food:
+        return farming(bt).fValue >= 10 || bt == eBT::granary;
+    case eMonsterTarget::sea:
+        return bt == eBT::fishery || bt == eBT::urchinQuay ||
+               bt == eBT::triremeWharf || bt == eBT::tradePost;
+    case eMonsterTarget::industry:
+        return industry(bt).fValue >= 10 || bt == eBT::refinery ||
+               bt == eBT::blackMarbleWorkshop;
+    case eMonsterTarget::military:
+    case eMonsterTarget::troops:
+        return bt == eBT::armory || bt == eBT::horseRanch ||
+               bt == eBT::triremeWharf || bt == eBT::chariotFactory;
+    case eMonsterTarget::money:
+        return bt == eBT::mint || bt == eBT::taxOffice ||
+               bt == eBT::palace || bt == eBT::tradePost;
+    case eMonsterTarget::common:
+        return bt == eBT::commonHouse;
+    case eMonsterTarget::aesthetic:
+        return eBuilding::sAestheticsBuilding(bt);
+    case eMonsterTarget::mythological:
+        return eBuilding::sSanctuaryBuilding(bt) ||
+               eBuilding::sHeroHall(bt);
+    case eMonsterTarget::best:
+    case eMonsterTarget::random:
+        return false;
+    }
+    return false;
+}
+
+eHeatGetters::eHeatGetter eHeatGetters::monsterTarget(const eMonsterTarget t) {
+    if(t == eMonsterTarget::best || t == eMonsterTarget::random) {
+        return eHeatGetters::any;
+    }
+    return [t](const eBuildingType bt) -> eHeat {
+        const auto a = any(bt);
+        if(a.fValue <= 0) return a;
+        if(isMonsterTarget(t, bt)) return {10, 5};
+        return a;
+    };
 }

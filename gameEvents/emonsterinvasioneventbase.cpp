@@ -7,6 +7,7 @@
 #include "evectorhelpers.h"
 #include "emessages.h"
 #include "fileIO/efileformat.h"
+#include "buildings/eheatgetters.h"
 
 eMonsterInvasionEventBase::eMonsterInvasionEventBase(
         const eCityId cid,
@@ -50,9 +51,11 @@ void eMonsterInvasionEventBase::write(eWriteStream& dst) const {
         dst << k;
     }
 
-    dst << mIndustryMonsters.size();
-    for(const auto m : mIndustryMonsters) {
-        dst << m;
+    dst << 0; // old industry-only list (format monsterTarget)
+    dst << mMonsterTargets.size();
+    for(const auto& m : mMonsterTargets) {
+        dst << m.first;
+        dst << m.second;
     }
 }
 
@@ -80,7 +83,20 @@ void eMonsterInvasionEventBase::read(eReadStream& src) {
         int ni;
         src >> ni;
         for(int i = 0; i < ni; i++) {
-            src >> mIndustryMonsters.emplace_back();
+            eMonsterType m;
+            src >> m;
+            mMonsterTargets.push_back({m, eMonsterTarget::industry});
+        }
+    }
+    if(src.formatVersion() >= eFileFormat::monsterTargets) {
+        int nt;
+        src >> nt;
+        for(int i = 0; i < nt; i++) {
+            eMonsterType m;
+            eMonsterTarget t;
+            src >> m;
+            src >> t;
+            mMonsterTargets.push_back({m, t});
         }
     }
 }
@@ -113,9 +129,8 @@ eMonster* eMonsterInvasionEventBase::triggerBase() {
     board->addMonsterEvent(mMonster, this);
     mChooseMonster = false;
     choosePointId();
-    if(eVectorHelpers::contains(mIndustryMonsters, mMonster)) {
-        chooseIndustryPoint();
-    }
+    const auto target = targetOf(mMonster);
+    chooseTargetPoint(target);
     const auto cid = cityId();
     const auto monster = eMonster::sCreateMonster(mMonster, *board);
     board->registerMonster(cid, monster.get());
@@ -124,6 +139,7 @@ eMonster* eMonsterInvasionEventBase::triggerBase() {
 
     const auto a = e::make_shared<eMonsterAction>(monster.get());
     a->setAggressivness(mAggressivness);
+    a->setTarget(target);
     monster->setAction(a);
     const int ptId = pointId();
     const auto tile = board->monsterTile(cid, ptId);
@@ -163,19 +179,38 @@ eMonster* eMonsterInvasionEventBase::triggerBase() {
     return monster.get();
 }
 
-void eMonsterInvasionEventBase::chooseIndustryPoint() {
+eMonsterTarget eMonsterInvasionEventBase::targetOf(const eMonsterType m) const {
+    for(const auto& t : mMonsterTargets) {
+        if(t.first == m) return t.second;
+    }
+    return eMonsterTarget::random;
+}
+
+void eMonsterInvasionEventBase::chooseTargetPoint(const eMonsterTarget target) {
+    if(target == eMonsterTarget::best ||
+       target == eMonsterTarget::random) return;
     const auto board = gameBoard();
     if(!board) return;
     const auto cid = cityId();
     std::vector<eTile*> res;
     board->iterateOverAllTiles([&](eTile* const t) {
         if(t->cityId() != cid) return;
-        const auto terr = t->terrain();
-        if(terr == eTerrain::marble || terr == eTerrain::blackMarble ||
-           terr == eTerrain::copper || terr == eTerrain::silver ||
-           terr == eTerrain::orichalc) {
-            res.push_back(t);
+        if(target == eMonsterTarget::industry) {
+            const auto terr = t->terrain();
+            if(terr == eTerrain::marble || terr == eTerrain::blackMarble ||
+               terr == eTerrain::copper || terr == eTerrain::silver ||
+               terr == eTerrain::orichalc) {
+                res.push_back(t);
+                return;
+            }
+        } else if(target == eMonsterTarget::sea) {
+            if(t->hasWater() && !t->isShoreTile()) {
+                res.push_back(t);
+                return;
+            }
         }
+        const auto bt = t->underBuildingType();
+        if(eHeatGetters::isMonsterTarget(target, bt)) res.push_back(t);
     });
     if(res.empty()) return;
     int bestId = -1;
@@ -194,7 +229,8 @@ void eMonsterInvasionEventBase::chooseIndustryPoint() {
         }
     }
     if(bestId > 0) {
-        printf("Monster aimed at industry: marker %i\n", bestId);
+        printf("Monster aimed at target %i: marker %i\n",
+               static_cast<int>(target), bestId);
         setPointId(bestId);
     }
 }

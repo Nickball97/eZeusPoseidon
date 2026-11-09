@@ -4,6 +4,7 @@
 #include "egodmonsteraction.h"
 
 #include "characters/monsters/emonster.h"
+#include "characters/monsters/emonstertarget.h"
 #include "audio/esounds.h"
 #include "characters/actions/walkable/eobsticlehandler.h"
 
@@ -28,6 +29,7 @@ public:
     { return mAggressivness; }
     void setAggressivness(const eMonsterAggressivness a)
     { mAggressivness = a; }
+    void setTarget(const eMonsterTarget t) { mTarget = t; }
 
     void goToTarget();
     void goBack();
@@ -52,6 +54,7 @@ private:
 
     eTile* mHomeTile = nullptr;
     eMonsterAggressivness mAggressivness{eMonsterAggressivness::passive};
+    eMonsterTarget mTarget{eMonsterTarget::random};
     eMonsterAttackStage mStage{eMonsterAttackStage::none};
     const eMonsterType mType;
     int mLookForAttack = 0;

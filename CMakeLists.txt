@@ -715,6 +715,7 @@ add_executable(eZeus
     characters/monsters/ecalydonianboar.h
     characters/monsters/emonster.cpp
     characters/monsters/emonster.h
+    characters/monsters/emonstertarget.h
     characters/monsters/emonstertype.h
     characters/monsters/ewatermonster.cpp
     characters/monsters/ewatermonster.h

@@ -11,6 +11,7 @@
 #include "egodaction.h"
 
 #include "enumbers.h"
+#include "fileIO/efileformat.h"
 
 eMonsterAction::eMonsterAction(eCharacter* const c) :
     eGodMonsterAction(c, eCharActionType::monsterAction),
@@ -76,6 +77,9 @@ void eMonsterAction::read(eReadStream& src) {
     src >> mAggressivness;
     src >> mStage;
     src >> mLookForAttack;
+    if(src.formatVersion() >= eFileFormat::monsterTargets) {
+        src >> mTarget;
+    }
 }
 
 void eMonsterAction::write(eWriteStream& dst) const {
@@ -84,6 +88,7 @@ void eMonsterAction::write(eWriteStream& dst) const {
     dst << mAggressivness;
     dst << mStage;
     dst << mLookForAttack;
+    dst << mTarget;
 }
 
 eTile* eMonsterAction::closestEmptySpace(const int rdx, const int rdy) const {
@@ -180,7 +185,8 @@ void eMonsterAction::goToTarget() {
         const stdptr<eMonsterAction> tptr(this);
         const auto tryAgain = std::make_shared<eGoToTargetTryAgain>(
                                   board(), this);
-        eGodMonsterAction::goToTarget(eHeatGetters::any, tryAgain,
+        eGodMonsterAction::goToTarget(eHeatGetters::monsterTarget(mTarget),
+                                      tryAgain,
                                       obsticleHandler(),
                                       eWalkableHelpers::sMonsterTileDistance,
                                       eWalkableObject::sCreateAttacker(),

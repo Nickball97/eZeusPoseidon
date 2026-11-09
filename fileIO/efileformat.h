@@ -13,6 +13,7 @@ namespace eFileFormat {
         poseidonKraken,
         eliteNoble,
         monsterTarget,
+        monsterTargets,
 
         nextVersion
     };

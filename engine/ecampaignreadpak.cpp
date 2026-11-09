@@ -374,19 +374,7 @@ eMonsterType pakIdToMonsterType(const uint8_t id, bool& valid) {
     return eMonsterType::calydonianBoar;
 }
 
-enum class eMonsterTarget {
-    food,
-    sea,
-    industry,
-    military,
-    money,
-    troops,
-    common,
-    aesthetic,
-    mythological,
-    best,
-    random
-};
+#include "characters/monsters/emonstertarget.h"
 
 eMonsterTarget pakIdToMonsterTarget(const uint16_t id) {
     if(id > 10) {
@@ -651,10 +639,9 @@ void readEpisodeEvents(eEpisode& ep, ZeusFile& file,
             {
                 const uint16_t vals[3] = {value1, value2, value3};
                 for(int k = 0; k < 3; k++) {
-                    if(targets[k] != eMonsterTarget::industry) continue;
                     bool v;
                     const auto m = monsterIdToType(vals[k], v);
-                    if(v) ee->addIndustryMonster(m);
+                    if(v) ee->addMonsterTarget(m, targets[k]);
                 }
             }
             e = ee;
