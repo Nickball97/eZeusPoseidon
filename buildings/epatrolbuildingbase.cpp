@@ -2,6 +2,7 @@
 
 #include "engine/egameboard.h"
 #include "engine/eguidedmovepathtask.h"
+#include "characters/etaxcollector.h"
 
 #include <algorithm>
 
@@ -124,7 +125,10 @@ void ePatrolBuildingBase::timeChanged(const int by) {
                 mSpawnTime = 0;
                 // blessed: walkers come twice as often (sBlessMultiplier);
                 // two such walkers make one extra, which uses it up
-                if(blessed()) spendBlessing(0.5);
+                // (a tax office instead spends it on one collector, in spawn)
+                if(blessed() && type() != eBuildingType::taxOffice) {
+                    spendBlessing(0.5);
+                }
                 const bool r = updatePathIfNeeded();
                 if(r) mSpawnOnPathSet = true;
                 else spawn();
@@ -154,6 +158,12 @@ bool ePatrolBuildingBase::spawn() {
     const auto chr = mCharGenerator();
     mChar = chr.get();
     if(!mChar) return false;
+    if(type() == eBuildingType::taxOffice && blessed()) {
+        if(const auto tc = dynamic_cast<eTaxCollector*>(chr.get())) {
+            tc->setBlessed(true);
+            spendBlessing(1.);
+        }
+    }
     chr->setBothCityIds(cityId());
     if(mPatrolGuides.empty()) {
         eTile* t = nullptr;
