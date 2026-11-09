@@ -140,8 +140,11 @@ void eResourceCollectBuilding::timeChanged(const int by) {
                 if(type == eResourceType::silver) {
                     auto& brd = getBoard();
                     const auto pid = playerId();
-                    brd.incDrachmas(pid, useBlessing(1)*eNumbers::sMintDrachmasPerSilver,
-                                    eFinanceTarget::minedSilver);
+                    // blessed: "400 drachmas once instead of only 100"
+                    const bool blessedLoad = useBlessing(1) > 1;
+                    const int dr = eNumbers::sMintDrachmasPerSilver +
+                                   (blessedLoad ? 300 : 0);
+                    brd.incDrachmas(pid, dr, eFinanceTarget::minedSilver);
                     mRawCount -= mRawPerLoad;
                 } else {
                     // a blessed building turns this load into several

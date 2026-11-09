@@ -40,6 +40,7 @@ double eEmployingBuilding::sBlessMultiplier(const eBuildingType type) {
     case eBuildingType::wheatFarm:
     case eBuildingType::carrotsFarm:
     case eBuildingType::onionsFarm:
+        return 1.5;
     case eBuildingType::cardingShed:
     case eBuildingType::olivePress:
     case eBuildingType::winery:
@@ -100,7 +101,17 @@ void eEmployingBuilding::write(eWriteStream& dst) const {
 
 int eEmployingBuilding::useBlessing(const int normal) {
     if(!blessed()) return normal;
-    const int n = static_cast<int>(std::round(normal*sBlessMultiplier(type())));
     spendBlessing();
-    return std::max(normal, n);
+    switch(type()) {
+    case eBuildingType::wheatFarm:
+    case eBuildingType::carrotsFarm:
+    case eBuildingType::onionsFarm:
+        // "the farm produces 12 loads instead of 8" (Citadel of Poseidon)
+        return std::max(normal, static_cast<int>(std::round(normal*1.5)));
+    default:
+        // "produces 4 loads once instead of only 1" (Citadel of Poseidon,
+        // every other blessed production building; mint 400 drachmas
+        // instead of 100)
+        return normal + 3;
+    }
 }

@@ -341,7 +341,9 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("army_travel_time_i", sArmyTravelTime, 200, 1, 1000);
     loadI("ai_invasion_months_break_i", sAIInvasionMonthsBreak, 30, 0, 1000);
     loadI("invasion_appear_at_places_b", sInvasionAppearAtPlaces, 0, 0, 1);
-    loadD("army_strength_horseman_mult_d", sArmyStrengthHorsemanMult, 1.5, 0.1, 100.);
+    // horsemen are twice as strong as hoplites abroad (Citadel of Poseidon,
+    // Peloponnesian War ep. 3)
+    loadD("army_strength_horseman_mult_d", sArmyStrengthHorsemanMult, 2., 0.1, 100.);
 
     loadI("rabble_divisor_i", sRabbleDivisor, 6, 1, 100);
     loadI("soldiers_per_banner_i", sSoldiersPerBanner, 8, 2, 100);
@@ -463,7 +465,8 @@ void eNumbers::sLoad(const std::string& path) {
     // Poseidon, about 3/4 month per tree). 6000 ticks of work plus the
     // short wait and walk gives about that when the resource is close.
     loadI("bronze_collect_period_i", sBronzeCollectTime, 6000, 1, 1000000);
-    loadI("silver_collect_period_i", sSilverCollectTime, 10000, 1, 1000000);
+    // silver is mined like bronze (Citadel of Poseidon)
+    loadI("silver_collect_period_i", sSilverCollectTime, 6000, 1, 1000000);
     loadI("wood_collect_period_i", sWoodCollectTime, 6000, 1, 1000000);
     loadI("fish_collect_period_i", sFishCollectTime, 10000, 1, 1000000);
     loadI("urchin_collect_period_i", sUrchinCollectTime, 10000, 1, 1000000);

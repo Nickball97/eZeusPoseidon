@@ -88,9 +88,16 @@ bool eGrowerAction::decide() {
 
     if(grapes > 0 || olives > 0 || oranges > 0) {
         if(inLodge) {
-            mLodge->addProduced(eResourceType::grapes, grapes);
-            mLodge->addProduced(eResourceType::olives, olives);
-            mLodge->addProduced(eResourceType::oranges, oranges);
+            // a blessing makes the first of these one bigger delivery
+            if(grapes > 0) {
+                mLodge->addProduced(eResourceType::grapes, mLodge->useBlessing(grapes));
+            }
+            if(olives > 0) {
+                mLodge->addProduced(eResourceType::olives, mLodge->useBlessing(olives));
+            }
+            if(oranges > 0) {
+                mLodge->addProduced(eResourceType::oranges, mLodge->useBlessing(oranges));
+            }
 
             mGrower->incGrapes(-grapes);
             mGrower->incOlives(-olives);

@@ -115,7 +115,8 @@ void eCorral::timeChanged(const int by) {
     const double eff = effectiveness();
     const double newP = std::max(0., mProcessing - by*eff);
     if(newP == 0. && mProcessing > 0) {
-        addProduced(eResourceType::meat, 3);
+        // each cow gives 2 loads of meat (Citadel of Poseidon)
+        addProduced(eResourceType::meat, useBlessing(2));
     }
 
     mProcessing = newP;
