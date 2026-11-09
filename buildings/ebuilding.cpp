@@ -2742,17 +2742,21 @@ void eBuilding::setHP(const int hp) {
     mHp = hp;
 }
 
+// A building's appeal is the highest appeal over its footprint (original
+// exe 0x004842A0, documented by zeus-poseidon-arm64 docs/engine/terrain.md
+// 7.4, "verified"). The original adds 10 more when an unidentified flag is
+// set; that is not done here.
 double eBuilding::appeal() const {
     const auto& b = getBoard();
     const auto& tiles = tilesUnder();
     if(tiles.empty()) return 0;
-    double sum = 0;
+    double best = -1e9;
     for(const auto t : tiles) {
         const int dx = t->dx();
         const int dy = t->dy();
-        sum += b.appeal(dx ,dy);
+        best = std::max(best, b.appeal(dx ,dy));
     }
-    return sum/tiles.size();
+    return best;
 }
 
 void eBuilding::spendBlessing(const double amount) {
