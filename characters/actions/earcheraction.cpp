@@ -85,7 +85,10 @@ void eArcherAction::increment(const int by) {
                 if(!t) continue;
                 const auto& chars = t->characters();
                 for(const auto& cc : chars) {
-                    if(!cc->isSoldier()) continue;
+                    // sentries shoot "any enemy or wolf near the tower"
+                    // (Citadel of Poseidon, walkers/military.html)
+                    if(!cc->isSoldier() &&
+                       cc->type() != eCharacterType::wolf) continue;
                     const auto cctid = cc->teamId();
                     if(!eTeamIdHelpers::isEnemy(cctid, tid)) continue;
                     if(cc->dead()) continue;

@@ -73,6 +73,13 @@ void eCollectAction::increment(const int by) {
     } else if(cType == eCharacterType::urchinGatherer) {
         period = eNumbers::sUrchinCollectTime;
     }
+    if(cType == eCharacterType::marbleMiner) {
+        // With the Pillar of Atlas finished, quarrymen hew white and black
+        // marble faster (Citadel of Poseidon, industries.html); no number
+        // is known, so 3/4 of the time like Poseidon's fishing (Nicolás)
+        const auto s = c->getBoard().sanctuary(c->cityId(), eGodType::atlas);
+        if(s && s->finished()) period = period*3/4;
+    }
     if(cType == eCharacterType::fishingBoat ||
        cType == eCharacterType::urchinGatherer) {
         // With Poseidon's sanctuary finished, his Kraken convinces fish

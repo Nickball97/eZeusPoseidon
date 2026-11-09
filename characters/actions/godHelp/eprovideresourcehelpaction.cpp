@@ -1,6 +1,7 @@
 #include "eprovideresourcehelpaction.h"
 
 #include "etilehelper.h"
+#include "fileIO/efileformat.h"
 
 eProvideResourceHelpAction::eProvideResourceHelpAction(
         eCharacter* const c,
@@ -26,6 +27,11 @@ bool eProvideResourceHelpAction::decide() {
         give();
         break;
     case eProvideResourceHelpStage::give: {
+        if(mCount <= 0 && mNextCount > 0) {
+            mResource = mNextResource;
+            mCount = mNextCount;
+            mNextCount = 0;
+        }
         if(mCount > 0) {
             mStage = eProvideResourceHelpStage::goTo;
             goToTarget();
@@ -50,6 +56,10 @@ void eProvideResourceHelpAction::read(eReadStream& src) {
     });
     src >> mResource;
     src >> mCount;
+    if(src.formatVersion() >= eFileFormat::godHelpSecondResource) {
+        src >> mNextResource;
+        src >> mNextCount;
+    }
 }
 
 void eProvideResourceHelpAction::write(eWriteStream& dst) const {
@@ -58,6 +68,8 @@ void eProvideResourceHelpAction::write(eWriteStream& dst) const {
     dst.writeBuilding(mTarget);
     dst << mResource;
     dst << mCount;
+    dst << mNextResource;
+    dst << mNextCount;
 }
 
 void eProvideResourceHelpAction::decCount(const int by) {

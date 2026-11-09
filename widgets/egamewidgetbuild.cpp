@@ -785,7 +785,19 @@ bool eGameWidget::buildMouseRelease() {
                 const auto b = t->underBuilding();
                 const auto r = static_cast<eRoad*>(b);
                 const bool rb = r->isRoadblock();
-                if(!rb) r->setRoadblock(true);
+                if(!rb) {
+                    r->setRoadblock(true);
+                    if(!mEditorMode) {
+                        // 2/3/4/5/10 drachmas by difficulty (Citadel of
+                        // Poseidon building models, Nefermenu)
+                        static const int sCost[] = {2, 3, 4, 5, 10};
+                        const auto ppid = mBoard->personPlayer();
+                        const auto diff = mBoard->difficulty(ppid);
+                        const int cost = sCost[static_cast<int>(diff)];
+                        mBoard->incDrachmas(ppid, -cost,
+                                            eFinanceTarget::construction);
+                    }
+                }
             }
         } break;
         case eBuildingMode::bridge: {

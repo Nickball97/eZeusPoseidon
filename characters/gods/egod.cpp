@@ -480,8 +480,9 @@ int eGod::sGodAppearTime(const eGodType gt) {
 
 // Buildings each god sanctifies (blesses) while walking around the city.
 // Zeus manual, Mythology chapter (Sanctuaries), and Poseidon manual (Hera,
-// Atlas, Apollo in Atlantis); HeavenGames' sanctuaries page agrees except
-// for Atlas (it lists timber mill and refinery; the manual is used).
+// Atlas, Apollo in Atlantis); HeavenGames' sanctuaries page agrees. Atlas
+// follows HeavenGames and the Citadel of Poseidon (timber mill and refinery),
+// per Nicolás; his finished sanctuary also speeds up marble quarrying.
 bool eGod::sTarget(const eGodType gt, const eBuildingType bt) {
     switch(gt) {
     case eGodType::aphrodite: // "she sanctifies some of your houses"
@@ -506,9 +507,9 @@ bool eGod::sTarget(const eGodType gt, const eBuildingType bt) {
     case eGodType::athena: // Carding Sheds and Olive Presses
         return bt == eBuildingType::cardingShed ||
                bt == eBuildingType::olivePress;
-    case eGodType::atlas: // Masonry Shop or Black Marble Workshop
-        return bt == eBuildingType::masonryShop ||
-               bt == eBuildingType::blackMarbleWorkshop;
+    case eGodType::atlas: // Timber Mills and Refineries
+        return bt == eBuildingType::timberMill ||
+               bt == eBuildingType::refinery;
     case eGodType::demeter: // "your farms"
         return bt == eBuildingType::wheatFarm ||
                bt == eBuildingType::onionsFarm ||

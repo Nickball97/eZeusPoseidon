@@ -196,6 +196,8 @@ bool eFigureStats::sGet(const eCharacterType type,
     // hunting (eZeus's 100 HP; attack 0, or 10 when angry, see
     // eHuntAction and sDamage)
     case eT::boar: s = speedOnly(7); return true;
+    // deer run like wolves and boar, 1.25x (speed.html)
+    case eT::deer: s = speedOnly(7); return true;
     case eT::wolf: s = wolf(d); return true;
     case eT::cattle1: case eT::cattle2:
     case eT::cattle3: case eT::bull: s = cattle(d); return true;

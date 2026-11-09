@@ -295,7 +295,8 @@ eInvasionHandler::generateSoldiersForCity(
         case eNationality::persian:
             s = spawnSoldier<ePersianHoplite>(mBoard, ocid, cid, tile);
             break;
-        case eNationality::centaur:
+        case eNationality::centaur: // swordsmen
+            s = spawnSoldier<eCentaurHorseman>(mBoard, ocid, cid, tile);
             break;
         case eNationality::amazon: {
             const auto a = spawnSoldier<eAmazon>(mBoard, ocid, cid, tile);
