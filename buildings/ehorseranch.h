@@ -2,6 +2,7 @@
 #define EHORSERANCH_H
 
 #include "eemployingbuilding.h"
+#include "engine/edate.h"
 
 class eHorseRanchEnclosure;
 
@@ -33,6 +34,9 @@ public:
     void setEnclosure(eHorseRanchEnclosure* const e);
 
     int horseCount() const;
+    // a blessing breeds 4 extra horses at once instead of speeding up
+    bool blessingLastsUntilUsed() const override { return true; }
+    bool blessingBoostsSpeed() const override { return false; }
     bool takeHorse();
 
     void read(eReadStream& src) override;
@@ -41,6 +45,7 @@ private:
     int mWheat = 0;
     int mWheatTime = 0;
     int mHorseTime = 0;
+    eMonth mLastMonth = eMonth::january; // not saved; only spots month changes
     eHorseRanchEnclosure* mEnclosure = nullptr;
 
     stdptr<eCartTransporter> mTakeCart;

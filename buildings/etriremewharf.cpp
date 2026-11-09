@@ -136,13 +136,18 @@ void eTriremeWharf::timeChanged(const int by) {
             mOrichalcCount--;
             mTrireme->setAtlanteanFire(true);
         }
-        if(!mTrireme && mWoodCount > 1 && mArmorCount > 0) {
+        // a trireme takes 2 loads of wood and 2 of armor (Citadel of
+        // Poseidon); spread over the build stages
+        const int stages = eNumbers::sTriremeWharfBuildStages;
+        const int woodStage = std::max(1, 2/stages);
+        const int armorStage = std::max(1, 2/stages);
+        if(!mTrireme && mWoodCount >= woodStage && mArmorCount >= armorStage) {
             mTriremeBuildingTime += by*eff;
             if(mTriremeBuildingTime > eNumbers::sTriremeWharfBuildTime) {
                 mTriremeBuildingTime = 0;
                 mTriremeBuildingStage++;
-                mWoodCount -= 2;
-                mArmorCount--;
+                mWoodCount -= woodStage;
+                mArmorCount -= armorStage;
                 if(mTriremeBuildingStage >= eNumbers::sTriremeWharfBuildStages) {
                     mTriremeBuildingStage = 0;
                     spawnTrireme();

@@ -51,9 +51,11 @@ private:
     int mTriremeBuildingStage = 0;
     double mTriremeBuildingTime = 0;
 
-    const int mMaxWood = 8;
+    // "the wharf tries to hold 3 loads of both armor and wood in stock"
+    // (Citadel of Poseidon)
+    const int mMaxWood = 3;
     int mWoodCount{0};
-    const int mMaxArmor = 4;
+    const int mMaxArmor = 3;
     int mArmorCount{0};
     // Atlantean cities: one load of orichalc fits the frigate with an
     // Atlantean Fire launcher (Poseidon manual, Atlantean Navy)

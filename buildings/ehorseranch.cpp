@@ -60,6 +60,18 @@ void eHorseRanch::timeChanged(const int by) {
         if(!mTakeCart) {
             mTakeCart = spawnCart(eCartActionTypeSupport::take);
         }
+        if(blessed()) {
+            // Poseidon's blessing: "the horse ranch will breed 4 extra
+            // horses in less than a month" (Citadel of Poseidon)
+            spendBlessing();
+            int n = 0;
+            for(int i = 0; i < 4; i++) {
+                if(mEnclosure->spawnHorse()) n++;
+            }
+            if(n > 0 && isPersonPlayer()) {
+                getBoard().incProduced(eResourceType::horse, n);
+            }
+        }
         if(mWheat > 0) {
             mWheatTime += by;
             if(mWheatTime > eNumbers::sHorseRanchWheatUsePeriod) {
@@ -68,8 +80,17 @@ void eHorseRanch::timeChanged(const int by) {
                 // of Poseidon) a month (Nicolás); 100 units = 1 load.
                 mWheat = std::max(0, mWheat - 10*horseCount());
             }
-            mHorseTime += by;
-            if(mHorseTime > eNumbers::sHorseRanchHorseSpawnPeriod) {
+            // Horses are born in even months (February, April ...) and a
+            // fully staffed ranch breeds one in each (Citadel of Poseidon);
+            // fewer workers stretch the gap to later even months.
+            mHorseTime += std::round(by*effectiveness());
+            const auto month = getBoard().date().month();
+            const bool newMonth = month != mLastMonth;
+            mLastMonth = month;
+            const int im = static_cast<int>(month);
+            const bool evenMonth = im % 2 == 1; // february = 1
+            const int need = std::round(0.9*eNumbers::sHorseRanchHorseSpawnPeriod);
+            if(newMonth && evenMonth && mHorseTime >= need) {
                 mHorseTime = 0;
                 // Breeding one horse costs 50 units of wheat
                 // (Citadel of Poseidon).
