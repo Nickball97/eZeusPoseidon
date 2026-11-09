@@ -384,9 +384,12 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("goat_max_groom_i", sGoatMaxGroom, 10, 1, 1000);
     loadI("animal_move_range_i", sAnimalMoveRange, 5, 2, 100);
 
-    loadI("corral_processing_period_i", sCorralProcessingPeriod, 10000, 1, 1000000);
+    // original exe 0x004F9E90: slaughtering a cow takes 16 cycles (1 month);
+    // the next cow is taken from the pen once 8 cycles have passed and the
+    // slaughter is done
+    loadI("corral_processing_period_i", sCorralProcessingPeriod, (365*sDayLength)/12, 1, 1000000);
     loadI("corral_take_period_i", sCorralTakePeriod, 10000, 1, 1000000);
-    loadI("corral_kill_period_i", sCorralKillPeriod, 10000, 1, 1000000);
+    loadI("corral_kill_period_i", sCorralKillPeriod, (365*sDayLength)/24, 1, 1000000);
     loadI("corral_replace_period_i", sCorralReplacePeriod, 10000, 1, 1000000);
     // placed cattle (one stage short) are ready after 6 months, calves (two
     // stages short) after a year (Citadel of Poseidon): half a year a stage

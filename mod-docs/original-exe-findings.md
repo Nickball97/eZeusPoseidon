@@ -134,3 +134,9 @@ The Dragon and Cerberus use the single "Monster" row (500 HP, attack 50, armor 1
 - Each roaming walker's action sets a limit at figure +0x42 and counts up +0x44 until it reaches the limit, then heads home. The limits are: culture walkers (`0x004B4370`) and tax collector (`0x004AF550`) 3072; healer (`0x004B78A0`) and water bearer (`0x004C0BC0`) 2304; peddler (`0x004B6720`), superintendent (`0x004AF930`) and watchman (`0x004C0CF0`) 3840.
 - Units: the counter grows by the walker's speed each tick (`0x004D6790`), and a walker moves speed/6 sub-steps a tick, so 6 per sub-step. A tile is 15 sub-steps (`0x004D69B0`), so 90 per tile.
 - In tiles that is about 34, 26 and 43. eZeus uses HeavenGames' measured 35, 27 and 44 with the same groups. They agree within a tile, so these are kept.
+
+## Workshops and corral (verified in code, step 31 `0x0048CFB0`, 9 Nov 2026)
+- Shared workshop rule: each cycle, progress (+0x54) grows by 10 at full staff, 8 at 75%+, 6 at 50%+, 4 at 25%+ and 2 below that. At 320, 100 raw (1 load) becomes 100 goods, so 32 cycles (2 months) a load and 6 a year at full staff. This matches eZeus's HeavenGames value. eZeus scales smoothly with staff instead of in these steps (not changed).
+- Output storage caps by building type: 200 by default; winery, oil press and others 300; sculpture studio 400; 500 and 800 for some types; corral 600.
+- Corral (`0x004F9E90`): a slaughter takes 16 cycles (1 month) and gives 200 (2 loads). The next cow leaves the pen once 8 cycles have passed and the slaughter is done. Applied: corral_processing_period = 1 month, corral_kill_period = half a month.
+- Corral fetching (`0x004F9960`): it tries to send a Rancher for cattle every 1, 4, 8, 16 or 32 cycles depending on staff (100%, 75%, 50%, 25%, less). At most 2 are out, and cattle held plus out stay under 3. Not applied, because eZeus doesn't cap how many fetchers are out, so a 1-cycle period would flood the map.

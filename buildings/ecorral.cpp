@@ -130,9 +130,9 @@ void eCorral::timeChanged(const int by) {
     }
     if(mNCattle > 0) {
         mKillWait += by*eff;
-        if(mKillWait > eNumbers::sCorralKillPeriod) {
+        // waits until the slaughter in progress is done (original)
+        if(mKillWait > eNumbers::sCorralKillPeriod && killCattle()) {
             mKillWait = 0;
-            killCattle();
         }
     }
     mReplaceWait += by*eff;
