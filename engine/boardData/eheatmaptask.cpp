@@ -2,6 +2,8 @@
 
 #include "../thread/ethreadboard.h"
 
+#include <algorithm>
+
 eHeatMapTask::eHeatMapTask(const eCityId cid,
                            const SDL_Rect& bRect,
                            const eHeatGetter& heatGetter,
@@ -108,9 +110,20 @@ void eHeatMapTask::sRun(eThreadBoard& board,
             const int ttx = t->x();
             const int tty = t->y();
             if(ttx != rect.x || tty != rect.y) continue;
-            const auto a = heatGetter(ubt);
+            auto a = heatGetter(ubt);
+            if(ubt == eBuildingType::eliteHousing && a.fStep > 0) {
+                // Elite house appeal grows with its level (original Model
+                // data: residence 2, mansion 3, manor 4, estate 6).
+                static const int sEliteDES[] = {0, 2, 3, 4, 6};
+                const int l = std::clamp(ub.houseLevel(), 0, 4);
+                a.fValue = sEliteDES[l];
+            }
             map.addHeat(a, rect);
         }
+    }
+
+    for(const auto& ag : board.agoras()) {
+        map.addHeat(heatGetter(ag.type()), ag.tileRect());
     }
 
     const auto& fms = board.finishedMonuments();

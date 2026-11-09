@@ -42,12 +42,22 @@ eHeat eHeatGetters::appeal(const eBuildingType type) {
     case eBuildingType::fleeceVendor:
     case eBuildingType::oilVendor:
     case eBuildingType::armsVendor:
-    case eBuildingType::wineVendor: return {2, 2};
+    case eBuildingType::wineVendor: return {0, 0}; // vendors: DES 0 in the Model data
     case eBuildingType::horseTrainer:
-    case eBuildingType::chariotVendor: return {-2, 2};
+    case eBuildingType::chariotVendor: return {0, 0};
+    // Agora DES 12, every 2 tiles -2, range 6 (Model data and the
+    // Citadel of Poseidon appeal table).
+    case eBuildingType::commonAgora:
+    case eBuildingType::grandAgora: return {12, 6, 2, -2};
+    // Race track: DES -6, +1 per tile, range 4.
+    case eBuildingType::hippodromePiece: return {-6, 4, 1, 1};
+    // Elite house: value set per level in eHeatMapTask; range 4,
+    // -1 every 2 tiles.
+    case eBuildingType::eliteHousing: return {0, 4, 2, -1};
 
-    case eBuildingType::horseRanch:
-    case eBuildingType::horseRanchEnclosure: return {-10, 4, 1, 1};
+    case eBuildingType::horseRanch: return {-10, 4, 1, 1};
+    // The pen is its own Model row: DES -6, range 4.
+    case eBuildingType::horseRanchEnclosure: return {-6, 4, 1, 1};
 
     case eBuildingType::fountain: return {4, 4, 2, -2};
     case eBuildingType::hospital: return {-2, 4, 4, 0};
