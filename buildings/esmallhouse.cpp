@@ -227,7 +227,9 @@ void eSmallHouse::nextMonth() {
     mPaidTaxesLastMonth = mPaidTaxes;
     mPaidTaxes = 0;
     mSatisfactionProvidedThisMonth = false;
-    const int cfood = round(mPeople*0.25);
+    // a quarter of the residents, rounded down, once a month; huts need no
+    // food and eat none (original exe 0x0048B8D0, Model column i)
+    const int cfood = mLevel > 0 ? mPeople*25/100 : 0;
     const int cfleece = (mLevel > 2 && mPeople > 0) ? 2 : 0;
     const int coil = (mLevel > 4 && mPeople > 0) ? 2 : 0;
     mFood = std::max(0, mFood - cfood);
@@ -271,8 +273,9 @@ void eSmallHouse::setDisgruntled(const bool d) {
 }
 
 bool eSmallHouse::lowFood() const {
+    if(mLevel == 0) return false;
     if(!mFood) return true;
-    const int cfood = round(mPeople*0.25);
+    const int cfood = mPeople*25/100;
     return mFood < cfood;
 }
 

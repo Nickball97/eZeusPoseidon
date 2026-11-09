@@ -261,21 +261,29 @@ void eEliteHousing::timeChanged(const int by) {
 void eEliteHousing::nextMonth() {
     mPaidTaxesLastMonth = mPaidTaxes;
     mPaidTaxes = 0;
-    // a quarter unit each, rounded down: Residence 1, Mansion 2 a month
-    // (consumption.html)
-    const int cfood = (mPeople + mHorses)/4;
+    // a devolved home needs and uses nothing (Model columns i-l are 0)
+    if(mLevel <= 0 || mPeople <= 0) return;
+    // the residents eat a quarter of their number, rounded down, and the
+    // horses 1 unit between them; with no food left for them a horse is
+    // lost (original exe 0x0048B8D0)
+    const int cfood = mPeople*25/100;
+    mFood = std::max(0, mFood - cfood);
+    if(mHorses > 0) {
+        if(mFood > 0) mFood--;
+        else removeHorse();
+    }
+    // fleece, oil and wine: 1 each twice a month (original 0x00484C50)
     const int cfleece = 2;
     const int coil = 2;
-    const int cwine = mLevel > 1 ? 2 : 0;
-    mFood = std::max(0, mFood - cfood);
+    const int cwine = mLevel > 2 ? 2 : 0;
     mFleece = std::max(0, mFleece - cfleece);
     mOil = std::max(0, mOil - coil);
-    if(mLevel > 2) mWine = std::max(0, mWine - cwine);
+    mWine = std::max(0, mWine - cwine);
 }
 
 bool eEliteHousing::lowFood() const {
     if(!mFood) return true;
-    const int cfood = round((mPeople + mHorses)*0.25);
+    const int cfood = mPeople*25/100 + (mHorses > 0 ? 1 : 0);
     return mFood < cfood;
 }
 

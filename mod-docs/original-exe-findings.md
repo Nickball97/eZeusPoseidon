@@ -115,3 +115,9 @@ The Dragon and Cerberus use the single "Monster" row (500 HP, attack 50, armor 1
 - Step 36 (`0x00484DE0`) adds up the culture points from those counters: Greek 20/15/20/25, Atlantean 20/20/15/25, plus 10 for the bonus building.
 - In eZeus: a culture visit fills 8 steps of 1/16 year each (6 months). Healer care (100) now drops by 1 a cycle (about 6 months) whatever the food and water.
 - Fixed an eZeus bug: small houses counted the culture timer twice, so visits wore off in half the time.
+
+## House food and goods (verified in code, applied 9 Nov 2026)
+- Food, monthly (`0x0048B8D0`, run at month end): a house eats population x 25 / 100 units (`0x004E5EF0` returns 25), split over the number of food types it needs (Model column i). Huts need none and eat none.
+- Horses: a house with any horses eats 1 more unit a month, whatever the number of horses. If no food is left for them, it loses that unit's worth of horses (1).
+- Fleece, oil, wine (`0x00484C50`, step 39 `0x004FE290`, on cycles 0 and 7 of each month): each needed good drops by the Model value (1), so 2 a month. eZeus already matched this, except that a devolved elite home kept using goods.
+- The house needs check (`0x00484250` area, status codes 1-29) compares the house bytes and shorts with the Model columns. The record is +0x1c people, +0x12 level, +0x64 wine, +0x66 oil, +0x68 fleece, +0x6a arms, +0x72 horses, +0x80 culture points.
