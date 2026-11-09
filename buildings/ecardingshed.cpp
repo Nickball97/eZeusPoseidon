@@ -21,6 +21,8 @@ eCardingShed::eCardingShed(eGameBoard& board, const eCityId cid) :
                          2, 2, 8, cid),
     mTextures(eGameTextures::buildings())  {
     eGameTextures::loadCardingShed();
+    // holds at most 5 loads before it stops (original exe 0x004F8050)
+    setMaxResource(5);
 }
 
 std::vector<eOverlay> eCardingShed::getOverlays(const eTileSize size) const {

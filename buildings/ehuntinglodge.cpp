@@ -13,6 +13,8 @@ eHuntingLodge::eHuntingLodge(eGameBoard& board,
     eResourceCollectBuildingBase(board, eBuildingType::huntingLodge,
                           2, 2, 8, eResourceType::meat, cid) {
     eGameTextures::loadHuntingLodge();
+    // holds at most 5 loads before it stops (original exe 0x0048CFB0)
+    setMaxResource(5);
 }
 
 eHuntingLodge::~eHuntingLodge() {

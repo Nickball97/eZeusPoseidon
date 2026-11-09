@@ -16,6 +16,8 @@ eCorral::eCorral(eGameBoard& board,
                           4, 4, 25, eResourceType::meat,
                           cid) {
     eGameTextures::loadCorral();
+    // holds at most 6 loads before it stops (original exe 0x004F9E90)
+    setMaxResource(6);
 }
 
 std::shared_ptr<eTexture> eCorral::getTexture(const eTileSize size) const {

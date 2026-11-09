@@ -14,4 +14,6 @@ eWinery::eWinery(eGameBoard& board, const eCityId cid) :
                         eNumbers::sWineryProcessingPeriod,
                         cid) {
     eGameTextures::loadWinery();
+    // accepts at most 3 loads of raw material (original exe 0x0048A880)
+    setMaxRaw(3);
 }

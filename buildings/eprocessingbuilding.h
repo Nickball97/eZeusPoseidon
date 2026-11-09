@@ -44,6 +44,8 @@ public:
     void write(eWriteStream& dst) const override;
 
     int rawCount() const { return mRawCount; }
+    // raw material it accepts (original exe 0x0048A880)
+    void setMaxRaw(const int m) { mMaxRaw = m; }
 private:
     const std::vector<eBuildingTextures>& mTextures;
 
@@ -56,7 +58,7 @@ private:
 
     stdptr<eCartTransporter> mTakeCart;
 
-    const int mMaxRaw = 4;
+    int mMaxRaw = 4;
     const int mRawUse;
     int mRawCount{0};
 

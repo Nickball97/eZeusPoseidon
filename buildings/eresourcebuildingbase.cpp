@@ -50,7 +50,10 @@ int eResourceBuildingBase::add(const eResourceType type,
                                const int count) {
     if(type != mResType) return 0;
 
-    const int r = std::clamp(mResource + count, 0, mMaxResource);
+    // a blessed batch (4 loads or more at once) may go up to 3 loads over
+    // the limit; the original sends it straight out on a cart
+    const int cap = count >= 4 ? mMaxResource + 3 : mMaxResource;
+    const int r = std::clamp(mResource + count, 0, std::max(cap, mResource));
     const int result = r - mResource;
     mResource = r;
     return result;
@@ -72,7 +75,7 @@ int eResourceBuildingBase::count(const eResourceType type) const {
 
 int eResourceBuildingBase::spaceLeft(const eResourceType type) const {
     if(type != mResType) return 0;
-    return mMaxResource - mResource;
+    return std::max(0, mMaxResource - mResource);
 }
 
 std::vector<eCartTask> eResourceBuildingBase::cartTasks() const {
