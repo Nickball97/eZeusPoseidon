@@ -411,6 +411,9 @@ public:
         if(!eBuilding::sAttackable(type)) return null;
         const bool target = eGod::sAttackTarget(mType, type);
         if(!target) return null;
+        // remember it so act() can destroy it (was never stored, so
+        // Zeus' palace and Demeter's farm curses did nothing)
+        mBTarget = b;
         return b->centerTile();
     }
 
