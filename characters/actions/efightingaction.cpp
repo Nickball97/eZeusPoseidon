@@ -166,6 +166,9 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                     ct == eCharacterType::atlanteanArcher ||
                     ct == eCharacterType::phoenicianArcher ||
                     ct == eCharacterType::persianArcher ||
+                    ct == eCharacterType::archerPoseidon ||
+                    ct == eCharacterType::mayanArcher ||
+                    ct == eCharacterType::archer ||
                     ct == eCharacterType::trireme) {
                     eMissile::sCreate<eArrowMissile>(brd, tx, ty, 0.5,
                                                      ttx, tty, 0.5, 0.25*dist);
