@@ -1,4 +1,5 @@
 #include "eroad.h"
+#include <cmath>
 
 #include "textures/egametextures.h"
 
@@ -526,4 +527,72 @@ void eRoad::read(eReadStream &src) {
         setAboveHippodrome(static_cast<eHippodromePiece*>(bb));
     });
     src >> mCharacterAltitude;
+}
+
+bool eRoad::largeBridge() const {
+    const auto ti = centerTile();
+    if(!ti || !ti->hasBridge() || !ti->hasWater()) return false;
+    const int len = ti->bridgeLength();
+    // Long crossings are Large Water Crossings, and Atlantean cities build
+    // Bridges (manuals; 5+ tiles is large, per Nicolás). Very short
+    // Atlantean crossings keep the small deck: the end pieces need 4 tiles.
+    if(len < 4) return false;
+    const bool atl = getBoard().atlantean(cityId());
+    return atl || len > 4;
+}
+
+std::shared_ptr<eTexture> eRoad::bridgePiece(const eTileSize size) const {
+    if(!largeBridge()) return nullptr;
+    const auto ti = centerTile();
+    auto& board = getBoard();
+    const auto dir = board.direction();
+    const int sizeId = static_cast<int>(size);
+    const auto& builTexs = eGameTextures::buildings()[sizeId];
+
+    const auto tr = ti->topRightRotated<eTile>(dir);
+    const auto bl = ti->bottomLeftRotated<eTile>(dir);
+    const bool trb = tr && tr->hasBridge();
+    const bool blb = bl && bl->hasBridge();
+    // crossing running up-left to down-right on screen, or up-right to
+    // down-left
+    const bool tlbrAxis = !(trb || blb);
+
+    const int len = ti->bridgeLength();
+    int k = 0; // tiles to the upper end
+    auto t = ti;
+    while(true) {
+        const auto n = tlbrAxis ? t->topLeftRotated<eTile>(dir) :
+                                  t->topRightRotated<eTile>(dir);
+        if(!n || !n->hasBridge()) break;
+        t = n;
+        k++;
+    }
+
+    // Pieces as in the original (Nicolás's screenshots). Each end piece
+    // covers two tiles and is drawn from the lower one so the tiles drawn
+    // later don't cover it: the upper end from the second tile, the lower
+    // end from the last tile. Middle pieces cover their own tile.
+    int id;
+    if(k == 0 || k == len - 2) return nullptr;
+    if(k == 1) id = tlbrAxis ? 0 : 7;
+    else if(k == len - 1) id = tlbrAxis ? 3 : 4;
+    else id = tlbrAxis ? 1 : 5;
+    const bool middle = id == 1 || id == 5;
+
+    if(board.atlantean(cityId())) {
+        eGameTextures::loadPoseidonBridge();
+        if(middle) {
+            // the Atlantean Bridge leaves out the pillars in the middle,
+            // where ships pass under: deck only 296 / 301, with a pillar
+            // 297 / 300
+            const double c = 0.5*(len - 1);
+            const bool centre = std::abs(k - c) < 1.;
+            if(tlbrAxis) id = centre ? 1 : 2;
+            else id = centre ? 6 : 5;
+        }
+        return builTexs.fPoseidonBridge.getTexture(id);
+    }
+    eGameTextures::loadBridge();
+    if(middle && k % 2) id++;
+    return builTexs.fBridge.getTexture(id);
 }

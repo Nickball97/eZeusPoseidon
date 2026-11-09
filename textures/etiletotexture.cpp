@@ -1,4 +1,5 @@
 #include "etiletotexture.h"
+#include "buildings/eroad.h"
 
 #include <algorithm>
 
@@ -416,7 +417,10 @@ std::shared_ptr<eTexture> eTileToTexture::get(eTile* const tile,
 
     if(hr || ut == eBuildingType::avenue) {
         const auto b = tile->underBuilding();
-        return b->getTexture(tileSize);
+        // long crossings: plain water here, the bridge piece is drawn
+        // over it with the buildings (eGameWidget::paintEvent)
+        const bool large = hr && static_cast<eRoad*>(b)->largeBridge();
+        if(!large) return b->getTexture(tileSize);
     }
 
     switch(tile->terrain()) {

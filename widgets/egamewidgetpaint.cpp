@@ -1661,6 +1661,14 @@ void eGameWidget::paintEvent(ePainter& p) {
             }
         }
         //drawTerrain(tile);
+        // Large Water Crossing / Atlantean Bridge piece over the water
+        if(tile && tile->hasBridge()) {
+            const auto r = static_cast<eRoad*>(tile->underBuilding());
+            if(r && r->largeBridge()) {
+                const auto tex = r->bridgePiece(mTileSize);
+                if(tex) tp.drawTexture(rx, ry, tex, eAlignment::top);
+            }
+        }
 
         drawSheepGoat();
         drawPatrol();

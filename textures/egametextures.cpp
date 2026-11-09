@@ -1340,6 +1340,13 @@ void eGameTextures::loadBridge() {
     });
 }
 
+void eGameTextures::loadPoseidonBridge() {
+    loadTexture([](const int i) {
+        auto& c = sBuildingTextures[i];
+        c.loadPoseidonBridge();
+    });
+}
+
 void eGameTextures::loadPalace() {
     loadTexture([](const int i) {
         auto& c = sBuildingTextures[i];

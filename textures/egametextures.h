@@ -231,6 +231,7 @@ public:
     static void loadWatchpost();
     static void loadRoadblock();
     static void loadBridge();
+    static void loadPoseidonBridge();
     static void loadPalace();
     static void loadPalaceTiles();
     static void loadSanctuary();

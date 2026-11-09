@@ -184,6 +184,13 @@ void eBuildingTextures::loadPoseidonBridge() {
     for(int i = 1; i < 17; i++) {
         loader.load(1, i, fPoseidonBridge);
     }
+    // Atlantean Bridge pieces (0-7) use the same 2x2-tile canvas as the
+    // Large Water Crossing
+    for(int i = 0; i < 8; i++) {
+        fPoseidonBridge.getTexture(i)->setOffset(30, -20);
+    }
+    fPoseidonBridge.getTexture(3)->setOffset(59, -5);
+    fPoseidonBridge.getTexture(4)->setOffset(1, -5);
 }
 
 void eBuildingTextures::loadOrichalcTowerOverlay() {
