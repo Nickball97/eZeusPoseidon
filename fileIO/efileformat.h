@@ -17,6 +17,9 @@ namespace eFileFormat {
         multiCollectors,
         heroHallCurators,
         godHelpSecondResource,
+        huntingLodgeHunters,
+        domesticatedYearly,
+        growerHarvesters,
 
         nextVersion
     };

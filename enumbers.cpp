@@ -352,9 +352,11 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("earthquake_progress_period_i", sEarthquakeProgressPeriod, 500, 1, 10000);
 
     loadI("boar_max_count_i", sBoarMaxCount, 8, 2, 100);
-    loadI("boar_spawn_period_i", sBoarSpawnPeriod, 4000, 1, 100000);
+    // "only one new boar/deer born a month after another one was killed"
+    // (Citadel of Poseidon)
+    loadI("boar_spawn_period_i", sBoarSpawnPeriod, (365*sDayLength)/12, 1, 100000);
     loadI("deer_max_count_i", sDeerMaxCount, 8, 2, 100);
-    loadI("deer_spawn_period_i", sDeerSpawnPeriod, 4000, 1, 100000);
+    loadI("deer_spawn_period_i", sDeerSpawnPeriod, (365*sDayLength)/12, 1, 100000);
     loadI("wolf_max_count_i", sWolfMaxCount, 8, 2, 100);
     loadI("wolf_spawn_period_i", sWolfSpawnPeriod, 4000, 1, 100000);
     loadI("wolf_hunt_wait_i", sWolfHuntWait, 20, 1, 1000);
@@ -386,7 +388,9 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("corral_take_period_i", sCorralTakePeriod, 10000, 1, 1000000);
     loadI("corral_kill_period_i", sCorralKillPeriod, 10000, 1, 1000000);
     loadI("corral_replace_period_i", sCorralReplacePeriod, 10000, 1, 1000000);
-    loadI("cattle_mature_period_i", sCattleMaturePeriod, 25000, 1, 1000000);
+    // placed cattle (one stage short) are ready after 6 months, calves (two
+    // stages short) after a year (Citadel of Poseidon): half a year a stage
+    loadI("cattle_mature_period_i", sCattleMaturePeriod, (365*sDayLength)/2, 1, 1000000);
 
     loadI("urchin_quay_unpack_time_i", sUrchinQuayUnpackTime, 10000, 1, 1000000);
     loadI("fishery_boat_build_time_i", sFisheryBoatBuildTime, 40000, 1, 1000000);
@@ -447,8 +451,11 @@ void eNumbers::sLoad(const std::string& path) {
 
     loadI("chariot_building_time_i", sChariotBuildingTime, sSixPerYear, 1, 1000000);
 
-    loadI("olive_tree_ripe_period_i", sOliveTreeRipePeriod, 40000, 1, 1000000);
-    loadI("vine_ripe_period_i", sVineRipePeriod, 40000, 1, 1000000);
+    // "When the trees are planted early enough in the growing season, they
+    // reach the maximum of 100% at harvest time" (Citadel of Poseidon): the
+    // 5 growth stages fill the 9 months between harvest seasons
+    loadI("olive_tree_ripe_period_i", sOliveTreeRipePeriod, (365*sDayLength*3/4)/5, 1, 1000000);
+    loadI("vine_ripe_period_i", sVineRipePeriod, (365*sDayLength*3/4)/5, 1, 1000000);
     loadI("orange_tree_ripe_period_i", sOrangeTreeRipePeriod, 40000, 1, 1000000);
 
     loadD("tree_vine_fully_ripe_period_multiplier_d", sTreeVineFullyRipePeriodMultiplier, 2., 1, 9);
@@ -579,11 +586,15 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("attack_city_ares_max_killed_i", sAttackCityAresMaxKilled, 8, 1, 100);
 
     loadI("basic_vendor_max_resource_take_distance_i", sBasicVendorMaxResourceTakeDistance, 60, 5, 1000);
-    loadI("horse_vendor_max_resource_take_distance_i", sHorseVendorMaxResourceTakeDistance, 200, 5, 1000);
+    // horse ranches and chariot factories must be within 40 tiles of the
+    // building that uses their goods (Citadel of Poseidon, industries.html)
+    loadI("horse_vendor_max_resource_take_distance_i", sHorseVendorMaxResourceTakeDistance, 40, 5, 1000);
 
     loadI("resource_building_max_resource_give_distance_i", sResourceBuildingMaxResourceGiveDistance, 60, 5, 1000);
     loadI("processing_building_max_resource_take_distance_i", sProcessingBuildingMaxResourceTakeDistance, 60, 5, 1000);
     loadI("trireme_wharf_max_resource_take_distance_i", sTriremeWharfMaxResourceTakeDistance, 60, 5, 1000);
-    loadI("trireme_wharf_build_time_i", sTriremeWharfBuildTime, 100000, 1, 1000000);
-    loadI("trireme_wharf_build_stages_i", sTriremeWharfBuildStages, 3, 1, 10);
+    // one ship = 2 wood + 2 armor in 2 stages; total build time kept at
+    // eZeus's old 300,000 ticks until a source number turns up
+    loadI("trireme_wharf_build_time_i", sTriremeWharfBuildTime, 150000, 1, 1000000);
+    loadI("trireme_wharf_build_stages_i", sTriremeWharfBuildStages, 2, 1, 10);
 }
