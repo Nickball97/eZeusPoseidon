@@ -1291,6 +1291,11 @@ bool eGameWidget::buildMouseRelease() {
 
 
         case eBuildingMode::pier: {
+            // "You may only have 10 active Piers" (original game text 19:30)
+            if(!mEditorMode && mBoard->countBuildings(cid, eBuildingType::pier) >= 10) {
+                showTip(cid, eLanguage::zeusText(19, 30));
+                break;
+            }
             eDiagonalOrientation o;
             const bool c = canBuildPier(mHoverTX, mHoverTY, o, cid, pid, mEditorMode);
             if(c) {
