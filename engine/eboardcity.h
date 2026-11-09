@@ -598,6 +598,16 @@ private:
     int mMoodTimer = 0;
     bool mMoodActive = false; // the city has reached 350 people
     void updateMood();
+    // City health and plague outbreaks (original exe; see
+    // mod-docs/original-exe-findings.md)
+    int mCityHealth = 80;
+    int mHealthTarget = 80;
+    int mHealthCycle = 0;
+    int mOutbreaksThisYear = 0;
+    bool mOutbreakThisMonth = false;
+    void updateHealthTarget();
+    void healthCycle();
+    void plagueOutbreak();
     int mHealth = 0;
     int mMaintanance = 0;
     int mExcessiveMilitaryServiceCount = 0;

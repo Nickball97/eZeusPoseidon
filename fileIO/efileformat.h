@@ -23,6 +23,7 @@ namespace eFileFormat {
         artisansSecond,
         sanctuaryGuardian,
         cityMoodCrime,
+        cityPlague,
 
         nextVersion
     };

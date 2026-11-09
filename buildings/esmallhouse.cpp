@@ -164,41 +164,14 @@ void eSmallHouse::timeChanged(const int by) {
     }
 
     auto& b = getBoard();
+    // Plague (original exe 0x00447F70): a house stays sick for 32 cycles
+    // (about 2 months), then recovers. Outbreaks start in eBoardCity.
     if(mPlague) {
-        if(mHygiene > 25) {
-            const double pm = eNumbers::sHouseHealPlaguePeriodMultiplier;
-            const double pbm = eNumbers::sHouseHealPlaguePeriodBaseMultiplier;
-            const double pe = eNumbers::sHouseHealPlaguePeriodExponent;
-            const int m4 = pm*pow(pbm/mHygiene, pe);
-            if(by) {
-                const int healPeriod = m4/by;
-                if(healPeriod && eRand::rand() % healPeriod == 0) {
-                    b.healHouse(this);
-                }
-            }
-        }
-    } else {
-        const double pm = eNumbers::sHousePlagueRiskPeriodMultiplier;
-        const double pbi = eNumbers::sHousePlagueRiskPeriodBaseIncrement;
-        const double pe = eNumbers::sHousePlagueRiskPeriodExponent;
-        const int m4 = pm*pow(pbi + mHygiene, pe);
-        const auto pid = playerId();
-        const auto diff = b.difficulty(pid);
-        // disease risk by house level and difficulty (Model column u),
-        // scaled so a Hero hut keeps eZeus's old Hero risk (1.875)
-        const double plagueRisk =
-                eHouseModel::smallDisease(diff, mLevel)*1.875/20;
-        if(plagueRisk > 0. && by) {
-            const int plaguePeriod = std::round(m4/(by*plagueRisk));
-            if(plaguePeriod && eRand::rand() % plaguePeriod == 0) {
-                const auto center = centerTile();
-                const int tx = center->x();
-                const int ty = center->y();
-                int dist;
-                const auto cid = cityId();
-                b.nearestPlague(cid, tx, ty, dist);
-                if(dist > 5) b.startPlague(this);
-            }
+        mPlagueTime += by;
+        const int cycles32 = (32*365*eNumbers::sDayLength)/(12*16);
+        if(mPlagueTime >= cycles32) {
+            mPlagueTime = 0;
+            b.healHouse(this);
         }
     }
 
@@ -388,6 +361,9 @@ void eSmallHouse::read(eReadStream& src) {
         src >> mOutlawCycle;
         src >> mFailedChecks;
     }
+    if(src.formatVersion() >= eFileFormat::cityPlague) {
+        src >> mPlagueTime;
+    }
 }
 
 void eSmallHouse::write(eWriteStream& dst) const {
@@ -417,6 +393,7 @@ void eSmallHouse::write(eWriteStream& dst) const {
     dst << mCrime;
     dst << mOutlawCycle;
     dst << mFailedChecks;
+    dst << mPlagueTime;
 }
 
 std::string eSmallHouse::sName(const int level) {

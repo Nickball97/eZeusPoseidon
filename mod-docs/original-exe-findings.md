@@ -52,3 +52,10 @@ Applied 9 Nov 2026: popularity (city mood) above 89; health above 79; gymnasium/
 
 ## Tax coverage
 The tax mood factor uses the "no taxes" row when tax coverage is below 11% (`0x00567120`).
+
+## City health and plague details (verified in code; applied 9 Nov 2026)
+- Health moves 1 point per cycle toward a target (`0x00566B90`).
+- Target, monthly (`0x00566C00`): population-weighted average over houses of 50 for a recent healer visit + 50 for a second flag (taken to be water), plus a small-city bonus (table `0x00641ED0`): under 100 people +80, 200 +80, 300 +70, 400 +60, 500 +50, 600 +40, 700 +30, 800 +20, 900 +10, 1000+ 0.
+- A healer (figure 32) sets the visit value to 96 for houses within 2 tiles (`0x004A66B0`); how fast it wears off was not traced (eZeus uses its hygiene value).
+- An infected house loses a share of its people by difficulty (doubles at `0x005F8480`): 25%, 33%, 50%, 67%, 100%; it stays sick for 32 cycles (house timer +0x100).
+- An outbreak infects a fifth of lived-in houses (candidates are the 40% with the least health care; each taken on a coin toss until half are chosen).

@@ -142,6 +142,14 @@ void eBoardCity::incTime(const int by) {
         mPop25000 = true;
     }
 
+    // city health moves and outbreaks are checked every cycle
+    mHealthCycle += by;
+    const int healthPeriod = (365*eNumbers::sDayLength)/(12*16);
+    while(mHealthCycle >= healthPeriod) {
+        mHealthCycle -= healthPeriod;
+        healthCycle();
+    }
+
     // the original updates the city mood twice a month
     mMoodTimer += by;
     const int moodPeriod = (365*eNumbers::sDayLength)/24;
@@ -347,7 +355,8 @@ void eBoardCity::updateCoverage() {
         mUnrest = std::round(100.*totalUnrest/commonPeople);
         // popularity is the city mood (the original's sentiment)
         mPopularity = mMood;
-        mHealth = std::round(1.*totalHygiene/commonPeople);
+        // the health rating is the original's city health
+        mHealth = mCityHealth;
         mMaintanance = std::round(1.*totalMaintanance/totalBuildings);
     }
 }
@@ -534,6 +543,10 @@ void eBoardCity::updateCityDefense() {
 
 void eBoardCity::nextMonth() {
     payPensions();
+
+    updateHealthTarget();
+    mOutbreakThisMonth = false;
+    if(mBoard.date().month() == eMonth::january) mOutbreaksThisYear = 0;
 
     {
         int nTot = 0;
@@ -2765,4 +2778,113 @@ void eBoardCity::updateMood() {
         if(sum >= 0) change = sum + drift < 0 ? 0 : sum + drift;
     }
     mMood = std::clamp(mMood + change, 0, 100);
+}
+
+// Monthly health target (original exe 0x00566C00): the population-weighted
+// average of 50 for a recent healer visit plus 50 for water, plus a bonus
+// for small cities (table 0x00641ED0), within 0-100.
+void eBoardCity::updateHealthTarget() {
+    long sum = 0;
+    long people = 0;
+    for(const auto h : mHouses) {
+        const auto sh = dynamic_cast<eSmallHouse*>(h);
+        if(!sh) continue;
+        const int p = sh->people();
+        if(p <= 0) continue;
+        int v = 0;
+        if(sh->hygiene() > 0) v += 50;
+        if(sh->water() > 0) v += 50;
+        sum += long(p)*v;
+        people += p;
+    }
+    const int avg = people > 0 ? int(sum/people) : 0;
+    const int pop = mPopData.population();
+    static const int sPop[10][2] = {{100, 80}, {200, 80}, {300, 70},
+                                    {400, 60}, {500, 50}, {600, 40},
+                                    {700, 30}, {800, 20}, {900, 10},
+                                    {1000, 0}};
+    int bonus = 0;
+    for(const auto& r : sPop) {
+        if(pop < r[0]) {
+            bonus = r[1];
+            break;
+        }
+    }
+    mHealthTarget = std::clamp(avg + bonus, 0, 100);
+}
+
+// Every cycle (16 a month): health moves one point toward its target, and
+// an outbreak may start (original exe 0x00566B90, 0x00447FF0). The chance
+// per 10,000 by health: <10 300, <20 250, <30 200, <45 100, <60 50,
+// <75 25, else none (table 0x005F84A8); at most one a month and about
+// chance*384/20000 a year.
+void eBoardCity::healthCycle() {
+    if(mCityHealth < mHealthTarget) mCityHealth++;
+    else if(mCityHealth > mHealthTarget) mCityHealth--;
+    static const int sBand[7][2] = {{10, 300}, {20, 250}, {30, 200},
+                                    {45, 100}, {60, 50}, {75, 25},
+                                    {100, 0}};
+    int chance = 0;
+    bool found = false;
+    for(const auto& r : sBand) {
+        if(mCityHealth < r[0]) {
+            chance = r[1];
+            found = true;
+            break;
+        }
+    }
+    if(!found || chance <= 0) return;
+    if(mOutbreakThisMonth) return;
+    int cap = (chance*384 + 9999)/10000;
+    cap = (cap + 1)/2;
+    if(mOutbreaksThisYear >= cap) return;
+    if(eRand::rand() % 10000 >= chance) return;
+    plagueOutbreak();
+}
+
+// An outbreak (original exe 0x004481B0, 0x00448490, 0x00448220): a fifth
+// of the lived-in houses fall sick, those with the least health care first
+// (a healer's recent visit, +20 for water), each with a coin toss until
+// enough are chosen. A sick house loses a share of its people by
+// difficulty: 25/33/50/67/100% (table 0x005F8480).
+void eBoardCity::plagueOutbreak() {
+    std::vector<eSmallHouse*> houses;
+    for(const auto h : mHouses) {
+        const auto sh = dynamic_cast<eSmallHouse*>(h);
+        if(!sh || sh->people() <= 0 || sh->plague()) continue;
+        houses.push_back(sh);
+    }
+    int need = int(houses.size())/5;
+    if(need <= 0) return;
+    mOutbreakThisMonth = true;
+    mOutbreaksThisYear++;
+    std::stable_sort(houses.begin(), houses.end(),
+                     [](eSmallHouse* const a, eSmallHouse* const b) {
+        const int sa = a->hygiene() + (a->water() > 0 ? 20 : 0);
+        const int sb = b->hygiene() + (b->water() > 0 ? 20 : 0);
+        return sa < sb;
+    });
+    const auto p = owningPlayer();
+    const auto diff = p ? mBoard.difficulty(owningPlayerId()) : eDifficulty::hero;
+    static const double sDie[5] = {0.25, 1./3, 0.5, 2./3, 1.};
+    const double die = sDie[std::clamp(static_cast<int>(diff), 0, 4)];
+    const auto plague = std::make_shared<ePlague>(mId, mBoard);
+    int left = int(houses.size());
+    bool first = true;
+    for(const auto h : houses) {
+        if(need <= 0) break;
+        const bool take = left <= need || eRand::rand() % 2 == 0;
+        left--;
+        if(!take) continue;
+        need--;
+        h->kill(int(h->people()*die));
+        plague->addHouse(h);
+        if(first) {
+            first = false;
+            eEventData ed(mId);
+            ed.fTile = h->centerTile();
+            mBoard.event(eEvent::plague, ed);
+        }
+    }
+    if(plague->houseCount() > 0) mPlagues.push_back(plague);
 }

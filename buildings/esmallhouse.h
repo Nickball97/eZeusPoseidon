@@ -89,6 +89,7 @@ private:
     int mCrime = 0;
     double mOutlawCycle = 0;
     int mFailedChecks = 0; // level checks failed in a row
+    int mPlagueTime = 0;
 };
 
 #endif // ESMALLHOUSE_H

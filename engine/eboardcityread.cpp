@@ -212,4 +212,11 @@ void eBoardCity::read(eReadStream& src) {
         src >> mMoodTimer;
         src >> mMoodActive;
     }
+    if(src.formatVersion() >= eFileFormat::cityPlague) {
+        src >> mCityHealth;
+        src >> mHealthTarget;
+        src >> mHealthCycle;
+        src >> mOutbreaksThisYear;
+        src >> mOutbreakThisMonth;
+    }
 }
