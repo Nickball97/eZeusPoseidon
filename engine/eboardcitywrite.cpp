@@ -150,4 +150,7 @@ void eBoardCity::write(eWriteStream& dst) const {
     }
 
     dst << mDefending;
+    dst << mMood;
+    dst << mMoodTimer;
+    dst << mMoodActive;
 }

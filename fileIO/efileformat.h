@@ -22,6 +22,7 @@ namespace eFileFormat {
         growerHarvesters,
         artisansSecond,
         sanctuaryGuardian,
+        cityMoodCrime,
 
         nextVersion
     };

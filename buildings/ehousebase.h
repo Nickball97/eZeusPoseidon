@@ -43,6 +43,8 @@ public:
     int athletesScholars() const { return mAthletes; }
     int competitorsCurators() const { return mCompetitors; }
     int allCultureScience() const;
+    // city mood food factor for this house; call once per mood update
+    int foodMoodFactor();
     // Original culture/science points: philosopher 15, actor 25, athlete
     // 20, competitor 20 (Atlantean: inventor 20, astronomer 25, scholar
     // 15, curator 20), plus 10 for the whole city with a working stadium
@@ -83,6 +85,7 @@ protected:
     int mOil = 0;
 
     int mUpdateCulture = 0;
+    int mUnfedUpdates = 0; // mood updates in a row without food
 
     int mPhilosophers = 0;
     int mActors = 0;

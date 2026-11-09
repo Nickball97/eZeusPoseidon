@@ -14,6 +14,7 @@
 
 #include "elanguage.h"
 #include "enumbers.h"
+#include "fileIO/efileformat.h"
 
 #include <algorithm>
 
@@ -109,6 +110,10 @@ int eSmallHouse::provide(const eProvide p, const int n) {
     }
 
     case eProvide::satisfaction: {
+        // a watchman lowers crime by the guardpost's risk reducer (Model
+        // BUILD_GUARDPOST column j = 50) each time he passes (original exe
+        // 0x004DFB70 -> 0x004A5F70)
+        reduceCrime(50);
         if(mSatisfactionProvidedThisMonth) return 0;
         mSatisfactionProvidedThisMonth = true;
         const int p = eNumbers::sWatchmanSatisfactionProvide;
@@ -136,6 +141,7 @@ void eSmallHouse::timeChanged(const int by) {
         }
         setDisgruntled(false);
         mSatisfaction = 100;
+        mCrime = 0;
         mFoodSatisfaction = 100;
         mWaterSatisfaction = 100;
         mWorkSatisfaction = 100;
@@ -197,32 +203,23 @@ void eSmallHouse::timeChanged(const int by) {
     }
 
     const auto cid = cityId();
-    const auto s = b.sanctuary(cid, eGodType::dionysus);
-    const bool dion = s && s->finished();
-    if(mDisgruntled) {
-        if(dion) {
-            setDisgruntled(false);
-         } else if(mSatisfaction > 30 && by > 0) {
-            const int p = eNumbers::sHouseDisgruntledRemovePeriod;
-            if(eRand::rand() % (p/(mSatisfaction*by)) == 0) {
-                setDisgruntled(false);
-            }
-        }
-    } else if(!dion) {
-        const double pm = eNumbers::sHouseDisgruntledRiskPeriodMultiplier;
-        const double pbi = eNumbers::sHouseDisgruntledRiskPeriodBaseIncrement;
-        const double pe = eNumbers::sHouseDisgruntledRiskPeriodExponent;
-        const int m4 = pm*pow(pbi + mSatisfaction, pe);
-        const auto pid = playerId();
-        const auto diff = b.difficulty(pid);
-        // crime risk by house level and difficulty (Model column o),
-        // scaled so a Hero hut keeps eZeus's old Hero risk (1.875)
-        const double crimeRisk =
-                eHouseModel::smallCrime(diff, mLevel)*1.875/15;
-        if(crimeRisk > 0. && by) {
-            const int crimePeriod = std::round(m4/(by*crimeRisk));
-            if(crimePeriod && eRand::rand() % crimePeriod == 0) {
-                setDisgruntled(true);
+    // Outlaws (original exe 0x005BFDE0): every cycle (16 a month), a
+    // 1-in-200 draw for each crime threshold the house has reached, highest
+    // first: 100 vandal, 90 thief, 80 mugger, 70 disgruntled citizen. Only
+    // one outlaw from a house at a time.
+    {
+        mOutlawCycle += by;
+        const double cycle = 365.*eNumbers::sDayLength/(12*16);
+        while(mOutlawCycle >= cycle) {
+            mOutlawCycle -= cycle;
+            if(mPeople <= 0) continue;
+            static const std::pair<int, eCharacterType> sOutlaws[4] = {
+                {100, eCharacterType::vandal}, {90, eCharacterType::thief},
+                {80, eCharacterType::mugger}, {70, eCharacterType::disgruntled}};
+            for(const auto& o : sOutlaws) {
+                if(mCrime < o.first) continue;
+                if(mDisg) break;
+                if(eRand::rand() % 200 == 0) spawnOutlaw(o.second);
             }
         }
     }
@@ -248,10 +245,11 @@ void eSmallHouse::timeChanged(const int by) {
     }
 
     mUpdateLevel += by;
-    const int lupdate = 1000;
+    // checked every cycle (16 a month), as houses_evolve does
+    const int lupdate = (365*eNumbers::sDayLength)/(12*16);
     if(mUpdateLevel > lupdate) {
         mUpdateLevel -= lupdate;
-        updateLevel();
+        updateLevel(true);
     }
     mUpdateSatisfaction += by;
     const int supdate = eNumbers::sHouseSatisfactionUpdatePeriod;
@@ -260,14 +258,6 @@ void eSmallHouse::timeChanged(const int by) {
         updateSatisfaction();
     }
 
-    if(mDisgruntled && !mDisg) {
-        mSpawnDisg += by;
-        const int d = eNumbers::sHouseDisgruntledSpawnPeriod;
-        if(mSpawnDisg > d) {
-            mSpawnDisg = 0;
-            spawnDisgruntled();
-        }
-    }
     if(mPlague && !mSick) {
         mSpawnSick += by;
         const int s = eNumbers::sHouseSickSpawnPeriod;
@@ -295,6 +285,31 @@ void eSmallHouse::nextMonth() {
 void eSmallHouse::setPlague(const bool p) {
     mPlague = p;
     mSpawnSick = eRand::rand() % 10000;
+}
+
+void eSmallHouse::crimeUpdate(const int mood, const bool active,
+                              const bool dionysus) {
+    if(mPeople <= 0) {
+        mCrime = 0;
+    } else {
+        const auto d = getBoard().difficulty(playerId());
+        if(active) {
+            // the original's special case (a god's sanctuary; taken to be
+            // Dionysus, "no unrest") lowers crime by 20 instead
+            if(dionysus) mCrime -= 20;
+            else mCrime += eHouseModel::smallCrime(d, mLevel) + (40 - mood)/2;
+        }
+        mCrime = std::max(mCrime, eHouseModel::smallCrimeBase(d, mLevel));
+        mCrime = std::min(mCrime, 100);
+    }
+    setDisgruntled(mCrime >= 70);
+}
+
+void eSmallHouse::reduceCrime(const int by) {
+    if(mPeople <= 0) return;
+    const auto d = getBoard().difficulty(playerId());
+    mCrime = std::max(mCrime - by, eHouseModel::smallCrimeBase(d, mLevel));
+    setDisgruntled(mCrime >= 70);
 }
 
 void eSmallHouse::setDisgruntled(const bool d) {
@@ -368,6 +383,11 @@ void eSmallHouse::read(eReadStream& src) {
     src.readCharacter(&getBoard(), [this](eCharacter* const c) {
         mDisg = static_cast<eDisgruntled*>(c);
     });
+    if(src.formatVersion() >= eFileFormat::cityMoodCrime) {
+        src >> mCrime;
+        src >> mOutlawCycle;
+        src >> mFailedChecks;
+    }
 }
 
 void eSmallHouse::write(eWriteStream& dst) const {
@@ -394,32 +414,54 @@ void eSmallHouse::write(eWriteStream& dst) const {
     dst.writeCharacter(mSick.get());
     dst << mSpawnDisg;
     dst.writeCharacter(mDisg.get());
+    dst << mCrime;
+    dst << mOutlawCycle;
+    dst << mFailedChecks;
 }
 
 std::string eSmallHouse::sName(const int level) {
     return eLanguage::zeusText(28, 2 + level);
 }
 
-void eSmallHouse::updateLevel() {
+void eSmallHouse::stepToward(const int target, const bool timed) {
+    // Original houses (exe 0x004FE360...): a house moves one level at a
+    // time, and only drops a level after failing its needs on 3 checks in
+    // a row; a passing check resets the count. Only the regular check
+    // counts failures; deliveries can only raise a house.
+    if(target > mLevel) {
+        mFailedChecks = 0;
+        setLevel(mLevel + 1);
+    } else if(target < mLevel) {
+        if(!timed) return;
+        if(++mFailedChecks >= 3) {
+            mFailedChecks = 0;
+            setLevel(mLevel - 1);
+        }
+    } else if(timed) {
+        mFailedChecks = 0;
+    }
+}
+
+void eSmallHouse::updateLevel(const bool timed) {
     if(mFood > 0 && appealFor(1)) {
         if(mWater > 0 && cultureFor(2) && appealFor(2)) {
             if(mFleece > 0 && appealFor(3)) {
                 if(cultureFor(4) && appealFor(4)) {
                     if(mOil > 0 && appealFor(5)) {
                         if(cultureFor(6) && appealFor(6)) {
-                            return setLevel(6);
+                            return stepToward(6, timed);
                         }
-                        return setLevel(5);
+                        return stepToward(5, timed);
                     }
-                    return setLevel(4);
+                    return stepToward(4, timed);
                 }
-                return setLevel(3);
+                return stepToward(3, timed);
             }
-            return setLevel(2);
+            return stepToward(2, timed);
         }
-        return setLevel(1);
+        return stepToward(1, timed);
     }
-    setLevel(0);
+    stepToward(0, timed);
 }
 
 void eSmallHouse::updateSatisfaction() {
@@ -493,22 +535,16 @@ void eSmallHouse::spawnSick() {
     c->setBothCityIds(cid);
 }
 
-void eSmallHouse::spawnDisgruntled() {
+void eSmallHouse::spawnOutlaw(const eCharacterType type) {
     if(mDisg) mDisg->kill();
-    // The unhappier the house, the worse the walker it sends out: the Zeus
-    // manual ranks disgruntled citizens, then muggers, thieves and vandals
-    // as the most dangerous. The satisfaction cut-offs are not in any
-    // source (eZeus choice).
+    // which outlaw comes from the crime level (see timeChanged)
     stdsptr<eDisgruntled> c;
     auto& board = getBoard();
-    if(mSatisfaction >= 40) {
-        c = e::make_shared<eDisgruntled>(board);
-    } else if(mSatisfaction >= 25) {
-        c = e::make_shared<eMugger>(board);
-    } else if(mSatisfaction >= 10) {
-        c = e::make_shared<eThief>(board);
-    } else {
-        c = e::make_shared<eVandal>(board);
+    switch(type) {
+    case eCharacterType::vandal: c = e::make_shared<eVandal>(board); break;
+    case eCharacterType::thief: c = e::make_shared<eThief>(board); break;
+    case eCharacterType::mugger: c = e::make_shared<eMugger>(board); break;
+    default: c = e::make_shared<eDisgruntled>(board); break;
     }
     mDisg = c.get();
     const auto cid = cityId();

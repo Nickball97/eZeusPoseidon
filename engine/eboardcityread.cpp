@@ -1,4 +1,5 @@
 #include "eboardcity.h"
+#include "fileIO/efileformat.h"
 
 #include "einvasionhandler.h"
 #include "engine/eplague.h"
@@ -206,4 +207,9 @@ void eBoardCity::read(eReadStream& src) {
     }
 
     src >> mDefending;
+    if(src.formatVersion() >= eFileFormat::cityMoodCrime) {
+        src >> mMood;
+        src >> mMoodTimer;
+        src >> mMoodActive;
+    }
 }

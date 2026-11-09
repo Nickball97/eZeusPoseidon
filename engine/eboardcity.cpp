@@ -4,6 +4,9 @@
 #include "buildings/eemployingbuilding.h"
 #include "buildings/estoragebuilding.h"
 #include "buildings/esmallhouse.h"
+#include "buildings/sanctuaries/esanctuary.h"
+#include "engine/edifficulty.h"
+#include "enumbers.h"
 #include "buildings/eelitehousing.h"
 #include "buildings/eheroshall.h"
 #include "buildings/eagorabase.h"
@@ -137,6 +140,14 @@ void eBoardCity::incTime(const int by) {
         mBoard.showMessage(ed, msgs->fPop25000);
         allow(eBuildingType::commemorative, 0);
         mPop25000 = true;
+    }
+
+    // the original updates the city mood twice a month
+    mMoodTimer += by;
+    const int moodPeriod = (365*eNumbers::sDayLength)/24;
+    if(mMoodTimer > moodPeriod) {
+        mMoodTimer -= moodPeriod;
+        updateMood();
     }
 
     const int updateResWait = 1000;
@@ -334,7 +345,8 @@ void eBoardCity::updateCoverage() {
         mMaintanance = 100;
     } else {
         mUnrest = std::round(100.*totalUnrest/commonPeople);
-        mPopularity = std::round(1.*totalSatisfaction/commonPeople);
+        // popularity is the city mood (the original's sentiment)
+        mPopularity = mMood;
         mHealth = std::round(1.*totalHygiene/commonPeople);
         mMaintanance = std::round(1.*totalMaintanance/totalBuildings);
     }
@@ -2665,4 +2677,92 @@ eBuilding* eBoardCity::nearestEliteHouse(const int tx, const int ty) const {
         }
     }
     return best;
+}
+
+// City mood, as the original game's sentiment (exe 0x005671A0, called
+// twice a month; see mod-docs/original-exe-findings.md). Six factors are
+// added each time, with a drift back toward the middle; house crime is
+// updated with the mood from before the change.
+void eBoardCity::updateMood() {
+    const int pop = mPopData.population();
+    if(pop >= 350) mMoodActive = true;
+    const bool active = mMoodActive;
+    const auto neg = [active](const int v) { return (v < 0 && !active) ? 0 : v; };
+
+    const auto p = owningPlayer();
+    const auto diff = p ? mBoard.difficulty(owningPlayerId()) : eDifficulty::hero;
+
+    // taxes: the difficulty's tax sentiment table
+    const int taxes = neg(eDifficultyHelpers::taxSentiment(diff, mTaxRate));
+    // wages: none -10, very low -5, low -2, normal 0, high +2, very high +4
+    static const int sWage[6] = {-10, -5, -2, 0, 2, 4};
+    const int wages = neg(sWage[std::clamp(static_cast<int>(mWageRate), 0, 5)]);
+    // unemployment
+    int jobs = 0;
+    {
+        const int e = mEmplData.employable();
+        const int u = mEmplData.unemployed();
+        const int pct = e > 0 ? (100*u)/e : 0;
+        if(pct < 5) jobs = 1;
+        else if(pct < 11) jobs = 0;
+        else if(pct < 18) jobs = -1;
+        else if(pct < 26) jobs = -2;
+        else jobs = -3;
+        jobs = neg(jobs);
+    }
+    // food: average over lived-in houses; crime updated in the same pass
+    const auto ds = sanctuary(eGodType::dionysus);
+    const bool dionysus = ds && ds->finished();
+    int food = 0;
+    {
+        int sum = 0;
+        int n = 0;
+        for(const auto h : mHouses) {
+            if(const auto sh = dynamic_cast<eSmallHouse*>(h)) {
+                sh->crimeUpdate(mMood, active, dionysus);
+            }
+            if(h->people() <= 0) continue;
+            sum += h->foodMoodFactor();
+            n++;
+        }
+        if(n > 0) {
+            food = sum/n;
+            const int rem = std::abs(sum % n);
+            if(rem > n/2) food += sum < 0 ? -1 : 1;
+        }
+        food = neg(food);
+    }
+    // debt: months in debt and a negative treasury
+    int debt = 0;
+    if(p && p->drachmas() < 0) {
+        const auto& now = mBoard.date();
+        const auto& since = p->inDebtSince();
+        const int months = 12*(now.year() - since.year()) +
+                           static_cast<int>(now.month()) -
+                           static_cast<int>(since.month());
+        if(months > 2) debt -= 4;
+        if(months > 1) debt -= 3;
+        if(months > 0) debt -= 2;
+        debt -= 2;
+    }
+    // (the original's sixth factor, from figure counts, is not identified)
+
+    const int sum = taxes + wages + jobs + food + debt;
+    int drift;
+    if(mMood < 11) drift = 4;
+    else if(mMood < 21) drift = 3;
+    else if(mMood < 31) drift = 2;
+    else if(mMood < 41) drift = 1;
+    else if(mMood < 61) drift = 0;
+    else if(mMood < 71) drift = -1;
+    else if(mMood < 81) drift = -2;
+    else if(mMood < 91) drift = -3;
+    else drift = -4;
+    int change = sum;
+    if(mMood < 41) {
+        if(sum < 0) change = sum + drift > 0 ? 0 : sum + drift;
+    } else if(mMood >= 61) {
+        if(sum >= 0) change = sum + drift < 0 ? 0 : sum + drift;
+    }
+    mMood = std::clamp(mMood + change, 0, 100);
 }

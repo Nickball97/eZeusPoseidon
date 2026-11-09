@@ -76,6 +76,16 @@ namespace eHouseModel {
             {25, 20, 20, 15, 15, 10, 10}};
         return s[diffId(d)][l];
     }
+    // Crime risk base (column p): a house's crime never drops below it.
+    inline int smallCrimeBase(const eDifficulty d, const int l) {
+        static const int s[5][7] = {
+            {0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0},
+            {5, 5, 0, 0, 0, 0, 0},
+            {10, 5, 5, 0, 0, 0, 0},
+            {10, 10, 10, 5, 5, 0, 0}};
+        return s[diffId(d)][l];
+    }
     // Disease risk increment (column u).
     inline int smallDisease(const eDifficulty d, const int l) {
         static const int s[5][7] = {

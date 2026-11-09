@@ -185,6 +185,8 @@ public:
     int taxesCoverage() const { return mTaxesCoverage; }
     int unrest() const { return mUnrest; }
     int popularity() const { return mPopularity; }
+    // City mood (the original's sentiment), 0-100, starts at 60
+    int mood() const { return mMood; }
     int health() const { return mHealth; }
     int maintanance() const { return mMaintanance; }
 
@@ -592,6 +594,10 @@ private:
     int mTaxesCoverage = 0;
     int mUnrest = 0; // percent
     int mPopularity = 0;
+    int mMood = 60;
+    int mMoodTimer = 0;
+    bool mMoodActive = false; // the city has reached 350 people
+    void updateMood();
     int mHealth = 0;
     int mMaintanance = 0;
     int mExcessiveMilitaryServiceCount = 0;

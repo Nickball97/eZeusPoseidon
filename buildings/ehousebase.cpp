@@ -11,6 +11,7 @@
 #include "characters/actions/emovetoaction.h"
 #include "characters/actions/ekillcharacterfinishfail.h"
 #include "enumbers.h"
+#include "fileIO/efileformat.h"
 
 #include <algorithm>
 
@@ -165,6 +166,9 @@ void eHouseBase::read(eReadStream& src) {
     src >> mCompetitors;
 
     src >> mUpdateCulture;
+    if(src.formatVersion() >= eFileFormat::cityMoodCrime) {
+        src >> mUnfedUpdates;
+    }
 }
 
 void eHouseBase::write(eWriteStream& dst) const {
@@ -186,6 +190,18 @@ void eHouseBase::write(eWriteStream& dst) const {
     dst << mCompetitors;
 
     dst << mUpdateCulture;
+    dst << mUnfedUpdates;
+}
+
+// The house's share of the city mood's food factor (original exe
+// 0x00566F20): +2 when fed; -1, -2, -3 after 1, 2, 3+ updates unfed.
+int eHouseBase::foodMoodFactor() {
+    if(mFood > 0) {
+        mUnfedUpdates = 0;
+        return 2;
+    }
+    mUnfedUpdates = std::min(3, mUnfedUpdates + 1);
+    return -mUnfedUpdates;
 }
 
 void eHouseBase::setLevel(const int l) {
