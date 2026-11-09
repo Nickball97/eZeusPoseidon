@@ -297,7 +297,7 @@ bool eEliteHousing::appealFor(const int l) const {
     const auto d = getBoard().difficulty(playerId());
     const int need = level() >= l ? eHouseModel::eliteDevolve(d, l) :
                                     eHouseModel::eliteEvolve(d, l);
-    return appeal >= need;
+    return appeal >= need - aphroditeAppealBonus();
 }
 
 // culture/science points for level L; an estate also needs a working

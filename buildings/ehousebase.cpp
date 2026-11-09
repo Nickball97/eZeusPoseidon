@@ -4,6 +4,7 @@
 #include "engine/eboardcity.h"
 #include "buildings/estadium.h"
 #include "buildings/emuseum.h"
+#include "buildings/sanctuaries/esanctuary.h"
 
 #include "characters/esettler.h"
 #include "characters/ehomeless.h"
@@ -53,6 +54,11 @@ int eHouseBase::allCultureScience() const {
     if(mAthletes > 0) result++;
     if(mCompetitors > 0) result++;
     return result;
+}
+
+int eHouseBase::aphroditeAppealBonus() const {
+    const auto s = getBoard().sanctuary(cityId(), eGodType::aphrodite);
+    return s && s->finished() ? 10 : 0;
 }
 
 bool eHouseBase::hasCultureBonusBuilding() const {

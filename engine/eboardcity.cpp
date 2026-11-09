@@ -546,7 +546,10 @@ void eBoardCity::nextMonth() {
 
     updateHealthTarget();
     mOutbreakThisMonth = false;
-    if(mBoard.date().month() == eMonth::january) mOutbreaksThisYear = 0;
+    if(mBoard.date().month() == eMonth::january) {
+        mOutbreaksThisYear = 0;
+        yearlyBirthsDeaths();
+    }
 
     {
         int nTot = 0;
@@ -2887,4 +2890,36 @@ void eBoardCity::plagueOutbreak() {
         }
     }
     if(plague->houseCount() > 0) mPlagues.push_back(plague);
+}
+
+// Once a year the population grows or shrinks by a share set by city
+// health (original exe 0x00566D40): 91+ +6%, 81-90 +4%, 71-80 +3%,
+// 61-70 +2%, 51-60 +1%, 41-50 0; 40 or less: -1% while the health target
+// is 31 or more, otherwise -2% (21-40), -3% (11-20), -5% (1-10).
+// Hera's finished sanctuary adds 3. Newborns fill houses with room;
+// deaths come out of the houses.
+void eBoardCity::yearlyBirthsDeaths() {
+    const int h = mCityHealth;
+    int pct = 0;
+    if(h >= 91) pct = 6;
+    else if(h >= 81) pct = 4;
+    else if(h >= 71) pct = 3;
+    else if(h >= 61) pct = 2;
+    else if(h >= 51) pct = 1;
+    else if(h >= 41) pct = 0;
+    else if(mHealthTarget >= 31) pct = -1;
+    else if(h >= 21) pct = -2;
+    else if(h >= 11) pct = -3;
+    else if(h > 0) pct = -5;
+    const auto hs = sanctuary(eGodType::hera);
+    if(hs && hs->finished()) pct += 3;
+    const int pop = mPopData.population();
+    int n = (pop*std::abs(pct))/100;
+    if(n <= 0 || pct == 0) return;
+    for(const auto house : mHouses) {
+        if(n <= 0) break;
+        if(house->people() <= 0) continue;
+        if(pct > 0) n -= house->moveIn(n);
+        else n -= house->kill(n);
+    }
 }

@@ -90,11 +90,17 @@ void eMoveAction::increment(const int by) {
 
     const auto c = character();
     double speed = c->speed();
-    if(c->type() == eCharacterType::cartTransporter) {
-        // Hermes' Refuge finished: deliverymen move at 68 tiles a month
-        // instead of 54.4, 1.25x (Citadel of Poseidon, speed.html)
+    const auto ct = c->type();
+    const bool cart = ct == eCharacterType::cartTransporter;
+    const bool trade = ct == eCharacterType::trader ||
+                       ct == eCharacterType::donkey ||
+                       ct == eCharacterType::tradeBoat;
+    if(cart || trade) {
+        // Hermes' Refuge finished (original exe 0x004E1B20): deliverymen
+        // speed code x1.33 (6 -> 7, 1.25x; Citadel of Poseidon speed.html
+        // agrees), merchants, donkeys and trade ships x1.5
         const auto s = c->getBoard().sanctuary(c->cityId(), eGodType::hermes);
-        if(s && s->finished()) speed *= 1.25;
+        if(s && s->finished()) speed *= cart ? 1.25 : 1.5;
     }
     moveBy(speed*0.005 * by);
 }

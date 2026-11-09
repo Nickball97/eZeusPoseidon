@@ -8,7 +8,7 @@ Read with Ghidra 12.2 from Nicolás's Steam `zeus.exe` (same build as GOG: compi
 - **Twice a month** (cycles 0 and 8; `0x005671A0` → `0x00566F20`), once the city has 350 or more people: crime += crime increment for the house level (column o) + (40 − city mood) / 2 (integer division). Then it is floored at the crime base and capped at 100.
 - **Watchmen** (figure 61, `0x004DFB70` → `0x004A5F70`): every house within 2 tiles of the watchman loses the guardpost's "Risk Reducer" (Model `BUILD_GUARDPOST` column j = 50 on every difficulty), floored at the crime base. There is no persuasion: the watchman just lowers crime around him.
 - **Outlaws** (`0x005BFDE0`, every cycle): for each threshold a house's crime level reaches, a 1-in-200 draw spawns that walker, if the house has none out already: 70 → disgruntled citizen (figure 22), 80 → mugger (27), 90 → thief (23), 100 → vandal (29). Table at `0x0065E898`.
-- **Unidentified condition** (`0x004E9440`): when a particular god's sanctuary (building types 84–97, chosen through an object not yet identified) is in the city, houses need 10 less appeal to evolve and stay, and crime falls by 20 every update instead of rising.
+- **Gods' sanctuaries** (`0x004E9440` with a god record, see "Sanctuary benefits"): Dionysus sets the crime increment to 0 and makes crime fall by 20 each update; Aphrodite lowers house appeal needs by 10.
 
 ## City mood (verified in code, `0x005671A0`, twice a month)
 - Starts at 60, range 0–100. Each update adds the sum of six factors:
@@ -59,3 +59,17 @@ The tax mood factor uses the "no taxes" row when tax coverage is below 11% (`0x0
 - A healer (figure 32) sets the visit value to 96 for houses within 2 tiles (`0x004A66B0`); how fast it wears off was not traced (eZeus uses its hygiene value).
 - An infected house loses a share of its people by difficulty (doubles at `0x005F8480`): 25%, 33%, 50%, 67%, 100%; it stays sick for 32 cycles (house timer +0x100).
 - An outbreak infects a fifth of lived-in houses (candidates are the 40% with the least health care; each taken on a coin toss until half are chosen).
+
+## Sanctuary benefits (verified in code)
+`0x004E9440` checks one god's sanctuary through a record in an array at `0x00EF5DD8`, 0x34 bytes per god, in the Model's sanctuary row order: Zeus, Poseidon, Demeter, Apollo, Artemis, Ares, Aphrodite, Hermes, Athena, Hephaestus, Dionysus, Hades, Hera, Atlas. Effects found:
+- **Aphrodite:** every house's appeal needs (evolve and devolve) are 10 lower (`0x00433D80`).
+- **Dionysus:** crime increment 0, and crime falls by 20 each update (`0x00433D80`, `0x00566F20`).
+- **Hephaestus:** building fire risk 0 (`0x00433D50`).
+- **Athena:** the player's rabble, hoplites and horsemen get +4 armor against missiles (`0x004E1B20`).
+- **Hermes:** cart pushers, storehouse workers and deliverymen get speed code ×1.33 (6 → 7 = 1.25×); merchants, donkeys and trade ships ×1.5 (`0x004E1B20`).
+- **Apollo:** +20 to the city's Pan-Hellenic games score (`0x00565D40`).
+- **Hera:** +3% to the yearly births (`0x00566D40`).
+- Not yet read: Artemis (`0x0056AF80`, `0x00567C70`), Ares (`0x0046DAA0`), Hades (`0x00546E80`), Zeus.
+
+## Births and deaths (verified in code, `0x00566D40`, once a year)
+Population changes by a share set by city health: 91+ +6%, 81–90 +4%, 71–80 +3%, 61–70 +2%, 51–60 +1%, 41–50 0; 40 or less: −1% while the health target is 31+, otherwise −2% (21–40), −3% (11–20), −5% (1–10). Hera +3%.

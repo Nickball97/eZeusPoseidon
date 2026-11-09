@@ -50,6 +50,9 @@ public:
     // 15, curator 20), plus 10 for the whole city with a working stadium
     // (Atlantean: museum). Citadel of Poseidon, entertainment.html
     int culturePoints() const;
+    // Aphrodite's finished sanctuary lowers every house's appeal needs
+    // by 10 (original exe 0x00433D80)
+    int aphroditeAppealBonus() const;
     // a working stadium (Greek) or museum (Atlantean) in the city
     bool hasCultureBonusBuilding() const;
 

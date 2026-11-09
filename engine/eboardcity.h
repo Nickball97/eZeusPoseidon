@@ -608,6 +608,8 @@ private:
     void updateHealthTarget();
     void healthCycle();
     void plagueOutbreak();
+    // yearly births and deaths by health (original exe 0x00566D40)
+    void yearlyBirthsDeaths();
     int mHealth = 0;
     int mMaintanance = 0;
     int mExcessiveMilitaryServiceCount = 0;

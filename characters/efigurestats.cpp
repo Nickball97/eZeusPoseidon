@@ -5,6 +5,7 @@
 #include "engine/egameboard.h"
 #include "engine/edifficulty.h"
 #include "enumbers.h"
+#include "buildings/sanctuaries/esanctuary.h"
 
 #include <algorithm>
 
@@ -260,7 +261,21 @@ double missileDamage(const int ma, const int rate,
                      const eCharacter* const target, const int by) {
     const double r = rate > 0 ? double(sRefRabble.fMissileRate)/rate : 1.;
     if(target && target->hasFigureStats()) {
-        const int net = std::max(0, ma - target->missileArmor());
+        // Athena's finished sanctuary: the player's rabble, hoplites and
+        // horsemen get +4 armor against missiles (original exe 0x004E1B20)
+        int marmor = target->missileArmor();
+        if(target->isSoldier()) {
+            const auto s = target->getBoard().sanctuary(target->cityId(), eGodType::athena);
+            const auto tt = target->type();
+            const bool own = tt == eCharacterType::rockThrower ||
+                             tt == eCharacterType::hoplite ||
+                             tt == eCharacterType::horseman ||
+                             tt == eCharacterType::archerPoseidon ||
+                             tt == eCharacterType::hoplitePoseidon ||
+                             tt == eCharacterType::chariotPoseidon;
+            if(own && s && s->finished()) marmor += 4;
+        }
+        const int net = std::max(0, ma - marmor);
         const int refNet = sRefRabble.fMissileAttack - sRefHoplite.fMissileArmor;
         return by*r*net*eNumbers::sRabbleAttack/refNet;
     }

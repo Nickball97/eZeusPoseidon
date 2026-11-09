@@ -304,7 +304,7 @@ bool eSmallHouse::appealFor(const int l) const {
     const auto d = getBoard().difficulty(playerId());
     const int need = level() >= l ? eHouseModel::smallDevolve(d, l) :
                                     eHouseModel::smallEvolve(d, l);
-    return appeal >= need;
+    return appeal >= need - aphroditeAppealBonus();
 }
 
 bool eSmallHouse::cultureFor(const int l) const {
