@@ -1,6 +1,9 @@
 #include "ehousebase.h"
 
 #include "engine/egameboard.h"
+#include "engine/eboardcity.h"
+#include "buildings/estadium.h"
+#include "buildings/emuseum.h"
 
 #include "characters/esettler.h"
 #include "characters/actions/emovetoaction.h"
@@ -47,6 +50,29 @@ int eHouseBase::allCultureScience() const {
     if(mAthletes > 0) result++;
     if(mCompetitors > 0) result++;
     return result;
+}
+
+bool eHouseBase::hasCultureBonusBuilding() const {
+    auto& b = getBoard();
+    const auto c = b.boardCityWithId(cityId());
+    if(!c) return false;
+    if(atlantean()) {
+        const auto m = c->museum();
+        return m && m->enabled();
+    }
+    const auto s = c->stadium();
+    return s && s->enabled();
+}
+
+int eHouseBase::culturePoints() const {
+    const bool atl = atlantean();
+    int p = 0;
+    if(mPhilosophers > 0) p += atl ? 20 : 15;
+    if(mActors > 0) p += 25;
+    if(mAthletes > 0) p += atl ? 15 : 20;
+    if(mCompetitors > 0) p += 20;
+    if(hasCultureBonusBuilding()) p += 10;
+    return p;
 }
 
 void eHouseBase::levelUp() {

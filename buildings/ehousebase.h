@@ -43,6 +43,13 @@ public:
     int athletesScholars() const { return mAthletes; }
     int competitorsCurators() const { return mCompetitors; }
     int allCultureScience() const;
+    // Original culture/science points: philosopher 15, actor 25, athlete
+    // 20, competitor 20 (Atlantean: inventor 20, astronomer 25, scholar
+    // 15, curator 20), plus 10 for the whole city with a working stadium
+    // (Atlantean: museum). Citadel of Poseidon, entertainment.html
+    int culturePoints() const;
+    // a working stadium (Greek) or museum (Atlantean) in the city
+    bool hasCultureBonusBuilding() const;
 
     void levelUp();
     void levelDown();

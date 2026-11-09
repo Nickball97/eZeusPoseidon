@@ -62,6 +62,7 @@ private:
 
     void updateLevel();
     bool appealFor(const int l) const;
+    bool cultureFor(const int l) const;
 
     int mUpdateLevel = 0;
 

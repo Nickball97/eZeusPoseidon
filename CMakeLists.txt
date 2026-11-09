@@ -246,6 +246,7 @@ add_executable(eZeus
     buildings/eshepherbuildingbase.h
     buildings/esmallhouse.cpp
     buildings/esmallhouse.h
+    buildings/ehousemodel.h
     buildings/estadium.cpp
     buildings/estadium.h
     buildings/estadiumrenderer.cpp

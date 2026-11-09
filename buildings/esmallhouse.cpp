@@ -1,4 +1,5 @@
 ﻿#include "esmallhouse.h"
+#include "ehousemodel.h"
 
 #include "textures/egametextures.h"
 #include "engine/egameboard.h"
@@ -177,7 +178,10 @@ void eSmallHouse::timeChanged(const int by) {
         const int m4 = pm*pow(pbi + mHygiene, pe);
         const auto pid = playerId();
         const auto diff = b.difficulty(pid);
-        const double plagueRisk = eDifficultyHelpers::plagueRisk(diff);
+        // disease risk by house level and difficulty (Model column u),
+        // scaled so a Hero hut keeps eZeus's old Hero risk (1.875)
+        const double plagueRisk =
+                eHouseModel::smallDisease(diff, mLevel)*1.875/20;
         if(plagueRisk > 0. && by) {
             const int plaguePeriod = std::round(m4/(by*plagueRisk));
             if(plaguePeriod && eRand::rand() % plaguePeriod == 0) {
@@ -211,7 +215,10 @@ void eSmallHouse::timeChanged(const int by) {
         const int m4 = pm*pow(pbi + mSatisfaction, pe);
         const auto pid = playerId();
         const auto diff = b.difficulty(pid);
-        const double crimeRisk = eDifficultyHelpers::crimeRisk(diff);
+        // crime risk by house level and difficulty (Model column o),
+        // scaled so a Hero hut keeps eZeus's old Hero risk (1.875)
+        const double crimeRisk =
+                eHouseModel::smallCrime(diff, mLevel)*1.875/15;
         if(crimeRisk > 0. && by) {
             const int crimePeriod = std::round(m4/(by*crimeRisk));
             if(crimePeriod && eRand::rand() % crimePeriod == 0) {
@@ -301,38 +308,34 @@ bool eSmallHouse::lowFood() const {
     return mFood < cfood;
 }
 
-// Original Zeus house desirability (Model data, ALL HOUSES rows a and b):
-// reaching level L needs sEvolve[L]; a house already at level L or above
-// keeps it while appeal stays at or above sDevolve[L].
-// Levels: 0 hut, 1 shack, 2 hovel, 3 homestead, 4 tenement, 5 apartment,
-// 6 townhouse.
-static const double sSmallEvolve[7] = {-99, -10, 0, 10, 10, 20, 30};
-static const double sSmallDevolve[7] = {-99, -12, -2, -2, 5, 15, 25};
-
+// Original house desirability by difficulty (eHouseModel): reaching level L
+// needs smallEvolve(L); a house already at level L or above keeps it while
+// appeal stays at or above smallDevolve(L).
 bool eSmallHouse::appealFor(const int l) const {
     const double appeal = eHouseBase::appeal();
-    const double need = level() >= l ? sSmallDevolve[l] : sSmallEvolve[l];
+    const auto d = getBoard().difficulty(playerId());
+    const int need = level() >= l ? eHouseModel::smallDevolve(d, l) :
+                                    eHouseModel::smallEvolve(d, l);
     return appeal >= need;
 }
 
+bool eSmallHouse::cultureFor(const int l) const {
+    return culturePoints() >= eHouseModel::smallCulture(l);
+}
+
 eHouseMissing eSmallHouse::missing() const {
-    int nVenues = 0;
-    if(mPhilosophers > 0) nVenues++;
-    if(mActors > 0) nVenues++;
-    if(mAthletes > 0) nVenues++;
-    if(mCompetitors > 0) nVenues++;
     if(!appealFor(1)) return eHouseMissing::appeal;
     if(mFood <= 0) return eHouseMissing::food;
     if(!appealFor(2)) return eHouseMissing::appeal;
     if(mWater <= 0) return eHouseMissing::water;
-    if(nVenues <= 0) return eHouseMissing::venues;
+    if(!cultureFor(2)) return eHouseMissing::venues;
     if(mFleece <= 0) return eHouseMissing::fleece;
     if(!appealFor(3)) return eHouseMissing::appeal;
-    if(nVenues <= 1) return eHouseMissing::venues;
+    if(!cultureFor(4)) return eHouseMissing::venues;
     if(!appealFor(4)) return eHouseMissing::appeal;
     if(mOil <= 0) return eHouseMissing::oil;
     if(!appealFor(5)) return eHouseMissing::appeal;
-    if(nVenues <= 2) return eHouseMissing::venues;
+    if(!cultureFor(6)) return eHouseMissing::venues;
     if(!appealFor(6)) return eHouseMissing::appeal;
     return eHouseMissing::nothing;
 }
@@ -398,17 +401,12 @@ std::string eSmallHouse::sName(const int level) {
 }
 
 void eSmallHouse::updateLevel() {
-    int nVenues = 0;
-    if(mPhilosophers > 0) nVenues++;
-    if(mActors > 0) nVenues++;
-    if(mAthletes > 0) nVenues++;
-    if(mCompetitors > 0) nVenues++;
     if(mFood > 0 && appealFor(1)) {
-        if(mWater > 0 && nVenues > 0 && appealFor(2)) {
+        if(mWater > 0 && cultureFor(2) && appealFor(2)) {
             if(mFleece > 0 && appealFor(3)) {
-                if(nVenues > 1 && appealFor(4)) {
+                if(cultureFor(4) && appealFor(4)) {
                     if(mOil > 0 && appealFor(5)) {
-                        if(nVenues > 2 && appealFor(6)) {
+                        if(cultureFor(6) && appealFor(6)) {
                             return setLevel(6);
                         }
                         return setLevel(5);

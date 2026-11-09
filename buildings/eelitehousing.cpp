@@ -1,4 +1,5 @@
 #include "eelitehousing.h"
+#include "ehousemodel.h"
 
 #include "engine/egameboard.h"
 
@@ -287,35 +288,41 @@ void eEliteHousing::removeHorse() {
 }
 
 // Original Zeus elite house desirability (Model data, ALL HOUSES rows a
-// and b): reaching level L needs sEliteEvolve[L]; a house already at level
-// L or above keeps it while appeal stays at or above sEliteDevolve[L].
+// and b): reaching level L needs eliteEvolve(L); a house already at level
+// L or above keeps it while appeal stays at or above eliteDevolve(L).
 // Levels: 0 abandoned, 1 residence, 2 mansion, 3 manor, 4 estate.
-static const double sEliteEvolve[5] = {-99, 50, 60, 70, 80};
-static const double sEliteDevolve[5] = {-99, 46, 56, 66, 76};
-
+// Values by difficulty in eHouseModel.
 bool eEliteHousing::appealFor(const int l) const {
     const double appeal = eHouseBase::appeal();
-    const double need = level() >= l ? sEliteDevolve[l] : sEliteEvolve[l];
+    const auto d = getBoard().difficulty(playerId());
+    const int need = level() >= l ? eHouseModel::eliteDevolve(d, l) :
+                                    eHouseModel::eliteEvolve(d, l);
     return appeal >= need;
 }
 
+// culture/science points for level L; an estate also needs a working
+// stadium (Atlantean: museum) in the city (Model column e)
+bool eEliteHousing::cultureFor(const int l) const {
+    const auto d = getBoard().difficulty(playerId());
+    if(culturePoints() < eHouseModel::eliteCulture(d, l)) return false;
+    if(l >= 4 && !hasCultureBonusBuilding()) return false;
+    return true;
+}
+
 eHouseMissing eEliteHousing::missing() const {
-    int nVenues = 0;
-    if(mPhilosophers > 0) nVenues++;
-    if(mActors > 0) nVenues++;
-    if(mAthletes > 0) nVenues++;
-    if(mCompetitors > 0) nVenues++;
     if(mFood <= 0) return eHouseMissing::food;
     if(mFleece <= 0) return eHouseMissing::fleece;
     if(mOil <= 0) return eHouseMissing::oil;
-    if(nVenues <= 2) return eHouseMissing::venues;
+    if(!cultureFor(1)) return eHouseMissing::venues;
     if(!appealFor(1)) return eHouseMissing::appeal;
     if(mArms <= 0) return eHouseMissing::arms;
+    if(!cultureFor(2)) return eHouseMissing::venues;
     if(!appealFor(2)) return eHouseMissing::appeal;
     if(mWine <= 0) return eHouseMissing::wine;
+    if(!cultureFor(3)) return eHouseMissing::venues;
     if(!appealFor(3)) return eHouseMissing::appeal;
     if(mHorses <= 0) return eHouseMissing::horse;
-    if(nVenues <= 3) return eHouseMissing::venues;
+    if(!cultureFor(4)) return eHouseMissing::venues;
     if(!appealFor(4)) return eHouseMissing::appeal;
     return eHouseMissing::nothing;
 }
@@ -364,15 +371,10 @@ const eTextureCollection& eEliteHousing::getTextureCollection(
 }
 
 void eEliteHousing::updateLevel() {
-    int nVenues = 0;
-    if(mPhilosophers > 0) nVenues++;
-    if(mActors > 0) nVenues++;
-    if(mAthletes > 0) nVenues++;
-    if(mCompetitors > 0) nVenues++;
-    if(mFood > 0 && mFleece > 0 && mOil > 0 && nVenues > 2 && appealFor(1)) {
-        if(mArms > 0 && appealFor(2)) {
-            if(mWine > 0 && appealFor(3)) {
-                if(mHorses > 0 && nVenues > 3 && appealFor(4)) {
+    if(mFood > 0 && mFleece > 0 && mOil > 0 && cultureFor(1) && appealFor(1)) {
+        if(mArms > 0 && cultureFor(2) && appealFor(2)) {
+            if(mWine > 0 && cultureFor(3) && appealFor(3)) {
+                if(mHorses > 0 && cultureFor(4) && appealFor(4)) {
                     return setLevel(4);
                 }
                 return setLevel(3);

@@ -824,6 +824,7 @@ HEADERS += \
     buildings/esculpturestudio.h \
     buildings/eshepherbuildingbase.h \
     buildings/esmallhouse.h \
+    buildings/ehousemodel.h \
     buildings/estadium.h \
     buildings/estadiumrenderer.h \
     buildings/estoragebuilding.h \
