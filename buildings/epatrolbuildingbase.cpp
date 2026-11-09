@@ -93,10 +93,14 @@ static int sSpawnWaitCycles(const eBuildingType type, const int step) {
     case eBuildingType::hospital:
     case eBuildingType::theater:
     case eBuildingType::stadium:
+    case eBuildingType::laboratory: // 0x00432E60
+    case eBuildingType::museum: // 0x00433170
         return sVenue[step];
     case eBuildingType::podium:
+    case eBuildingType::observatory: // 0x00432B00
         return sPodium[step];
     case eBuildingType::gymnasium:
+    case eBuildingType::bibliotheke: // 0x00432960
         return sGym[step];
     case eBuildingType::commonAgora:
     case eBuildingType::grandAgora:

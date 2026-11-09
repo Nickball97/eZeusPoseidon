@@ -149,7 +149,7 @@ The Dragon and Cerberus use the single "Monster" row (500 HP, attack 50, armor 1
   - podium: 9 / 16 / 31 / 51 / 101
   - gymnasium: 5 / 6 / 11 / 18 / 31
 - Agora (`0x0040D620`): 3 / 4 / 5 / 6 / 11 cycles, staffed by its stalls. eZeus agoras have no staff of their own, so they use 3.
-- Culture venues allow 1 walker out at a time, 2 if blessed. The Atlantean buildings use their own functions (not read) and keep eZeus timing.
+- Culture venues allow 1 walker out at a time, 2 if blessed. Atlantean venues match their Greek counterparts: bibliotheke (`0x00432960`) like the gymnasium, observatory (`0x00432B00`) like the podium, laboratory (`0x00432E60`) and museum (`0x00433170`) like the theater and stadium. University and inventor's workshop (trainers) are not changed.
 - Agora deliveries (`0x0040D160`): food up to residents / 2 per type each visit, capped at 2 x residents. Goods up to Model need x 4 (2x2 or larger) x 2 (x2 more for elite homes): 8, or 16 for elite. This matches eZeus.
 - Superintendent (`0x004A5D90`): lowers fire and damage risk by Model row 121 column j (50). This matches eZeus.
 - Workshops (winery, olive press, sculpture studio, armory) now use the 10/8/6/4/2 staffing steps (see Workshops above).
