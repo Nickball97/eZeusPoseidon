@@ -14,6 +14,7 @@ namespace eFileFormat {
         eliteNoble,
         monsterTarget,
         monsterTargets,
+        multiCollectors,
 
         nextVersion
     };

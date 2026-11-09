@@ -69,10 +69,13 @@ void eHorseRanch::timeChanged(const int by) {
             mHorseTime += by;
             if(mHorseTime > eNumbers::sHorseRanchHorseSpawnPeriod) {
                 mHorseTime = 0;
-                mEnclosure->spawnHorse();
+                // Breeding one horse costs 50 units of wheat
+                // (Citadel of Poseidon).
+                const bool bred = mWheat >= 50 && mEnclosure->spawnHorse();
+                if(bred) mWheat -= 50;
 
                 const bool isPp = isPersonPlayer();
-                if(isPp) {
+                if(bred && isPp) {
                     auto& board = getBoard();
                     board.incProduced(eResourceType::horse, 1);
                 }

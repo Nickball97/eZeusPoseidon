@@ -27,7 +27,10 @@ eBlackMarbleWorkshop::eBlackMarbleWorkshop(eGameBoard& board, const eCityId cid)
     eGameTextures::loadMasonryShop();
     setAddResource(false);
     setRawInc(8);
-    setRawCountCollect(0);
+    // Hewing a block takes 2 months and each slab about 1 month, yet a
+    // shop makes up to 12 slabs a year (Citadel of Poseidon), so the
+    // quarryman sets out while 2 slabs are still to be cut.
+    setRawCountCollect(2);
 }
 
 std::vector<eOverlay>

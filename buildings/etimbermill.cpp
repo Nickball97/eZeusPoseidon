@@ -14,5 +14,9 @@ eTimberMill::eTimberMill(eGameBoard& board, const eCityId cid) :
                              eHasResourceObject::sCreate(eHasResourceObjectType::forest),
                              2, 2, 12, eResourceType::wood, cid) {
     eGameTextures::loadTimberMill();
-    setRawCountCollect(4);
+    // 3 workers, 25 units each, 100 units = 1 load (Citadel of Poseidon)
+    setMaxCollectors(3);
+    setRawPerLoad(4);
+    setRawCountCollect(16);
+    setWaitTime(1000);
 }

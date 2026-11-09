@@ -3,8 +3,10 @@
 #include "engine/etile.h"
 #include "engine/egameboard.h"
 
+// A cut tree grows back in about 3 months (Citadel of Poseidon).
+
 eRegrowForestAction::eRegrowForestAction(eTile* const tile) :
-    ePlannedAction(false, 500000, ePlannedActionType::regrowForest),
+    ePlannedAction(false, (365*350)/4, ePlannedActionType::regrowForest),
     mTile(tile) {}
 
 eRegrowForestAction::eRegrowForestAction() :

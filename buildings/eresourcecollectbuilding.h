@@ -56,6 +56,9 @@ protected:
     void setRawInc(const int i) { mRawInc = i; }
 
     void setRawCountCollect(const int r) { mRawCountCollect = r; }
+    void setWaitTime(const int w) { mWaitTime = w; mSpawnTime = w; }
+    void setMaxCollectors(const int m) { mMaxCollectors = m; }
+    void setRawPerLoad(const int r) { mRawPerLoad = r; }
 private:
     const eCharGenerator mCharGenerator;
     const std::vector<eBuildingTextures>& mTextures;
@@ -74,7 +77,15 @@ private:
 
     eTileActionType mCollectedAction = eTileActionType::none;
 
-    stdptr<eResourceCollectorBase> mCollector;
+    // Workers out collecting. Timber mills, foundries and refineries
+    // send up to 3 at once (Citadel of Poseidon), others 1.
+    std::vector<stdptr<eResourceCollectorBase>> mCollectors;
+    int mMaxCollectors = 1;
+    // Raw units per finished load (4 x 25 units = 1 load for wood,
+    // bronze and orichalc).
+    int mRawPerLoad = 1;
+
+    int collectorCount();
 
     bool mSpawnEnabled = true;
 

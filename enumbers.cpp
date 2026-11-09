@@ -456,10 +456,15 @@ void eNumbers::sLoad(const std::string& path) {
     loadD("tree_vine_cursed_fully_ripe_period_multiplier_d", sTreeVineCursedFullyRipePeriodMultiplier, 0.333, 0.1, 1.);
     loadD("tree_vine_cursed_ripe_period_multiplier_d", sTreeVineCursedRipePeriodMultiplier, 3., 1, 9);
 
-    loadI("marble_collect_period_i", sMarbleCollectTime, 10000, 1, 1000000);
-    loadI("bronze_collect_period_i", sBronzeCollectTime, 10000, 1, 1000000);
+    // Citadel of Poseidon: a quarryman needs 2 months to hew a block.
+    loadI("marble_collect_period_i", sMarbleCollectTime, (365*sDayLength)/6, 1, 1000000);
+    // Wood, copper and orichalc: 3 workers bring 25 units per trip and a
+    // mill or foundry makes at most 12-13 loads a year (Citadel of
+    // Poseidon, about 3/4 month per tree). 6000 ticks of work plus the
+    // short wait and walk gives about that when the resource is close.
+    loadI("bronze_collect_period_i", sBronzeCollectTime, 6000, 1, 1000000);
     loadI("silver_collect_period_i", sSilverCollectTime, 10000, 1, 1000000);
-    loadI("wood_collect_period_i", sWoodCollectTime, 10000, 1, 1000000);
+    loadI("wood_collect_period_i", sWoodCollectTime, 6000, 1, 1000000);
     loadI("fish_collect_period_i", sFishCollectTime, 10000, 1, 1000000);
     loadI("urchin_collect_period_i", sUrchinCollectTime, 10000, 1, 1000000);
 

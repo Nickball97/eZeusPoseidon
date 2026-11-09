@@ -48,7 +48,9 @@ void eCollectAction::increment(const int by) {
         board.ifVisible(c->tile(), [cType]() {
             if(cType == eCharacterType::marbleMiner) {
                 eSounds::playStoneCutterSound();
-            } else if(cType == eCharacterType::bronzeMiner) {
+            } else if(cType == eCharacterType::bronzeMiner ||
+              cType == eCharacterType::orichalcMiner) {
+        // orichalc is mined exactly like bronze (Citadel of Poseidon)
                 eSounds::playCopperMinerSound();
             } else if(cType == eCharacterType::silverMiner) {
                 eSounds::playSilverMinerSound();
