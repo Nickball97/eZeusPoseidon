@@ -175,6 +175,8 @@ int costBase(const eBuildingType type) {
         return 8;
     case eBuildingType::avenue:
         return 10;
+    case eBuildingType::boulevard:
+        return 15;
 
     case eBuildingType::bench:
         return 6;
@@ -443,6 +445,7 @@ bool originalCost(const eBuildingType type, std::array<int, 5>& c) {
     case eBuildingType::theater: c = {60, 100, 120, 145, 180}; return true; // BUILD_THEATRE
     case eBuildingType::palace: c = {125, 175, 250, 300, 400}; return true; // BUILD_PALACE
     case eBuildingType::avenue: c = {10, 16, 20, 25, 30}; return true; // BUILD_AVENUE
+    case eBuildingType::boulevard: c = {15, 24, 30, 36, 45}; return true; // BUILD_BOULEVARD
     case eBuildingType::bridge: c = {8, 12, 15, 16, 20}; return true; // BUILD_LARGE_BRIDGE
     case eBuildingType::maintenanceOffice: c = {10, 16, 20, 24, 30}; return true; // BUILD_SUPER_OFFICE
     case eBuildingType::taxOffice: c = {25, 40, 50, 60, 75}; return true; // BUILD_TAX_OFFICE
@@ -564,6 +567,7 @@ bool originalFireRisk(const eBuildingType type, std::array<int, 5>& r) {
     case eBuildingType::theater: r = {0, 0, 0, 0, 0}; return true; // BUILD_THEATRE
     case eBuildingType::palace: r = {0, 5, 5, 10, 15}; return true; // BUILD_PALACE
     case eBuildingType::avenue: r = {0, 0, 0, 0, 0}; return true; // BUILD_AVENUE
+    case eBuildingType::boulevard: r = {0, 0, 0, 0, 0}; return true; // BUILD_BOULEVARD
     case eBuildingType::bridge: r = {0, 0, 0, 0, 0}; return true; // BUILD_LARGE_BRIDGE
     case eBuildingType::maintenanceOffice: r = {0, 5, 5, 8, 10}; return true; // BUILD_SUPER_OFFICE
     case eBuildingType::taxOffice: r = {5, 10, 10, 12, 15}; return true; // BUILD_TAX_OFFICE
@@ -665,6 +669,7 @@ bool originalDamageRisk(const eBuildingType type, std::array<int, 5>& r) {
     case eBuildingType::theater: r = {8, 10, 15, 18, 22}; return true; // BUILD_THEATRE
     case eBuildingType::palace: r = {0, 5, 5, 10, 15}; return true; // BUILD_PALACE
     case eBuildingType::avenue: r = {0, 0, 0, 0, 0}; return true; // BUILD_AVENUE
+    case eBuildingType::boulevard: r = {0, 0, 0, 0, 0}; return true; // BUILD_BOULEVARD
     case eBuildingType::bridge: r = {0, 0, 0, 0, 0}; return true; // BUILD_LARGE_BRIDGE
     case eBuildingType::maintenanceOffice: r = {0, 0, 0, 0, 0}; return true; // BUILD_SUPER_OFFICE
     case eBuildingType::taxOffice: r = {0, 0, 0, 0, 0}; return true; // BUILD_TAX_OFFICE

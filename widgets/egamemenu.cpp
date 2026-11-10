@@ -803,7 +803,8 @@ void eGameMenu::initialize(eGameBoard* const b,
                                       eSPR{eBuildingMode::doricColumn, eLanguage::zeusText(28, 129)},
                                       eSPR{eBuildingMode::ionicColumn, eLanguage::zeusText(28, 145)},
                                       eSPR{eBuildingMode::corinthianColumn, eLanguage::zeusText(28, 146)},
-                                      eSPR{eBuildingMode::avenue, eLanguage::zeusText(28, 118)}};
+                                      eSPR{eBuildingMode::avenue, eLanguage::zeusText(28, 118)},
+                                      eSPR{eBuildingMode::boulevard, eLanguage::zeusText(28, 126)}};
     const auto bb9 = [this, cmx, cmy, bb9spr]() {
         openBuildWidget(cmx, cmy, bb9spr);
     };

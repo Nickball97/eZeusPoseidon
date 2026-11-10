@@ -23,6 +23,7 @@
 #include "buildings/epalacetile.h"
 
 #include "buildings/ehorseranch.h"
+#include "buildings/eavenue.h"
 
 #include "engine/boardData/eheatmaptask.h"
 
@@ -104,6 +105,7 @@
 #include "buildings/pyramids/epyramid.h"
 
 #include <algorithm>
+#include <set>
 
 #ifndef uint
 #define uint unsigned int
@@ -3719,6 +3721,181 @@ bool eGameBoard::canBuildAvenue(eTile* const t, const eCityId cid,
                     (b && b->hasRoad()) ||
                     (l && l->hasRoad());
     return hr;
+}
+
+// Avenue and Boulevard pieces, after the original game (zeus.exe):
+// - Boulevard (0x0041BBA0, 0x0041B250, piece 0x0041AFB0): the drag must
+//   start on a road; each road tile along the drag gets trees on both
+//   sides, across the road's direction
+// - Avenue (0x0041AEA0, 0x00419F90, piece 0x00419C90): trees on one side
+//   only. Starting on the road puts them on its top-left side (x - 1) for
+//   a road running along y, or its top-right side (y - 1) for one running
+//   along x; starting next to a road puts them on the tile clicked
+// - the drag runs along its longer direction from the start tile; the
+//   side keeps to the same edge (lower or higher coordinate) if the drag
+//   turns across the road's direction; a click without a drag builds
+//   nothing
+// - each piece needs a road tile and free tiles for the trees
+// - a piece with no Avenue or Boulevard next to it along the line is taken
+//   back and not charged (0x004195D0), so the shortest is two pieces
+// Kept from eZeus: the trees can't go over another road (the original
+// allows it), and a drag that doesn't start on or next to a road builds
+// nothing (the original then picks a side by the drag direction).
+std::vector<eGameBoard::eAvenuePiece> eGameBoard::avenuePieces(
+        const int sx, const int sy, const int ex, const int ey,
+        const eBuildingType type, const eCityId cid,
+        const ePlayerId pid, const bool forestAllowed,
+        const bool startOnly) const {
+    std::vector<eAvenuePiece> result;
+    const auto road = [&](const int x, const int y) {
+        const auto t = tile(x, y);
+        return t && t->hasRoad();
+    };
+    const bool boulevard = type == eBuildingType::boulevard;
+    // o: 0 trees at x - 1, 1 at y - 1, 2 at x + 1, 3 at y + 1 of the road
+    // tile; a Boulevard (0 or 1) has them on both sides
+    int o = 0;
+    int rx = sx; // the start piece's road tile
+    int ry = sy;
+    if(road(sx, sy)) {
+        const bool e = road(sx + 1, sy);
+        const bool w = road(sx - 1, sy);
+        const bool n = road(sx, sy - 1);
+        const bool s = road(sx, sy + 1);
+        if(e && w) o = 1;
+        else if(n && s) o = 0;
+        else if(!e && !w) {
+            if(!n && !s) return result;
+            o = 0;
+        } else o = 1;
+    } else if(boulevard) {
+        return result;
+    } else if(road(sx - 1, sy)) {
+        o = 2;
+        rx = sx - 1;
+    } else if(road(sx, sy - 1)) {
+        o = 3;
+        ry = sy - 1;
+    } else if(road(sx + 1, sy)) {
+        o = 0;
+        rx = sx + 1;
+    } else if(road(sx, sy + 1)) {
+        o = 1;
+        ry = sy + 1;
+    } else {
+        return result;
+    }
+
+    // the original measures the drag from the piece's own tile: the road
+    // tile, or the trees for an Avenue started beside a road to its
+    // top-left or top-right
+    const bool treesStart = o == 2 || o == 3;
+    const int dx = std::abs(ex - (treesStart ? sx : rx));
+    const int dy = std::abs(ey - (treesStart ? sy : ry));
+    if(!startOnly && dx < 1 && dy < 1) return result;
+    // the cursor preview keeps the start's own direction
+    const bool alongX = startOnly ? (o == 1 || o == 3) : dy < dx;
+    if(!startOnly) {
+        if(alongX) {
+            if(o == 0) o = 1;
+            else if(o == 2) o = 3;
+        } else {
+            if(o == 1) o = 0;
+            else if(o == 3) o = 2;
+        }
+    }
+
+    std::vector<std::pair<int, int>> sides;
+    switch(o) {
+    case 0: sides.push_back({-1, 0}); break;
+    case 1: sides.push_back({0, -1}); break;
+    case 2: sides.push_back({1, 0}); break;
+    case 3: sides.push_back({0, 1}); break;
+    }
+    if(boulevard) {
+        sides.push_back({-sides[0].first, -sides[0].second});
+    }
+
+    const int from = startOnly ? (alongX ? rx : ry) :
+                     alongX ? std::min(rx, ex) : std::min(ry, ey);
+    const int to = startOnly ? from :
+                   alongX ? std::max(rx, ex) : std::max(ry, ey);
+    for(int i = from; i <= to; i++) {
+        const int x = alongX ? i : rx;
+        const int y = alongX ? ry : i;
+        if(!road(x, y)) continue;
+        eAvenuePiece p;
+        p.fRoad = tile(x, y);
+        bool ok = true;
+        for(const auto& s : sides) {
+            const int tx = x + s.first;
+            const int ty = y + s.second;
+            const auto t = tile(tx, ty);
+            if(!t || !canBuildBase(tx, tx + 1, ty, ty + 1, forestAllowed,
+                                   cid, pid, false, true)) {
+                ok = false;
+                break;
+            }
+            p.fTrees.push_back(t);
+        }
+        if(ok) result.push_back(p);
+    }
+
+    if(startOnly) return result;
+
+    // take back pieces with nothing beside them along the line
+    std::set<eTile*> newTrees;
+    for(const auto& p : result) {
+        for(const auto t : p.fTrees) newTrees.insert(t);
+    }
+    const int lx = alongX ? 1 : 0;
+    const int ly = alongX ? 0 : 1;
+    const auto joined = [&](eTile* const t) {
+        for(const int d : {-1, 1}) {
+            const auto n = tile(t->x() + d*lx, t->y() + d*ly);
+            if(!n) continue;
+            if(newTrees.count(n)) return true;
+            if(eAvenue::sAvenueType(n->underBuildingType())) return true;
+        }
+        return false;
+    };
+    std::vector<eAvenuePiece> kept;
+    for(const auto& p : result) {
+        bool j = false;
+        for(const auto t : p.fTrees) {
+            if(joined(t)) {
+                j = true;
+                break;
+            }
+        }
+        if(j) kept.push_back(p);
+    }
+    return kept;
+}
+
+bool eGameBoard::buildAvenuePiece(const eAvenuePiece& p,
+                                  const eBuildingType type,
+                                  const eCityId cid, const ePlayerId pid,
+                                  const bool editorDisplay) {
+    for(const auto t : p.fTrees) {
+        const int tx = t->x();
+        const int ty = t->y();
+        if(!canBuildBase(tx, tx + 1, ty, ty + 1, editorDisplay,
+                         cid, pid, false, true)) {
+            return false;
+        }
+    }
+    bool first = true;
+    for(const auto t : p.fTrees) {
+        const int tx = t->x();
+        const int ty = t->y();
+        // one charge for the whole piece (zeus.exe counts pieces)
+        buildBase(tx, ty, tx, ty, [this, cid, type]() {
+            return e::make_shared<eAvenue>(*this, cid, type);
+        }, pid, cid, editorDisplay || !first, false, true);
+        first = false;
+    }
+    return true;
 }
 
 bool eGameBoard::canBuildBase(const int minX, const int maxX,

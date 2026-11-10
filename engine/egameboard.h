@@ -687,6 +687,25 @@ public:
     bool canBuildAvenue(eTile* const t, const eCityId cid,
                         const ePlayerId pid,
                         const bool forestAllowed) const;
+
+    // Avenues and Boulevards are laid along a road, as in the original
+    // game: one piece per road tile, with trees on one side (Avenue) or
+    // on both sides (Boulevard). See avenuePieces in egameboard.cpp.
+    struct eAvenuePiece {
+        eTile* fRoad = nullptr;
+        std::vector<eTile*> fTrees;
+    };
+    // the pieces a drag from (sx, sy) to (ex, ey) would build; startOnly:
+    // just the piece at the start tile, for the cursor preview
+    std::vector<eAvenuePiece> avenuePieces(
+            const int sx, const int sy, const int ex, const int ey,
+            const eBuildingType type, const eCityId cid,
+            const ePlayerId pid, const bool forestAllowed,
+            const bool startOnly = false) const;
+    // builds one piece, charged once
+    bool buildAvenuePiece(const eAvenuePiece& p, const eBuildingType type,
+                          const eCityId cid, const ePlayerId pid,
+                          const bool editorDisplay);
     bool canBuildBase(const int minX, const int maxX,
                       const int minY, const int maxY,
                       const bool forestAllowed,

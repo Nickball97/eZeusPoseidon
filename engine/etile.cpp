@@ -443,7 +443,7 @@ bool eTile::hasRoad() const {
 bool eTile::hasAvenue() const {
     if(!mUnderBuilding) return false;
     const auto t = mUnderBuilding->type();
-    return t == eBuildingType::avenue;
+    return t == eBuildingType::avenue || t == eBuildingType::boulevard;
 }
 
 void eTile::setUnderBuilding(const stdsptr<eBuilding>& b) {

@@ -83,6 +83,8 @@ eHeat eHeatGetters::appeal(const eBuildingType type) {
     case eBuildingType::corinthianColumn: return {4, 3, 1, -2};
 
     case eBuildingType::avenue: return {3, 3, 1, -1};
+    // Model BUILD_BOULEVARD: appeal 3, falling by 2 every 2 tiles, range 4
+    case eBuildingType::boulevard: return {3, 4, 2, -2};
 
     case eBuildingType::commemorative: return {30, 6, 2, -5};
     case eBuildingType::godMonument: return {35, 7};

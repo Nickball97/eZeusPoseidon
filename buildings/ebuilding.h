@@ -251,7 +251,8 @@ enum class eBuildingType {
 
     // added at the end so saved types keep their numbers
     templeGrandStatue, // Citadel of Poseidon centrepiece, 6x6
-    templeObelisk // Citadel of Poseidon corner obelisk and its floor
+    templeObelisk, // Citadel of Poseidon corner obelisk and its floor
+    boulevard // trees on both sides of a road (zeus.exe type 126)
 };
 
 struct eTextureSpace {

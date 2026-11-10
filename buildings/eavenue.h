@@ -7,7 +7,13 @@ class eRoad;
 
 class eAvenue : public eBuilding {
 public:
-    eAvenue(eGameBoard& board, const eCityId cid);
+    // type is avenue or boulevard: the original game's Boulevard (type 126)
+    // is an Avenue with trees on both sides of the road; eZeus keeps both
+    // as tree tiles beside a road
+    eAvenue(eGameBoard& board, const eCityId cid,
+            const eBuildingType type = eBuildingType::avenue);
+
+    static bool sAvenueType(const eBuildingType t);
 
     int provide(const eProvide p, const int n);
 

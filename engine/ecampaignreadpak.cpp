@@ -108,7 +108,7 @@ void readEpisodeAllowedBuildings(eEpisode& ep, ZeusFile& file,
                            eBuildingType::none, // columns
                            eBuildingType::park,
                            eBuildingType::avenue,
-                           eBuildingType::none, // boulevards
+                           eBuildingType::boulevard,
                            eBuildingType::wall,
                            eBuildingType::tower,
                            eBuildingType::gatehouse,

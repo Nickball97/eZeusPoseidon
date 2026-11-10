@@ -416,7 +416,8 @@ std::shared_ptr<eTexture> eTileToTexture::get(eTile* const tile,
         }
     }
 
-    if(hr || ut == eBuildingType::avenue) {
+    if(hr || ut == eBuildingType::avenue ||
+       ut == eBuildingType::boulevard) {
         const auto b = tile->underBuilding();
         // long crossings: plain water here, the bridge piece is drawn
         // over it with the buildings (eGameWidget::paintEvent)

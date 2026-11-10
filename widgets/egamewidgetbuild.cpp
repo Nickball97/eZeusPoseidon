@@ -1770,15 +1770,23 @@ bool eGameWidget::buildMouseRelease() {
             return true;
         } break;
         case eBuildingMode::avenue:
-            apply = [this, cid, pid, &r](eTile* const tile) {
-                const bool hr = canBuildAvenue(tile, cid, pid, mEditorMode);
-                if(!hr) return;
-                r = mBoard->build(tile->x(), tile->y(), 1, 1, cid, pid, mEditorMode,
-                      [this]() { return e::make_shared<eAvenue>(*mBoard, mViewedCityId); },
-                      false, true) || r;
-            };
+        case eBuildingMode::boulevard: {
+            // laid along a road like the original (eGameBoard::avenuePieces)
+            const auto type = eBuildingModeHelpers::toBuildingType(mode);
+            const auto pieces = mBoard->avenuePieces(
+                        mPressedTX, mPressedTY, mHoverTX, mHoverTY,
+                        type, cid, pid, mEditorMode);
+            std::vector<eTile*> tiles;
+            for(const auto& p : pieces) {
+                const bool b = mBoard->buildAvenuePiece(p, type, cid, pid,
+                                                        mEditorMode);
+                if(!b) continue;
+                r = true;
+                for(const auto t : p.fTrees) tiles.push_back(t);
+            }
+            updateMaps(tiles);
             mBoard->scheduleTerrainUpdate();
-            break;
+        } break;
 
 
         case eBuildingMode::populationMonument:

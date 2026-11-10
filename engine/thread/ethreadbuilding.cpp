@@ -42,6 +42,7 @@ void eThreadBuilding::load(eBuilding* const src) {
         case eBuildingType::ionicColumn:
         case eBuildingType::corinthianColumn:
         case eBuildingType::avenue:
+        case eBuildingType::boulevard:
 
         case eBuildingType::commemorative:
         case eBuildingType::godMonument:

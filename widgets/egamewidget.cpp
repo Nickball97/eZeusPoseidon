@@ -1488,7 +1488,8 @@ void eGameWidget::updatePatrolPath() {
                     const auto type = t->underBuildingType();
                     const bool hr = type == eBuildingType::road;
                     if(hr) return true;
-                    const bool a = type == eBuildingType::avenue;
+                    const bool a = type == eBuildingType::avenue ||
+                                   type == eBuildingType::boulevard;
                     if(a) return true;
                     const auto tt = static_cast<eTile*>(t);
                     return tt->underBuilding() == mPatrolBuilding;

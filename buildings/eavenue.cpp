@@ -3,9 +3,14 @@
 #include "textures/egametextures.h"
 #include "engine/egameboard.h"
 
-eAvenue::eAvenue(eGameBoard& board, const eCityId cid) :
-    eBuilding(board, eBuildingType::avenue, 1, 1, cid) {
+eAvenue::eAvenue(eGameBoard& board, const eCityId cid,
+                 const eBuildingType type) :
+    eBuilding(board, type, 1, 1, cid) {
     eGameTextures::loadAvenue();
+}
+
+bool eAvenue::sAvenueType(const eBuildingType t) {
+    return t == eBuildingType::avenue || t == eBuildingType::boulevard;
 }
 
 int eAvenue::provide(const eProvide p, const int n) {
@@ -18,7 +23,7 @@ int eAvenue::provide(const eProvide p, const int n) {
             if(!tt) continue;
             if(const auto b = tt->underBuilding()) {
                 const auto tp = b->type();
-                if(tp == eBuildingType::avenue) continue;
+                if(sAvenueType(tp)) continue;
                 const int r = b->provide(p, rem);
                 rem -= r;
                 if(rem <= 0) return n;
@@ -38,19 +43,19 @@ bool isSingle(eTile* const t,
     const int ty = t->y();
     const auto tl = (t->*tg1)(dir);
     const auto br = (t->*tg2)(dir);
-    const bool tlb = tl && tl->underBuildingType() == eBuildingType::avenue;
-    const bool brb = br && br->underBuildingType() == eBuildingType::avenue;
+    const bool tlb = tl && eAvenue::sAvenueType(tl->underBuildingType());
+    const bool brb = br && eAvenue::sAvenueType(br->underBuildingType());
     bool single = true;
     if(tlb && brb) {
         bool s = false;
         if(tl) {
             if(const auto tltl = (tl->*tg1)(dir)) {
-                s = tltl->underBuildingType() != eBuildingType::avenue;
+                s = !eAvenue::sAvenueType(tltl->underBuildingType());
             }
         }
         if(br && !s) {
             if(const auto brbr = (br->*tg2)(dir)) {
-                s = brbr->underBuildingType() != eBuildingType::avenue;
+                s = !eAvenue::sAvenueType(brbr->underBuildingType());
             }
         }
         single = s;
@@ -82,13 +87,13 @@ eAvenue::getTexture(const eTileSize size) const {
     const auto blt = bl ? bl->underBuildingType() : eBuildingType::none;
     const auto trt = tr ? tr->underBuildingType() : eBuildingType::none;
 
-    const bool tlb = tlt == eBuildingType::avenue ||
+    const bool tlb = eAvenue::sAvenueType(tlt) ||
                      tlt == eBuildingType::road;
-    const bool brb = brt == eBuildingType::avenue ||
+    const bool brb = eAvenue::sAvenueType(brt) ||
                      brt == eBuildingType::road;
-    const bool blb = blt == eBuildingType::avenue ||
+    const bool blb = eAvenue::sAvenueType(blt) ||
                      blt == eBuildingType::road;
-    const bool trb = trt == eBuildingType::avenue ||
+    const bool trb = eAvenue::sAvenueType(trt) ||
                      trt == eBuildingType::road;
 
     eTileGetter tg1 = nullptr;
@@ -104,11 +109,11 @@ eAvenue::getTexture(const eTileSize size) const {
         const auto lt = l ? l->underBuildingType() : eBuildingType::none;
         const auto rt = r ? r->underBuildingType() : eBuildingType::none;
 
-        const bool lb = lt == eBuildingType::avenue ||
+        const bool lb = eAvenue::sAvenueType(lt) ||
                         lt == eBuildingType::road;
-        const bool bb = bt == eBuildingType::avenue ||
+        const bool bb = eAvenue::sAvenueType(bt) ||
                         bt == eBuildingType::road;
-        const bool rb = rt == eBuildingType::avenue ||
+        const bool rb = eAvenue::sAvenueType(rt) ||
                         rt == eBuildingType::road;
 
         collId = 4;

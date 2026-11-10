@@ -2245,8 +2245,27 @@ void eGameWidget::paintEvent(ePainter& p) {
             drawBuildCount(buildCount);
         }
 
+        if(mode == eBuildingMode::avenue ||
+           mode == eBuildingMode::boulevard) {
+            // the trees the drag would plant (eGameBoard::avenuePieces)
+            const auto type = eBuildingModeHelpers::toBuildingType(mode);
+            const auto pieces = mBoard->avenuePieces(
+                        mPressedTX, mPressedTY, mHoverTX, mHoverTY,
+                        type, mViewedCityId, ppid, mEditorMode);
+            const auto& tex = trrTexs.fBuildingBase;
+            for(const auto& p : pieces) {
+                for(const auto t : p.fTrees) {
+                    double rx;
+                    double ry;
+                    drawXY(t->x(), t->y(), rx, ry, 1, 1, t->altitude());
+                    tp.drawTexture(rx, ry, tex, eAlignment::top);
+                }
+            }
+            drawBuildCount(pieces.size());
+            return;
+        }
+
         if(mode == eBuildingMode::park ||
-           mode == eBuildingMode::avenue ||
            mode == eBuildingMode::wall) {
             int buildW = 0;
             int buildH = 0;
@@ -2262,11 +2281,6 @@ void eGameWidget::paintEvent(ePainter& p) {
                     const bool b = static_cast<bool>(terr & eTerrain::buildable);
                     if(!b) continue;
                     if(t->underBuilding()) continue;
-                    if(mode == eBuildingMode::avenue) {
-                        const bool hr = canBuildAvenue(t, mViewedCityId, ppid,
-                                                       mEditorMode);
-                        if(!hr) continue;
-                    }
                     const int a = t->altitude();
                     drawXY(x, y, rx, ry, 1, 1, a);
                     tp.drawTexture(rx, ry, tex, eAlignment::top);
@@ -2767,14 +2781,15 @@ void eGameWidget::paintEvent(ePainter& p) {
                 return canBuildVendor(tx, ty, eResourceType::chariot);
             };
         } break;
-        case eBuildingMode::avenue: {
-            canBuildFunc = [&](const int tx, const int ty,
-                               const int sw, const int sh) {
-                (void)sw;
-                (void)sh;
-                const auto t = mBoard->tile(tx, ty);
-                return canBuildAvenue(t, mViewedCityId, ppid, mEditorMode);
-            };
+        case eBuildingMode::avenue:
+        case eBuildingMode::boulevard: {
+            // green where the trees of the piece at the cursor would go
+            // (eGameBoard::avenuePieces), red if there are none
+            const auto type = eBuildingModeHelpers::toBuildingType(mode);
+            const bool ok = !mBoard->avenuePieces(
+                        mHoverTX, mHoverTY, mHoverTX, mHoverTY, type,
+                        mViewedCityId, ppid, mEditorMode, true).empty();
+            canBuildFunc = [ok](int, int, int, int) { return ok; };
         } break;
         case eBuildingMode::tower: {
             canBuildFunc = [&](const int tx, const int ty,
@@ -3700,9 +3715,23 @@ void eGameWidget::paintEvent(ePainter& p) {
             const auto b1 = e::make_shared<eCorinthianColumn>(*mBoard, mViewedCityId);
             ebs.emplace_back(mHoverTX, mHoverTY, b1);
         } break;
-        case eBuildingMode::avenue: {
-            const auto b1 = e::make_shared<eAvenue>(*mBoard, mViewedCityId);
-            ebs.emplace_back(mHoverTX, mHoverTY, b1);
+        case eBuildingMode::avenue:
+        case eBuildingMode::boulevard: {
+            const auto type = eBuildingModeHelpers::toBuildingType(mode);
+            const auto pieces = mBoard->avenuePieces(
+                        mHoverTX, mHoverTY, mHoverTX, mHoverTY, type,
+                        mViewedCityId, ppid, mEditorMode, true);
+            if(pieces.empty()) {
+                const auto b1 = e::make_shared<eAvenue>(
+                                    *mBoard, mViewedCityId, type);
+                ebs.emplace_back(mHoverTX, mHoverTY, b1);
+            } else {
+                for(const auto tt : pieces.front().fTrees) {
+                    const auto b1 = e::make_shared<eAvenue>(
+                                        *mBoard, mViewedCityId, type);
+                    ebs.emplace_back(tt->x(), tt->y(), b1);
+                }
+            }
         } break;
 
         case eBuildingMode::populationMonument: {
