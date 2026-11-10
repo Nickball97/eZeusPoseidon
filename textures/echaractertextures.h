@@ -68,6 +68,20 @@ struct eShepherdTextures : public eBasicCharacterTextures {
     eTextureCollection fFight;
 };
 
+// the sanctuary priest (SprMain 8105-8427): walking, dying, lifting a goat
+// or a sheep and carrying it on his shoulders
+struct ePriestTextures : public eBasicCharacterTextures {
+    ePriestTextures(SDL_Renderer* const renderer) :
+        eBasicCharacterTextures(renderer),
+        fPickGoat(renderer),
+        fPickSheep(renderer) {}
+
+    eTextureCollection fPickGoat;
+    std::vector<eTextureCollection> fCarryGoat;
+    eTextureCollection fPickSheep;
+    std::vector<eTextureCollection> fCarrySheep;
+};
+
 struct eOrangeTenderTextures : public eBasicCharacterTextures {
     using eBasicCharacterTextures::eBasicCharacterTextures;
 
@@ -230,6 +244,8 @@ public:
     void loadHorse();
     bool fShepherdLoaded = false;
     void loadShepherd();
+    bool fPriestLoaded = false;
+    void loadPriest();
     bool fMarbleMinerLoaded = false;
     void loadMarbleMiner();
     bool fSilverMinerLoaded = false;
@@ -514,6 +530,7 @@ public:
     eResourceCollectorTextures fDeerHunter;
 
     eShepherdTextures fShepherd;
+    ePriestTextures fPriest;
     eShepherdTextures fGoatherd;
 
     eBasicCharacterTextures fFoodVendor;

@@ -27,6 +27,7 @@ eTempleAltarBuilding::getTexture(const eTileSize size) const {
 std::vector<eOverlay> eTempleAltarBuilding::getOverlays(const eTileSize size) const {
     const int sizeId = static_cast<int>(size);
     const auto& blds = eGameTextures::buildings()[sizeId];
+    if(!sacrificing()) return {};
     const eTextureCollection* coll = nullptr;
     if(mSacrifice == eSacrifice::sheep) {
         eGameTextures::loadAltarSheepOverlay();
@@ -47,31 +48,6 @@ std::vector<eOverlay> eTempleAltarBuilding::getOverlays(const eTileSize size) co
     return result;
 }
 
-void eTempleAltarBuilding::timeChanged(const int by) {
-    mSacrificeTime += by;
-    if(mSacrificeTime > 25000) {
-        mSacrifice = eSacrifice::none;
-        if(mSacrificeTime > 100000) {
-            eSacrifice s = eSacrifice::goods;
-            auto& board = getBoard();
-            const auto hasChar = [&](const eCharacterType type) {
-                const auto& chars = board.characters();
-                for(const auto c : chars) {
-                    const auto t = c->type();
-                    if(t == type) return true;
-                }
-                return false;
-            };
-            if(hasChar(eCharacterType::bull)) {
-                s = eSacrifice::bull;
-            } else if(hasChar(eCharacterType::sheep)) {
-                s = eSacrifice::sheep;
-            }
-            startSacrifice(s);
-        }
-    }
-}
-
 void eTempleAltarBuilding::read(eReadStream& src) {
     eSanctBuilding::read(src);
     src >> mSacrifice;
@@ -84,7 +60,8 @@ void eTempleAltarBuilding::write(eWriteStream& dst) const {
     dst << mSacrificeTime;
 }
 
-void eTempleAltarBuilding::startSacrifice(const eSacrifice s) {
-    mSacrifice = s;
-    mSacrificeTime = 0;
+bool eTempleAltarBuilding::sacrificing() const {
+    if(mSacrifice == eSacrifice::none) return false;
+    const auto s = dynamic_cast<eSanctuary*>(monument());
+    return s && s->sacrificeShown();
 }

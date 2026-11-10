@@ -6,7 +6,6 @@ Status on 9 Nov 2026, after Phases 0-7 and the zeus.exe reading. Details and add
 
 | # | Missing | Source | What it would take |
 |---|---|---|---|
-| A2 | Priests walking sheep, goats or cattle to the altar for sacrifices | Citadel: figures, walkers/other (plan 5.6) | New walker, art and sanctuary logic (the original has "Priest", figure 65) |
 | A3 | Boulevard (3 wide; cost 15/24/30/36/45; appeal 3, -2 every 2 tiles, range 4) | Model BUILD_BOULEVARD, game text, Citadel (plan 7.1) | Graphics: not found in eZeus's images; unclear whether the original has art for it |
 | A4 | Ground that looks better with high appeal (four looks: below 0, 0-15, 16-29, 30+) | zeus.exe `0x004A0450` | Mapping the original's ground images by appeal |
 | A5 | Hotkeys not added: Shift+1-4 company bookmarks and 1-4 to select them; Tab for the overview map; M "freeze footprint"; F5-F7 window/resolution; pressing 1 twice for the full population report | Citadel: hotkeys | Overview map doesn't exist in eZeus; "freeze footprint" meaning unknown |
@@ -28,10 +27,11 @@ Status on 9 Nov 2026, after Phases 0-7 and the zeus.exe reading. Details and add
 | B8 | Workshops' finished-goods limits | Cap table and cart code (sculpture carts 400 units, others 100) | Which stock the cap applies to on the output side (eZeus keeps 8) |
 | B9 | Flat road paving (which road image by appeal) | Slope roads pave above appeal 4 | Flat roads weren't traced (eZeus uses the slope rule for all) |
 | B10 | Building appeal "+10 when a flag is set" | zeus.exe appeal code | What the flag is |
+| B11 | A sanctuary without sacrifices "loses its benefits" (Zeus manual) | The exe never shows its "This Sanctuary is inactive" text and nothing found turns a sanctuary off | Whether the manual describes a cut feature; not applied |
 
 ## C. Found in zeus.exe but not yet put into eZeus
 
-None left: C1 (military service mood) and C2 (11% tax coverage) were applied on 9 Nov 2026. A1 (enemy warships) was applied on 9 Nov 2026 too; still open there: a warship count in the scenario editor, and the warships of the original's special invasion record 0x8c (see original-exe-findings.md).
+None left: C1 (military service mood) and C2 (11% tax coverage) were applied on 9 Nov 2026. A1 (enemy warships) was applied on 9 Nov 2026 too; still open there: a warship count in the scenario editor, and the warships of the original's special invasion record 0x8c (see original-exe-findings.md). A2 (sanctuary priests and sacrifices) was applied on 10 Nov 2026; not traced there: the bull's standing animation and the Poseidon art of a priest leading cattle.
 
 ## D. Upstream eZeus gaps (GitHub issues, not original-game rules)
 

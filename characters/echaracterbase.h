@@ -173,7 +173,9 @@ enum class eCharacterType {
     thief,
     vandal,
 
-    enemyWarship
+    enemyWarship,
+
+    priest
 };
 
 class eCharacterBase {

@@ -1233,6 +1233,8 @@ eSoundVector* eSounds::getCharacterVoices(eCharacter* const c) {
         return &sInstance->mPhilosopherVoices;
     case eCharacterType::artisan:
         return &sInstance->mArtisanVoices;
+    case eCharacterType::priest:
+        return &sInstance->mPriestVoices;
     case eCharacterType::astronomer:
         return &sInstance->mAstronomerVoices;
     case eCharacterType::inventor:

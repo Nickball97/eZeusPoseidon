@@ -57,6 +57,7 @@ public:
     static void loadSheep();
     static void loadHorse();
     static void loadShepherd();
+    static void loadPriest();
     static void loadMarbleMiner();
     static void loadSilverMiner();
     static void loadArcher();

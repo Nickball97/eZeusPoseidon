@@ -215,6 +215,7 @@ SOURCES += \
         characters/actions/etraderaction.cpp \
         characters/actions/etriremeaction.cpp \
         characters/actions/eenemywarshipaction.cpp \
+        characters/actions/epriestaction.cpp \
         characters/actions/ekrakendefenderaction.cpp \
         characters/actions/eguardiandefenderaction.cpp \
         characters/actions/eoutlawaction.cpp \
@@ -281,6 +282,7 @@ SOURCES += \
         characters/eelitecitizen.cpp \
         characters/eenemyboat.cpp \
         characters/eenemywarship.cpp \
+        characters/epriest.cpp \
         characters/eenlistedforces.cpp \
         characters/efightingcharacter.cpp \
         characters/efightingpatroler.cpp \
@@ -922,6 +924,7 @@ HEADERS += \
     characters/actions/etraderaction.h \
     characters/actions/etriremeaction.h \
     characters/actions/eenemywarshipaction.h \
+    characters/actions/epriestaction.h \
     characters/actions/ekrakendefenderaction.h \
     characters/actions/eguardiandefenderaction.h \
     characters/actions/eoutlawaction.h \
@@ -987,6 +990,7 @@ HEADERS += \
     characters/eelitecitizen.h \
     characters/eenemyboat.h \
     characters/eenemywarship.h \
+    characters/epriest.h \
     characters/eenlistedforces.h \
     characters/efightingcharacter.h \
     characters/efightingpatroler.h \

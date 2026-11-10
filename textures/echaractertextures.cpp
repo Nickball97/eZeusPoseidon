@@ -116,6 +116,11 @@
 #include "spriteData/shepherd45.h"
 #include "spriteData/shepherd60.h"
 
+#include "spriteData/priest15.h"
+#include "spriteData/priest30.h"
+#include "spriteData/priest45.h"
+#include "spriteData/priest60.h"
+
 #include "spriteData/marbleMiner15.h"
 #include "spriteData/marbleMiner30.h"
 #include "spriteData/marbleMiner45.h"
@@ -321,6 +326,7 @@ eCharacterTextures::eCharacterTextures(const int tileW, const int tileH,
     fDeerHunter(renderer),
 
     fShepherd(renderer),
+    fPriest(renderer),
     fGoatherd(renderer),
 
     fFoodVendor(renderer),
@@ -1007,6 +1013,34 @@ void eCharacterTextures::loadShepherd() {
     for(int i = 3511; i < 3519; i++) {
         loader.load(3415, i, fShepherd.fDie);
     }
+}
+
+// priest frames (exe art 0x6692-0x6697): walk 8105, die 8201, lifting a goat
+// 8209 (18 frames), carrying it 8227, lifting a sheep 8323 (9 frames),
+// carrying it 8332
+void eCharacterTextures::loadPriest() {
+    if(fPriestLoaded) return;
+    fPriestLoaded = true;
+    const auto& sds = spriteData(fTileH,
+                                 ePriestSpriteData15,
+                                 ePriestSpriteData30,
+                                 ePriestSpriteData45,
+                                 ePriestSpriteData60);
+    eSpriteLoader loader(fTileH, "priest", sds,
+                         &eSprMainOffset, fRenderer);
+
+    loader.loadSkipFlipped(8105, 8105, 8201, fPriest.fWalk);
+    for(int i = 8201; i < 8209; i++) {
+        loader.load(8105, i, fPriest.fDie);
+    }
+    for(int i = 8209; i < 8227; i++) {
+        loader.load(8105, i, fPriest.fPickGoat);
+    }
+    loader.loadSkipFlipped(8105, 8227, 8323, fPriest.fCarryGoat);
+    for(int i = 8323; i < 8332; i++) {
+        loader.load(8105, i, fPriest.fPickSheep);
+    }
+    loader.loadSkipFlipped(8105, 8332, 8428, fPriest.fCarrySheep);
 }
 
 void eCharacterTextures::loadMarbleMiner() {

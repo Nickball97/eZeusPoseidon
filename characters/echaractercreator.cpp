@@ -93,6 +93,7 @@
 #include "characters/etrireme.h"
 #include "characters/eenemyboat.h"
 #include "characters/eenemywarship.h"
+#include "characters/epriest.h"
 #include "characters/eorichalcminer.h"
 
 stdsptr<eCharacter> eCharacter::sCreate(
@@ -357,6 +358,8 @@ stdsptr<eCharacter> eCharacter::sCreate(
         return e::make_shared<eEnemyBoat>(board);
     case eCharacterType::enemyWarship:
         return e::make_shared<eEnemyWarship>(board);
+    case eCharacterType::priest:
+        return e::make_shared<ePriest>(board);
     }
     return nullptr;
 }

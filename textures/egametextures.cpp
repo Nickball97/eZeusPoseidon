@@ -210,6 +210,13 @@ void eGameTextures::loadShepherd() {
     });
 }
 
+void eGameTextures::loadPriest() {
+    loadTexture([](const int i) {
+        auto& c = sCharacterTextures[i];
+        c.loadPriest();
+    });
+}
+
 void eGameTextures::loadMarbleMiner() {
     loadTexture([](const int i) {
         auto& c = sCharacterTextures[i];

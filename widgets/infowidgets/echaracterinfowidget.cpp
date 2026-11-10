@@ -1,6 +1,8 @@
 #include "echaracterinfowidget.h"
 
 #include "characters/ecarttransporter.h"
+#include "characters/epriest.h"
+#include "characters/actions/epriestaction.h"
 #include "characters/actions/ecarttransporteraction.h"
 #include "characters/egrower.h"
 #include "characters/ehunter.h"
@@ -232,6 +234,8 @@ std::shared_ptr<eTexture> gCharPortrait(
         return zp.getTexture(64);
     case eCharacterType::artisan:
         return zp.getTexture(58);
+    case eCharacterType::priest:
+        return zp.getTexture(65);
     case eCharacterType::wolf:
         return zp.getTexture(59);
     case eCharacterType::waterDistributor:
@@ -576,6 +580,8 @@ std::string gCharOccupation(
         return eLanguage::zeusText(64, 64);
     case eCharacterType::artisan:
         return eLanguage::zeusText(64, 58);
+    case eCharacterType::priest:
+        return eLanguage::zeusText(64, 65);
     case eCharacterType::wolf:
         return eLanguage::zeusText(64, 59);
     case eCharacterType::waterDistributor:
@@ -1229,6 +1235,28 @@ eCharMessage gCharMessage(eCharacter * const c) {
             stringId = g;
         }
         groupId = 221;
+    } break;
+    case eCharacterType::priest: {
+        // the priest's own lines (text group 237): 0 danger, 1 looking
+        // for a goat, 2-4 to a sheep, 5 looking for cattle, 6 to a bull
+        groupId = 237;
+        const auto p = static_cast<ePriest*>(c);
+        const auto pa = dynamic_cast<ePriestAction*>(c->action());
+        const auto an = pa ? pa->animal() : nullptr;
+        const bool cattle = an && an->type() != eCharacterType::sheep &&
+                            an->type() != eCharacterType::goat;
+        if(enemyImmortal) {
+            stringId = 0;
+        } else if(p->load() == ePriestLoad::sheep ||
+                  p->load() == ePriestLoad::goat) {
+            stringId = 2 + eRand::rand() % 3;
+        } else if(p->load() == ePriestLoad::cattle) {
+            stringId = 6;
+        } else if(cattle) {
+            stringId = 5;
+        } else {
+            stringId = 1;
+        }
     } break;
     case eCharacterType::astronomer: {
         if(enemyImmortal) {

@@ -9,6 +9,8 @@
 #include "engine/edate.h"
 
 class eBuildingTextures;
+class eTempleAltarBuilding;
+enum class eSacrifice;
 
 enum class eHelpDenialReason {
     tooSoon,
@@ -91,7 +93,39 @@ public:
     void spawnGuardian();
 
     bool sacrificing() const;
+
+    // Priests and sacrifices, after the original game (zeus.exe
+    // 0x004E97D0 sends priests, 0x004EA1A0 sacrifices, 0x004EA2B0 a
+    // priest gone; see original-exe-findings.md):
+    // - every cycle (16 a month) a finished, fully staffed sanctuary
+    //   counts a timer down; while it is below 20 it sends a priest, up
+    //   to 3 out at once for Zeus, Poseidon, Hades and Hera, 2 for
+    //   Demeter, Apollo, Artemis, Athena and Atlas and 1 for the others
+    // - a sacrifice sets the timer to 24 (the next priest leaves 5
+    //   cycles later); above 24 it goes back to 22
+    // - a priest at the altar waits until every other priest sent out
+    //   has come back and no sacrifice is being shown; a sacrifice is
+    //   shown until the sanctuary sends a priest into its last free slot
+    eTempleAltarBuilding* altar() const;
+    eTile* priestTile() const;
+    int maxPriests() const;
+    void priestArrived(eCharacter* const p);
+    bool tryToSacrifice(const eSacrifice s);
+    bool sacrificeShown() const { return mSacrificeShown; }
 private:
+    void priestCycle();
+    void sendPriest();
+
+    struct eSanctPriest {
+        stdptr<eCharacter> fC;
+        bool fArrived = false;
+    };
+    std::vector<eSanctPriest> mPriests;
+    int mPriestTimer = 22;
+    int mPriestCycleTime = 0;
+    int mPriestsEnRoute = 0;
+    bool mSacrificeShown = false;
+
     stdptr<eGod> mGod;
     bool mGodAbroad = false;
     int mWolfHuntCheck = 0; // not saved

@@ -46,6 +46,8 @@
 #include "ezeussanctuary.h"
 
 #include "etemplealtarbuilding.h"
+#include "characters/epriest.h"
+#include "characters/actions/epriestaction.h"
 #include "enumbers.h"
 
 #include <algorithm>
@@ -382,7 +384,117 @@ bool eSanctuary::sacrificing() const {
     return false;
 }
 
+eTempleAltarBuilding* eSanctuary::altar() const {
+    for(const auto& e : mElements) {
+        if(e->type() != eBuildingType::templeAltar) continue;
+        return static_cast<eTempleAltarBuilding*>(e.get());
+    }
+    return nullptr;
+}
+
+eTile* eSanctuary::priestTile() const {
+    const auto a = altar();
+    if(!a) return nullptr;
+    const auto ct = a->centerTile();
+    if(!ct) return nullptr;
+    auto& board = getBoard();
+    return eTileHelper::closestRoad(ct->x(), ct->y(), board);
+}
+
+int eSanctuary::maxPriests() const {
+    // exe 0x004EA330 by god
+    switch(godType()) {
+    case eGodType::zeus:
+    case eGodType::poseidon:
+    case eGodType::hades:
+    case eGodType::hera:
+        return 3;
+    case eGodType::demeter:
+    case eGodType::apollo:
+    case eGodType::artemis:
+    case eGodType::athena:
+    case eGodType::atlas:
+        return 2;
+    default:
+        return 1;
+    }
+}
+
+void eSanctuary::priestCycle() {
+    // priests gone: one not yet back no longer counts as on its way
+    for(int i = 0; i < static_cast<int>(mPriests.size()); i++) {
+        const auto& p = mPriests[i];
+        if(p.fC && !p.fC->dead() && p.fC->tile()) continue;
+        if(!p.fArrived) {
+            mPriestsEnRoute = std::max(0, mPriestsEnRoute - 1);
+        }
+        mPriests.erase(mPriests.begin() + i);
+        i--;
+    }
+    if(mPriestTimer > 24) mPriestTimer = 22;
+    if(employed() <= 0) return;
+    // the original counts down a byte: 0 becomes 255
+    mPriestTimer = (mPriestTimer + 255) % 256;
+    if(mPriestTimer >= 20) return;
+    // sacrifices need the full staff (Model column EMP; the sanctuary's
+    // text: "lacks a few priests. No sacrifices can be conducted")
+    if(employed() < maxEmployees()) return;
+    if(!altar()) return;
+    if(static_cast<int>(mPriests.size()) >= maxPriests()) return;
+    sendPriest();
+}
+
+void eSanctuary::sendPriest() {
+    const auto t = priestTile();
+    if(!t) return;
+    auto& board = getBoard();
+    const auto c = e::make_shared<ePriest>(board);
+    c->setBothCityIds(cityId());
+    c->changeTile(t);
+    const auto a = e::make_shared<ePriestAction>(c.get());
+    a->setSanctuary(this);
+    c->setAction(a);
+    mPriests.push_back({c.get(), false});
+    mPriestsEnRoute++;
+    if(static_cast<int>(mPriests.size()) == maxPriests()) {
+        if(const auto al = altar()) al->setSacrifice(eSacrifice::none);
+    }
+}
+
+void eSanctuary::priestArrived(eCharacter* const p) {
+    for(auto& pp : mPriests) {
+        if(pp.fC.get() != p) continue;
+        if(pp.fArrived) return;
+        pp.fArrived = true;
+        mPriestsEnRoute--;
+        return;
+    }
+}
+
+bool eSanctuary::tryToSacrifice(const eSacrifice s) {
+    const auto a = altar();
+    if(!a) return false;
+    if(a->sacrifice() == eSacrifice::none) mSacrificeShown = false;
+    if(mPriestsEnRoute >= 1 || mSacrificeShown) return false;
+    mSacrificeShown = true;
+    a->setSacrifice(s);
+    mPriestsEnRoute--;
+    mPriestTimer = 24;
+    if(mPriestsEnRoute == -maxPriests()) mPriestsEnRoute = 0;
+    return true;
+}
+
 void eSanctuary::timeChanged(const int by) {
+    if(finished()) {
+        // one of the original's 16 cycles a month
+        const int cycle = static_cast<int>(365.*eNumbers::sDayLength/(12*16));
+        mPriestCycleTime += by;
+        while(mPriestCycleTime >= cycle) {
+            mPriestCycleTime -= cycle;
+            priestCycle();
+        }
+    }
+
     mHelpTimer += by;
     if(mOracleTimer < eNumbers::sGodHelpPeriod) mOracleTimer += by;
     eMonument::timeChanged(by);
@@ -514,6 +626,22 @@ void eSanctuary::read(eReadStream& src) {
             mGuardian = c;
         });
     }
+    if(src.formatVersion() >= eFileFormat::sanctuaryPriests) {
+        src >> mPriestTimer;
+        src >> mPriestCycleTime;
+        src >> mPriestsEnRoute;
+        src >> mSacrificeShown;
+        int np;
+        src >> np;
+        for(int i = 0; i < np; i++) {
+            const int id = static_cast<int>(mPriests.size());
+            mPriests.emplace_back();
+            src.readCharacter(&board, [this, id](eCharacter* const c) {
+                mPriests[id].fC = c;
+            });
+            src >> mPriests[id].fArrived;
+        }
+    }
 }
 
 void eSanctuary::write(eWriteStream& dst) const {
@@ -539,6 +667,16 @@ void eSanctuary::write(eWriteStream& dst) const {
     dst << mOracleTimer;
     dst.writeCharacter(mKraken);
     dst.writeCharacter(mGuardian);
+
+    dst << mPriestTimer;
+    dst << mPriestCycleTime;
+    dst << mPriestsEnRoute;
+    dst << mSacrificeShown;
+    dst << static_cast<int>(mPriests.size());
+    for(const auto& p : mPriests) {
+        dst.writeCharacter(p.fC);
+        dst << p.fArrived;
+    }
 }
 
 std::vector<eTile*> eSanctuary::warriorTiles() const {
