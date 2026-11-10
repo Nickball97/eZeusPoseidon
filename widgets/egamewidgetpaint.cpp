@@ -1244,6 +1244,7 @@ void eGameWidget::paintEvent(ePainter& p) {
                     const bool cbig = ct == eCharacterType::scylla ||
                                       ct == eCharacterType::kraken ||
                                       ct == eCharacterType::enemyBoat ||
+                                      ct == eCharacterType::enemyWarship ||
                                       ct == eCharacterType::trireme ||
                                       ct == eCharacterType::tradeBoat;
                     if(big != cbig) continue;

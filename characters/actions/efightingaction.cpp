@@ -169,7 +169,8 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                     ct == eCharacterType::archerPoseidon ||
                     ct == eCharacterType::mayanArcher ||
                     ct == eCharacterType::archer ||
-                    ct == eCharacterType::trireme) {
+                    ct == eCharacterType::trireme ||
+                    ct == eCharacterType::enemyWarship) {
                     eMissile::sCreate<eArrowMissile>(brd, tx, ty, 0.5,
                                                      ttx, tty, 0.5, 0.25*dist);
                 } else if(ct == eCharacterType::trojanSpearthrower ||
@@ -221,6 +222,7 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
             return eLookForEnemyState::attacking;
         }
     }
+    if(ownTargeting()) return eLookForEnemyState::none;
     // Poseidon's Kraken guards the city's waters (Zeus manual): it only
     // goes after enemies on water, and it is the one defender that can
     // attack Oceanids while they are under water (Poseidon manual)
@@ -236,18 +238,7 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
 
     const auto setAttackTarget = [&](const stdsptr<eCharacter>& cc,
                                      const bool range) {
-        const vec2d ccpos{cc->absX(), cc->absY()};
-        const vec2d posdif = ccpos - cpos;
-        mAttackTarget = eAttackTarget(cc.get());
-        mAttack = true;
-        c->setPlayFightSound(true);
-        mAttackTime = 0;
-        mSavedAction = c->actionType();
-        c->setActionType(range ? eCharacterActionType::fight2 :
-                             eCharacterActionType::fight);
-        mAngle = posdif.angle();
-        const auto o = sAngleOrientation(mAngle);
-        c->setOrientation(o);
+        startAttack(cc.get(), range);
     };
 
     mBuildingAttack += by;
@@ -278,6 +269,7 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                     if(cc->isImmortal()) {
                         thirdOption = cc;
                     } else if(cctype == eCharacterType::enemyBoat ||
+                              cctype == eCharacterType::enemyWarship ||
                               cctype == eCharacterType::trireme) {
                         secondOption = cc;
                     }
@@ -321,6 +313,7 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                             if(cc->isImmortal()) {
                                 thirdOption = cc;
                             } else if(cctype == eCharacterType::enemyBoat ||
+                                      cctype == eCharacterType::enemyWarship ||
                                       cctype == eCharacterType::trireme) {
                                 secondOption = cc;
                             }
@@ -377,6 +370,23 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
     }
 
     return eLookForEnemyState::none;
+}
+
+void eFightingAction::startAttack(eCharacter* const cc, const bool range) {
+    const auto c = character();
+    const vec2d cpos{c->absX(), c->absY()};
+    const vec2d ccpos{cc->absX(), cc->absY()};
+    const vec2d posdif = ccpos - cpos;
+    mAttackTarget = eAttackTarget(cc);
+    mAttack = true;
+    c->setPlayFightSound(true);
+    mAttackTime = 0;
+    mSavedAction = c->actionType();
+    c->setActionType(range ? eCharacterActionType::fight2 :
+                         eCharacterActionType::fight);
+    mAngle = posdif.angle();
+    const auto o = sAngleOrientation(mAngle);
+    c->setOrientation(o);
 }
 
 bool eFightingAction::attackBuilding(eTile* const t, const bool range) {

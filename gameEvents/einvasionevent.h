@@ -54,6 +54,11 @@ public:
     bool hardcoded() const { return mHardcoded; }
     void setHardcoded(const bool h) { mHardcoded = h; }
 
+    // warships that come with a sea invasion (the campaign event's
+    // warship count, zeus.exe 0x00503FD0); none for Oceanids
+    int warships() const { return mWarships; }
+    void setWarships(const int w) { mWarships = w; }
+
     bool activeInvasions() const;
     void addInvasionHandler(eInvasionHandler* const i);
     void removeInvasionHandler(eInvasionHandler* const i);
@@ -80,6 +85,7 @@ private:
     std::vector<eInvasionHandler*> mHandlers;
 
     bool mHardcoded = true;
+    int mWarships = 0;
 
     stdptr<ePlayerConquestEvent> mConquestEvent;
     eEnlistedForces mForces;

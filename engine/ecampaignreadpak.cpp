@@ -917,6 +917,11 @@ void readEpisodeEvents(eEpisode& ep, ZeusFile& file,
             ee->setMinPointId(cityMin);
             ee->setMaxPointId(cityMax);
 
+            // the warship count shares this field; the original reads
+            // its low byte (zeus.exe 0x00503FD0, record byte 0x36, which
+            // is this field: the exe's records start 2 bytes earlier)
+            ee->setWarships(godMonsterHeroId & 0xFF);
+
             e = ee;
         } break;
         case ePakEventType::rivalArmyAway: {

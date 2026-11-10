@@ -77,7 +77,8 @@ enum class eCharActionType {
     krakenDefenderAction,
     outlawAction,
     guardianDefenderAction,
-    artemisHuntAction
+    artemisHuntAction,
+    enemyWarshipAction
 };
 
 class eCharacterAction : public eStdSelfRef {

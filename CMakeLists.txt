@@ -429,6 +429,8 @@ add_executable(eZeus
     characters/actions/etraderaction.h
     characters/actions/etriremeaction.cpp
     characters/actions/etriremeaction.h
+    characters/actions/eenemywarshipaction.cpp
+    characters/actions/eenemywarshipaction.h
     characters/actions/ekrakendefenderaction.cpp
     characters/actions/ekrakendefenderaction.h
     characters/actions/eguardiandefenderaction.cpp
@@ -559,6 +561,8 @@ add_executable(eZeus
     characters/eelitecitizen.h
     characters/eenemyboat.cpp
     characters/eenemyboat.h
+    characters/eenemywarship.cpp
+    characters/eenemywarship.h
     characters/eenlistedforces.cpp
     characters/eenlistedforces.h
     characters/efightingcharacter.cpp

@@ -1,6 +1,7 @@
 #include "eboardcity.h"
 
 #include "buildings/ebuilding.h"
+#include "characters/echaracter.h"
 #include "buildings/eemployingbuilding.h"
 #include "buildings/estoragebuilding.h"
 #include "buildings/esmallhouse.h"
@@ -545,7 +546,16 @@ void eBoardCity::updateCityDefense() {
 void eBoardCity::nextMonth() {
     payPensions();
 
-    if(hasActiveInvasions()) mPeaceMonths = 0;
+    // the original also counts enemy ships still in the city's waters
+    // (figures 63-64, 0x00483C10)
+    bool enemyShips = false;
+    for(const auto c : mBoard.characters()) {
+        if(c->type() != eCharacterType::enemyWarship) continue;
+        if(c->onCityId() != mId || c->dead()) continue;
+        enemyShips = true;
+        break;
+    }
+    if(hasActiveInvasions() || enemyShips) mPeaceMonths = 0;
     else mPeaceMonths = std::min(mPeaceMonths + 1, 1000);
 
     updateHealthTarget();

@@ -28,6 +28,7 @@ namespace eFileFormat {
         buildingRiskCounters,
         worldCityRescue,
         cityPeaceMonths,
+        invasionWarships,
 
         nextVersion
     };

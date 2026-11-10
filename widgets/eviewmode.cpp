@@ -210,7 +210,8 @@ bool eViewModeHelpers::characterVisible(
         const int iMax = static_cast<int>(eCharacterType::greekHorseman);
         if(ic >= iMin && ic <= iMax) return true;
         if(c == eCharacterType::trireme ||
-           c == eCharacterType::enemyBoat) return true;
+           c == eCharacterType::enemyBoat ||
+           c == eCharacterType::enemyWarship) return true;
         return c == eCharacterType::watchman;
     } break;
 

@@ -53,6 +53,7 @@
 #include "eattackcityaction.h"
 
 #include "etriremeaction.h"
+#include "eenemywarshipaction.h"
 #include "ekrakendefenderaction.h"
 #include "eguardiandefenderaction.h"
 #include "eoutlawaction.h"
@@ -168,6 +169,8 @@ stdsptr<eCharacterAction> eCharacterAction::sCreate(
 
     case eCharActionType::triremeAction:
         return e::make_shared<eTriremeAction>(nullptr, c);
+    case eCharActionType::enemyWarshipAction:
+        return e::make_shared<eEnemyWarshipAction>(c);
     case eCharActionType::krakenDefenderAction:
         return e::make_shared<eKrakenDefenderAction>(c);
     case eCharActionType::guardianDefenderAction:

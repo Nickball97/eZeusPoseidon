@@ -171,7 +171,9 @@ enum class eCharacterType {
 
     mugger,
     thief,
-    vandal
+    vandal,
+
+    enemyWarship
 };
 
 class eCharacterBase {

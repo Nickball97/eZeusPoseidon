@@ -4,6 +4,7 @@
 #include "efightingcharacter.h"
 #include "engine/egameboard.h"
 #include "engine/edifficulty.h"
+#include "engine/eworldcity.h"
 #include "enumbers.h"
 #include "buildings/sanctuaries/esanctuary.h"
 
@@ -97,6 +98,19 @@ const eS sRefRabble = playerRabble(2);
 
 const eFigureStats eFigureStats::sAmazonWarrior = row(120, 12, 4, 2, 0, 0, 0, 7, 25);
 const eFigureStats eFigureStats::sAmazonArcher = row(80, 5, 2, 3, 8, 11, 75, 7, 75);
+
+eFigureStats eFigureStats::sEnemyWarship(const int nationality) {
+    // Greek ("Non Player Greek Trireme"), Trojan, Persian, Centaur,
+    // Amazon, Egyptian, Mayan, Phoenician, Oceanid, Atlantean: the order
+    // of eNationality and of the Model file
+    const eS r[10] = {
+        row(300, 90, 4, 5, 20, 9, 80, 8, 100), row(300, 90, 4, 5, 20, 9, 80, 8, 100),
+        row(300, 100, 3, 5, 20, 9, 80, 9, 100), row(300, 80, 6, 8, 24, 9, 100, 7, 100),
+        row(300, 100, 3, 5, 16, 9, 75, 7, 100), row(300, 90, 4, 5, 20, 9, 80, 7, 100),
+        row(200, 80, 3, 5, 16, 9, 80, 7, 100), row(350, 120, 3, 5, 30, 10, 75, 9, 100),
+        row(350, 100, 6, 8, 24, 9, 80, 9, 100), row(300, 100, 3, 5, 24, 11, 75, 8, 100)};
+    return r[std::clamp(nationality, 0, 9)];
+}
 
 eFigureStats eFigureStats::sTowerSentry(const eDifficulty diff) {
     const int d = std::clamp(static_cast<int>(diff), 0, 4);
@@ -230,6 +244,12 @@ bool eFigureStats::sGet(const eCharacterType type,
 }
 
 void eFigureStats::sApply(eCharacter* const c, const bool setHP) {
+    if(c->type() == eCharacterType::enemyWarship) {
+        const auto wc = c->getBoard().world().cityWithId(c->cityId());
+        const int nat = wc ? static_cast<int>(wc->nationality()) : 0;
+        sApply(c, sEnemyWarship(nat), setHP);
+        return;
+    }
     eFigureStats s;
     if(!sGet(c->type(), sDifficulty(c->getBoard()), s)) return;
     sApply(c, s, setHP);

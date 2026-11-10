@@ -1153,6 +1153,10 @@ int eDifficultyHelpers::soliderBribe(const eDifficulty diff,
     case eCharacterType::horseman:
         base = 50;
         break;
+    case eCharacterType::enemyWarship:
+        // 800 drachmas a warship on Hero (Citadel of Poseidon, bribes)
+        base = 200;
+        break;
     default:
         return 0;
     }

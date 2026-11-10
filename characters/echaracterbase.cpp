@@ -43,6 +43,7 @@ bool eCharacterBase::isFighter() const {
     if(s) return true;
     const auto t = type();
     return t == eCharacterType::enemyBoat ||
+           t == eCharacterType::enemyWarship ||
            t == eCharacterType::trireme;
 }
 
@@ -50,6 +51,7 @@ bool eCharacterBase::isBoat() const {
     const auto t = type();
     return t == eCharacterType::tradeBoat ||
            t == eCharacterType::enemyBoat ||
+           t == eCharacterType::enemyWarship ||
            t == eCharacterType::trireme ||
            t == eCharacterType::fishingBoat;
 }

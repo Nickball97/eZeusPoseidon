@@ -44,6 +44,9 @@ struct eFigureStats {
     // Amazons are one character type with two kinds of soldier
     static const eFigureStats sAmazonWarrior;
     static const eFigureStats sAmazonArcher;
+    // an invader's warship ("<Nation> Warship" rows, the same at every
+    // difficulty); nationality as eNationality's number
+    static eFigureStats sEnemyWarship(const int nationality);
     // the tower's own shooter ("Tower Sentry")
     static eFigureStats sTowerSentry(const eDifficulty diff);
     static eDifficulty sDifficulty(eGameBoard& board);

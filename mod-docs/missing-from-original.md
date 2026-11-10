@@ -6,7 +6,6 @@ Status on 9 Nov 2026, after Phases 0-7 and the zeus.exe reading. Details and add
 
 | # | Missing | Source | What it would take |
 |---|---|---|---|
-| A1 | Enemy warships (trireme/frigate rows for every nation) and the 800-drachma bribe per warship | Citadel: enemy_figures, enemy_bribes (plan 5.2) | New enemy ship figure and its fighting behaviour (the original has "Enemy Transport", figure 63, and "Enemy Warship", figure 64). Art is already in eZeus: the Citadel shows only two warship looks, the Greek one (the player's trireme, SprMain 6569) and one for every other nation (SprMain 4833, which eZeus already uses for its enemy transport) |
 | A2 | Priests walking sheep, goats or cattle to the altar for sacrifices | Citadel: figures, walkers/other (plan 5.6) | New walker, art and sanctuary logic (the original has "Priest", figure 65) |
 | A3 | Boulevard (3 wide; cost 15/24/30/36/45; appeal 3, -2 every 2 tiles, range 4) | Model BUILD_BOULEVARD, game text, Citadel (plan 7.1) | Graphics: not found in eZeus's images; unclear whether the original has art for it |
 | A4 | Ground that looks better with high appeal (four looks: below 0, 0-15, 16-29, 30+) | zeus.exe `0x004A0450` | Mapping the original's ground images by appeal |
@@ -32,7 +31,7 @@ Status on 9 Nov 2026, after Phases 0-7 and the zeus.exe reading. Details and add
 
 ## C. Found in zeus.exe but not yet put into eZeus
 
-None left: C1 (military service mood) and C2 (11% tax coverage) were applied on 9 Nov 2026.
+None left: C1 (military service mood) and C2 (11% tax coverage) were applied on 9 Nov 2026. A1 (enemy warships) was applied on 9 Nov 2026 too; still open there: a warship count in the scenario editor, and the warships of the original's special invasion record 0x8c (see original-exe-findings.md).
 
 ## D. Upstream eZeus gaps (GitHub issues, not original-game rules)
 

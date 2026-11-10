@@ -228,6 +228,8 @@ std::shared_ptr<eTexture> gCharPortrait(
 
     case eCharacterType::trireme:
         return zp.getTexture(57);
+    case eCharacterType::enemyWarship:
+        return zp.getTexture(64);
     case eCharacterType::artisan:
         return zp.getTexture(58);
     case eCharacterType::wolf:
@@ -570,6 +572,8 @@ std::string gCharOccupation(
 
     case eCharacterType::trireme:
         return eLanguage::zeusText(64, 57);
+    case eCharacterType::enemyWarship:
+        return eLanguage::zeusText(64, 64);
     case eCharacterType::artisan:
         return eLanguage::zeusText(64, 58);
     case eCharacterType::wolf:
