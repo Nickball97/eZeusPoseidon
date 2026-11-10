@@ -27,6 +27,7 @@ namespace eFileFormat {
         eliteFailedChecks,
         buildingRiskCounters,
         worldCityRescue,
+        cityPeaceMonths,
 
         nextVersion
     };

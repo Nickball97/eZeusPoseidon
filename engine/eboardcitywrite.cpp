@@ -158,4 +158,5 @@ void eBoardCity::write(eWriteStream& dst) const {
     dst << mHealthCycle;
     dst << mOutbreaksThisYear;
     dst << mOutbreakThisMonth;
+    dst << mPeaceMonths;
 }

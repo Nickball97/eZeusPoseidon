@@ -335,7 +335,9 @@ void eNumbers::sLoad(const std::string& path) {
     // ModelTax_Sentiment_Model.txt: "If tax coverage is very low, the first
     // tax rate numbers are used." The file does not say how low; 20% is a
     // chosen value, not from the original.
-    loadD("very_low_tax_coverage_d", sVeryLowTaxCoverage, 0.05, 0, 1);
+    // under 11% tax coverage the mood uses the "no taxes" row (original exe
+    // 0x00567120)
+    loadD("very_low_tax_coverage_d", sVeryLowTaxCoverage, 0.11, 0, 1);
 
     loadI("reinforcements_travel_time_i", sReinforcementsTravelTime, 50, 1, 1000);
     loadI("army_travel_time_i", sArmyTravelTime, 200, 1, 1000);

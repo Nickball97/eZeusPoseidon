@@ -32,10 +32,7 @@ Status on 9 Nov 2026, after Phases 0-7 and the zeus.exe reading. Details and add
 
 ## C. Found in zeus.exe but not yet put into eZeus
 
-| # | Rule | Source | Note |
-|---|---|---|---|
-| C1 | Sixth mood factor, probably military service: companies away from their forts lower mood -1 to -5 (1-2 / 3-5 / 6-8 / 9-12 / 13+ companies), after 2+ months of peace | `0x00566E70` | Not certain it is "away" |
-| C2 | The tax mood factor uses the "no taxes" row when tax coverage is under 11% | `0x00567120` | eZeus uses 5% (from an earlier source) |
+None left: C1 (military service mood) and C2 (11% tax coverage) were applied on 9 Nov 2026.
 
 ## D. Upstream eZeus gaps (GitHub issues, not original-game rules)
 

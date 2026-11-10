@@ -599,6 +599,8 @@ private:
     int mUnrest = 0; // percent
     int mPopularity = 0;
     int mMood = 60;
+    // months in a row with no enemies in the city (original exe 0x00483C10)
+    int mPeaceMonths = 0;
     int mMoodTimer = 0;
     bool mMoodActive = false; // the city has reached 350 people
     void updateMood();

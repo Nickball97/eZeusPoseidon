@@ -219,4 +219,7 @@ void eBoardCity::read(eReadStream& src) {
         src >> mOutbreaksThisYear;
         src >> mOutbreakThisMonth;
     }
+    if(src.formatVersion() >= eFileFormat::cityPeaceMonths) {
+        src >> mPeaceMonths;
+    }
 }

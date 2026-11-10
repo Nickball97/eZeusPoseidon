@@ -29,6 +29,7 @@
 #include "gameEvents/earmyreturnevent.h"
 #include "engine/emilitaryaid.h"
 #include "spawners/ebanner.h"
+#include "characters/esoldierbanner.h"
 #include "einvasionhandler.h"
 
 #include "elanguage.h"
@@ -543,6 +544,9 @@ void eBoardCity::updateCityDefense() {
 
 void eBoardCity::nextMonth() {
     payPensions();
+
+    if(hasActiveInvasions()) mPeaceMonths = 0;
+    else mPeaceMonths = std::min(mPeaceMonths + 1, 1000);
 
     updateHealthTarget();
     mOutbreakThisMonth = false;
@@ -2708,8 +2712,11 @@ void eBoardCity::updateMood() {
     const auto p = owningPlayer();
     const auto diff = p ? mBoard.difficulty(owningPlayerId()) : eDifficulty::hero;
 
-    // taxes: the difficulty's tax sentiment table
-    const int taxes = neg(eDifficultyHelpers::taxSentiment(diff, mTaxRate));
+    // taxes: the difficulty's tax sentiment table; under 11% tax coverage
+    // the "no taxes" row is used (original exe 0x00567120)
+    const auto taxRow = taxCoverage() < eNumbers::sVeryLowTaxCoverage ?
+                            eTaxRate::none : mTaxRate;
+    const int taxes = neg(eDifficultyHelpers::taxSentiment(diff, taxRow));
     // wages: none -10, very low -5, low -2, normal 0, high +2, very high +4
     static const int sWage[6] = {-10, -5, -2, 0, 2, 4};
     const int wages = neg(sWage[std::clamp(static_cast<int>(mWageRate), 0, 5)]);
@@ -2764,9 +2771,39 @@ void eBoardCity::updateMood() {
         if(years > 0) debt -= 2;
         debt -= 2;
     }
-    // (the original's sixth factor, from figure counts, is not identified)
+    // military service (original exe 0x00566E70): rabble, hoplite and
+    // horseman companies called away from home lower mood in peacetime,
+    // once there have been no enemies in the city for 2 months and no
+    // invasion is due within 2 months (0x00483C10)
+    int military = 0;
+    if(mPeaceMonths >= 2) {
+        bool invasionDue = false;
+        const auto now = mBoard.date();
+        for(const auto& e : mCityEvents.events()) {
+            if(!e || e->type() != eGameEventType::invasion) continue;
+            if(e->finished()) continue;
+            const int days = e->nextDate() - now;
+            if(days >= 0 && days < 60) {
+                invasionDue = true;
+                break;
+            }
+        }
+        if(!invasionDue) {
+            int n = 0;
+            for(const auto& b : mSoldierBanners) {
+                if(!b || b->isHome()) continue;
+                const auto t = b->type();
+                if(t == eBannerType::rockThrower ||
+                   t == eBannerType::hoplite ||
+                   t == eBannerType::horseman) n++;
+            }
+            military = n > 12 ? -5 : n > 8 ? -4 : n > 5 ? -3 :
+                       n > 2 ? -2 : n > 0 ? -1 : 0;
+        }
+    }
+    military = neg(military);
 
-    const int sum = taxes + wages + jobs + food + debt;
+    const int sum = taxes + wages + jobs + food + debt + military;
     int drift;
     if(mMood < 11) drift = 4;
     else if(mMood < 21) drift = 3;

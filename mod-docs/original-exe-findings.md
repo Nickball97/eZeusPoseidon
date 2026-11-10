@@ -36,7 +36,7 @@ Read with Ghidra 12.2 from Nicolás's Steam `zeus.exe` (same build as GOG: compi
 - **Mugger:** when his attack countdown ends, the victim is removed (dies); no chance roll found.
 - **Disgruntled citizen:** only roams.
 
-## Sixth mood factor (likely military service)
+## Sixth mood factor: military service (applied 9 Nov 2026)
 `0x00566E70` counts the city's rabble, hoplite and horse companies (figure types 11–13) carrying a flag (probably out of their forts or away), once the city has had 2+ months of peace: 0 → 0, 1–2 → −1, 3–5 → −2, 6–8 → −3, 9–12 → −4, 13+ → −5.
 
 ## Plague
@@ -174,3 +174,5 @@ The Dragon and Cerberus use the single "Monster" row (500 HP, attack 50, armor 1
 ## Adventure event types eZeus didn't read (verified in code, `0x0046DFD0`, applied 9 Nov 2026)
 - The event dispatcher switches on the event type byte. 6, 7, 10 and 11 share `0x00472EC0`, which only marks the event done and sets off its linked event. 12 (`0x004733F0`) only marks it done. 17 (`0x0046E840`) raises a city's favor by the event amount (`0x0042CED0`), with message PHRASE_favor_change_*_I. 18 (`0x0046E970`) lowers it, with message *_D.
 - Applied: new eFavorChangeEvent (save type favorChange, appended); adventure events 17 and 18 load as favor increases and decreases. 6, 7, 10 and 11 load as a favor change of 0, which does nothing but fire the linked events. 12 is skipped. Also fixed: an unreadable event no longer shifts the numbering, so linked events stay matched.
+- Details for the military service factor: `0x004DDD70` counts companies (types 11-13: rabble, hoplite, horseman) whose "called out" flag is set. `0x00483C10` counts months in a row with no enemy soldiers (figures 40-42) or ships (63-64) on the map (`0x00FE9578`). It also tracks months until the next invasion (`0x00FE957C`), and the factor applies only when both are 2 or more. eZeus counts banners that aren't at home, peace months as months with no active invasion (saved, version cityPeaceMonths), and treats an invasion due within 60 days as too close.
+- Tax coverage under 11%: the city mood also uses the "no taxes" row (applied 9 Nov 2026; eZeus had 5%, and only for houses).
