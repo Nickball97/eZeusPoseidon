@@ -5,6 +5,7 @@
 
 #include "engine/egameboard.h"
 #include "eagorabase.h"
+#include "eavenue.h"
 #include "egatehouse.h"
 #include "ehippodromepiece.h"
 #include "elanguage.h"
@@ -203,157 +204,16 @@ std::shared_ptr<eTexture> eRoad::getTexture(const eTileSize size) const {
         return builTexs.fBridge.getTexture(texId);
     }
 
-    const auto trt = tr ? tr->underBuildingType() : eBuildingType::none;
-    const auto brt = br ? br->underBuildingType() : eBuildingType::none;
-    const auto tlt = tl ? tl->underBuildingType() : eBuildingType::none;
-    const auto blt = bl ? bl->underBuildingType() : eBuildingType::none;
-
-    const bool avn = trt == eBuildingType::avenue ||
-                     brt == eBuildingType::avenue ||
-                     tlt == eBuildingType::avenue ||
-                     blt == eBuildingType::avenue;
+    const auto isAvn = [](eTileBase* const t) {
+        return t && eAvenue::sAvenueType(t->underBuildingType());
+    };
+    const bool avn = isAvn(tr) || isAvn(br) || isAvn(tl) || isAvn(bl);
 
     if(avn) {
-        const bool tlb = tlt == eBuildingType::avenue ||
-                         tlt == eBuildingType::road;
-        const bool brb = brt == eBuildingType::avenue ||
-                         brt == eBuildingType::road;
-        const bool blb = blt == eBuildingType::avenue ||
-                         blt == eBuildingType::road;
-        const bool trb = trt == eBuildingType::avenue ||
-                         trt == eBuildingType::road;
-
-        const auto t = ti->topRotated<eTile>(dir);
-        const auto b = ti->bottomRotated<eTile>(dir);
-        const auto l = ti->leftRotated<eTile>(dir);
-        const auto r = ti->rightRotated<eTile>(dir);
-
-        const auto tt = t ? t->underBuildingType() : eBuildingType::none;
-        const auto bt = b ? b->underBuildingType() : eBuildingType::none;
-        const auto lt = l ? l->underBuildingType() : eBuildingType::none;
-        const auto rt = r ? r->underBuildingType() : eBuildingType::none;
-
-        const bool tb = tt == eBuildingType::avenue ||
-                        tt == eBuildingType::road;
-        const bool lb = lt == eBuildingType::avenue ||
-                        lt == eBuildingType::road;
-        const bool bb = bt == eBuildingType::avenue ||
-                        bt == eBuildingType::road;
-        const bool rb = rt == eBuildingType::avenue ||
-                        rt == eBuildingType::road;
-
-        int id = 0;
-        if(tlb && brb && blb && trb) {
-            if(!tb && !lb && !bb && !rb) {
-                id = 0;
-            } else if(!tb && !lb && !bb && rb) {
-                id = 1;
-            } else if(!tb && !lb && bb && !rb) {
-                id = 2;
-            } else if(!tb && lb && !bb && !rb) {
-                id = 3;
-            } else if(tb && !lb && !bb && !rb) {
-                id = 4;
-            } else if(tb && lb && !bb && !rb) {
-                id = 5;
-            } else if(tb && !lb && !bb && rb) {
-                id = 6;
-            } else if(!tb && !lb && bb && rb) {
-                id = 7;
-            } else if(!tb && lb && bb && !rb) {
-                id = 8;
-            } else if(!tb && lb && !bb && rb) {
-                id = 9;
-            } else if(tb && !lb && bb && !rb) {
-                id = 10;
-            } else if(tb && lb && !bb && rb) {
-                id = 11;
-            } else if(tb && lb && bb && !rb) {
-                id = 12;
-            } else if(tb && !lb && bb && rb) {
-                id = 13;
-            } else if(!tb && lb && bb && rb) {
-                id = 14;
-            } else if(tb && lb && bb && rb) {
-                id = 15 + seed() % 4;
-            }
-        } else if(trb && brb && blb) {
-            if(rb && bb) {
-                id = 19;
-            } else if(bb) {
-                id = 20;
-            } else if(rb) {
-                id = 21;
-            } else {
-                id = 22;
-            }
-        } else if(tlb && brb && blb) {
-            if(lb && bb) {
-                id = 23;
-            } else if(lb) {
-                id = 24;
-            } else if(bb) {
-                id = 25;
-            } else {
-                id = 26;
-            }
-        } else if(tlb && trb && blb) {
-            if(lb && tb) {
-                id = 27;
-            } else if(tb) {
-                id = 28;
-            } else if(lb) {
-                id = 29;
-            } else {
-                id = 30;
-            }
-        } else if(tlb && trb && brb) {
-            if(rb && tb) {
-                id = 31;
-            } else if(rb) {
-                id = 32;
-            } else if(tb) {
-                id = 33;
-            } else {
-                id = 34;
-            }
-        } else if(trb && brb) {
-            if(rb) {
-                id = 35;
-            } else {
-                id = 36;
-            }
-        } else if(blb && brb) {
-            if(bb) {
-                id = 37;
-            } else {
-                id = 38;
-            }
-        } else if(blb && tlb) {
-            if(lb) {
-                id = 39;
-            } else {
-                id = 40;
-            }
-        } else if(tlb && trb) {
-            if(tb) {
-                id = 41;
-            } else {
-                id = 42;
-            }
-        } else if(blb && trb) {
-            id = 43;
-        } else if(tlb && brb) {
-            id = 44;
-        } else if(trb) {
-            id = 45;
-        } else if(brb) {
-            id = 46;
-        } else if(blb) {
-            id = 47;
-        } else if(tlb) {
-            id = 48;
-        }
+        // zeus.exe picks the Avenue/Boulevard road picture from its table
+        // (0x004193A0, 0x005E92B8); see eAvenue::sRoadImage
+        eGameTextures::loadAvenue();
+        const int id = eAvenue::sRoadImage(ti, dir, seed());
         return builTexs.fAvenueRoad.getTexture(id);
     }
 

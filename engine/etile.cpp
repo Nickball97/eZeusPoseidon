@@ -446,8 +446,11 @@ bool eTile::hasAvenue() const {
     return t == eBuildingType::avenue || t == eBuildingType::boulevard;
 }
 
+int eTile::sBuildingRevision = 0;
+
 void eTile::setUnderBuilding(const stdsptr<eBuilding>& b) {
     mUnderBuilding = b;
+    sBuildingRevision++;
     scheduleTerrainUpdate();
 }
 

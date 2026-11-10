@@ -6,7 +6,7 @@ Status on 9 Nov 2026, after Phases 0-7 and the zeus.exe reading. Details and add
 
 | # | Missing | Source | What it would take |
 |---|---|---|---|
-| A3 | Avenue and Boulevard leftovers: the original's exact picture choice for each tree tile, and the scenario on/off switch for both (eZeus has none) | zeus.exe `0x004193A0`, piece table `0x005E92B8` (see original-exe-findings.md, Avenue and Boulevard) | The build rules, the Boulevard itself, its cost and appeal were applied on 10 Nov 2026; the switch needs a new saved field |
+| A3 | Avenue and Boulevard leftover: the scenario on/off switch for both (eZeus has none) | zeus.exe tools `0x005D85E4` / `0x005D85C0` (see original-exe-findings.md, Avenue and Boulevard) | The build rules, the Boulevard itself, its cost, appeal and the tree pictures were applied on 10 Nov 2026; the switch needs a new saved field |
 | A5 | Hotkeys not added: Shift+1-4 company bookmarks and 1-4 to select them; Tab for the overview map; M "freeze footprint"; F5-F7 window/resolution; pressing 1 twice for the full population report | Citadel: hotkeys | Overview map doesn't exist in eZeus; "freeze footprint" meaning unknown |
 | A6 | Cosmetic cheats: Bowvine and Arrow (towers shoot cows), Cheese Puff (dairy workers in cheese suits), Mammaldrome (animals race in the hippodrome) | Citadel: cheats | Each needs art swaps |
 | A7 | Apollo's sanctuary: +20 to the Pan-Hellenic games score | zeus.exe `0x00565D40` | eZeus's games use their own winning chance; the original's games scoring wasn't traced |

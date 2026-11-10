@@ -79,6 +79,10 @@ public:
     bool hasRoad() const override;
     bool hasAvenue() const;
     void setUnderBuilding(const stdsptr<eBuilding>& b);
+    // rises whenever any tile's building changes; pictures that depend on
+    // the buildings around them (Avenue trees) use it to know when to
+    // pick again (not saved)
+    static int sBuildingRevision;
     eBuilding* underBuilding() const
     { return mUnderBuilding.get(); }
     eBuildingType underBuildingType() const override;
