@@ -7,7 +7,6 @@ Status on 9 Nov 2026, after Phases 0-7 and the zeus.exe reading. Details and add
 | # | Missing | Source | What it would take |
 |---|---|---|---|
 | A3 | Boulevard (3 wide; cost 15/24/30/36/45; appeal 3, -2 every 2 tiles, range 4) | Model BUILD_BOULEVARD, game text, Citadel (plan 7.1) | Graphics: not found in eZeus's images; unclear whether the original has art for it |
-| A4 | Ground that looks better with high appeal (four looks: below 0, 0-15, 16-29, 30+) | zeus.exe `0x004A0450` | Mapping the original's ground images by appeal |
 | A5 | Hotkeys not added: Shift+1-4 company bookmarks and 1-4 to select them; Tab for the overview map; M "freeze footprint"; F5-F7 window/resolution; pressing 1 twice for the full population report | Citadel: hotkeys | Overview map doesn't exist in eZeus; "freeze footprint" meaning unknown |
 | A6 | Cosmetic cheats: Bowvine and Arrow (towers shoot cows), Cheese Puff (dairy workers in cheese suits), Mammaldrome (animals race in the hippodrome) | Citadel: cheats | Each needs art swaps |
 | A7 | Apollo's sanctuary: +20 to the Pan-Hellenic games score | zeus.exe `0x00565D40` | eZeus's games use their own winning chance; the original's games scoring wasn't traced |

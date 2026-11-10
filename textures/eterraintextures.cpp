@@ -62,6 +62,11 @@
 #include "spriteData/poseidonTrees45.h"
 #include "spriteData/poseidonTrees60.h"
 
+#include "spriteData/plaza15.h"
+#include "spriteData/plaza30.h"
+#include "spriteData/plaza45.h"
+#include "spriteData/plaza60.h"
+
 eTerrainTextures::eTerrainTextures(const int tileW, const int tileH,
                                    SDL_Renderer* const renderer) :
     fTileW(tileW), fTileH(tileH),
@@ -111,6 +116,8 @@ eTerrainTextures::eTerrainTextures(const int tileW, const int tileH,
     fToBeachRoad(renderer),
     fRoad(renderer),
     fPrettyRoad(renderer),
+    fRuttedRoad(renderer),
+    fPlazaRoad(renderer),
 
     fSanctuaryStairs(renderer),
 
@@ -392,6 +399,11 @@ void eTerrainTextures::load() {
             loader.load(1, i, fPrettyRoad);
         }
 
+        // SPR_RUTTED_ROAD, roads where appeal is below 0
+        for(int i = 390; i < 439; i++) {
+            loader.load(1, i, fRuttedRoad);
+        }
+
         for(int i = 302; i < 310; i++) {
             loader.load(1, i, fDeepMarsh);
         }
@@ -408,6 +420,21 @@ void eTerrainTextures::load() {
         }
 
         loadWaterToX(fRenderer, 445, fLavaToDry, loader);
+    }
+
+    {
+        // SPR_PLAZA_1X1 (Zeus_General), roads where appeal is 30 or more;
+        // cut from the game files by tools/sgextract
+        const auto& sds = spriteData(fTileH,
+                                     ePlazaSpriteData15,
+                                     ePlazaSpriteData30,
+                                     ePlazaSpriteData45,
+                                     ePlazaSpriteData60);
+        eSpriteLoader loader(fTileH, "plaza", sds,
+                             nullptr, fRenderer);
+        for(int i = 201; i <= 207; i++) {
+            loader.load(201, i, fPlazaRoad);
+        }
     }
 
     {

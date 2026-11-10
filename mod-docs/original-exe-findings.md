@@ -90,8 +90,8 @@ Population changes by a share set by city health: 91+ +6%, 81–90 +4%, 71–80 
 Progress per cycle by staffing (10 / 8 / 6 / 4 / 2); a ship is launched past 319, so 32 cycles (2 months) at full staff. Needs 200+ units of a material in stock to progress.
 
 ## Roads, ground and the appeal view (verified in code)
-- Roads on slopes use the paved image when the tile's appeal is above 4 (`0x004A0480`, called from the slope road picker `0x0045E110`); eZeus uses the same rule for all roads. Flat road selection was not traced.
-- Plain ground picks one of four looks by appeal: below 0, 0–15, 16–29, 30+ (`0x004A0450`, `0x004A0190`). Not in eZeus.
+- Roads on slopes use the paved image when the tile's appeal is above 4 (`0x004A0480`, called from the slope road picker `0x0045E110`). Not checked whether eZeus has roads on slopes.
+- Flat roads (`0x004A0190`, called for every tile with road flag 0x40 by `0x004A0090`) pick one of four looks by the tile's appeal (`0x004A0450`): below 0 SPR_RUTTED_ROAD (Zeus_Terrain group 43, Land3 images 390–438), 0–15 SPR_ROADS (group 33, Land3 235–252), 16–29 SPR_PAVED_ROADS (group 39, Land3 253–301), 30+ SPR_PLAZA_1X1 (Zeus_General group 47, 7 stones, chosen by a per-tile random byte mod 7, no road shapes). The tiles around (top-right, right, bottom-right, bottom, bottom-left, left, top-left, top) are matched against the tables at `0x00637098` (17 pieces, plain roads, diagonals ignored) and `0x006371F0` (48 pieces, paved and rutted, with pieces for wide road areas); first fit wins, no variants. Roads on the beach (tile flag 0x10000) use the beach road images instead. Earlier notes called this "plain ground"; it is roads. Applied 10 Nov 2026 (`eRoad::getTexture`); straight plain roads now always use images 0/1 as in the original (eZeus used to swap in 2/3 at random).
 - Appeal view colour (`0x0044BCF0`): −11 or less → 0; −10 … 69 → appeal/10 + 2; 70+ → 9; a tile at 0 with no building is not coloured.
 
 ## Hippodrome (verified in code, table `0x006429F0`, 5 numbers per length band)

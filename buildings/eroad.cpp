@@ -9,6 +9,91 @@
 #include "ehippodromepiece.h"
 #include "elanguage.h"
 
+namespace {
+// The original's road pieces (zeus.exe tables 0x00637098 for plain roads
+// and 0x006371F0 for paved and rutted ones, read by 0x004A6920). fN gives
+// the 8 tiles around, from the top-right going clockwise (top-right,
+// right, bottom-right, bottom, bottom-left, left, top-left, top):
+// 1 = a road, 0 = no road, 2 = either. The first piece that fits gives the
+// image (as seen facing north; eZeus turns the neighbours instead).
+struct eRoadPiece {
+    char fN[8];
+    int fImg;
+};
+
+const eRoadPiece gPlainRoad[] = {
+    {{1, 2, 1, 2, 1, 2, 1, 2}, 17},
+    {{1, 2, 1, 2, 1, 2, 0, 2}, 13},
+    {{0, 2, 1, 2, 1, 2, 1, 2}, 14},
+    {{1, 2, 0, 2, 1, 2, 1, 2}, 15},
+    {{1, 2, 1, 2, 0, 2, 1, 2}, 16},
+    {{1, 2, 1, 2, 0, 2, 0, 2}, 4},
+    {{0, 2, 1, 2, 1, 2, 0, 2}, 5},
+    {{0, 2, 0, 2, 1, 2, 1, 2}, 6},
+    {{1, 2, 0, 2, 0, 2, 1, 2}, 7},
+    {{1, 2, 0, 2, 1, 2, 0, 2}, 0},
+    {{0, 2, 1, 2, 0, 2, 1, 2}, 1},
+    {{1, 2, 0, 2, 0, 2, 0, 2}, 8},
+    {{0, 2, 1, 2, 0, 2, 0, 2}, 9},
+    {{0, 2, 0, 2, 1, 2, 0, 2}, 10},
+    {{0, 2, 0, 2, 0, 2, 1, 2}, 11},
+    {{0, 2, 0, 2, 0, 2, 0, 2}, 12},
+    {{2, 2, 2, 2, 2, 2, 2, 2}, 12}
+};
+
+// paved and rutted roads also have pieces for wide road areas
+const eRoadPiece gWideRoad[] = {
+    {{1, 0, 1, 0, 1, 0, 1, 0}, 17},
+    {{1, 0, 1, 0, 1, 2, 0, 2}, 13},
+    {{1, 1, 1, 1, 1, 2, 0, 2}, 18},
+    {{1, 0, 1, 1, 1, 2, 0, 2}, 26},
+    {{1, 1, 1, 0, 1, 2, 0, 2}, 30},
+    {{0, 2, 1, 0, 1, 0, 1, 2}, 14},
+    {{0, 2, 1, 1, 1, 1, 1, 2}, 19},
+    {{0, 2, 1, 0, 1, 1, 1, 2}, 31},
+    {{0, 2, 1, 1, 1, 0, 1, 2}, 27},
+    {{1, 2, 0, 2, 1, 0, 1, 0}, 15},
+    {{1, 2, 0, 2, 1, 1, 1, 1}, 20},
+    {{1, 2, 0, 2, 1, 0, 1, 1}, 32},
+    {{1, 2, 0, 2, 1, 1, 1, 0}, 28},
+    {{1, 0, 1, 2, 0, 2, 1, 0}, 16},
+    {{1, 1, 1, 2, 0, 2, 1, 1}, 21},
+    {{1, 1, 1, 2, 0, 2, 1, 0}, 33},
+    {{1, 0, 1, 2, 0, 2, 1, 1}, 29},
+    {{1, 1, 1, 2, 0, 0, 0, 2}, 22},
+    {{0, 2, 1, 1, 1, 2, 0, 0}, 23},
+    {{0, 0, 0, 2, 1, 1, 1, 2}, 24},
+    {{1, 2, 0, 0, 0, 2, 1, 1}, 25},
+    {{1, 0, 1, 0, 1, 1, 1, 1}, 34},
+    {{1, 1, 1, 0, 1, 0, 1, 1}, 35},
+    {{1, 1, 1, 1, 1, 0, 1, 0}, 36},
+    {{1, 0, 1, 1, 1, 1, 1, 0}, 37},
+    {{1, 0, 1, 0, 1, 0, 1, 1}, 38},
+    {{1, 1, 1, 0, 1, 0, 1, 0}, 39},
+    {{1, 0, 1, 1, 1, 0, 1, 0}, 40},
+    {{1, 0, 1, 0, 1, 1, 1, 0}, 41},
+    {{1, 1, 1, 1, 1, 0, 1, 1}, 42},
+    {{1, 1, 1, 1, 1, 1, 1, 0}, 43},
+    {{1, 0, 1, 1, 1, 1, 1, 1}, 44},
+    {{1, 1, 1, 0, 1, 1, 1, 1}, 45},
+    {{1, 1, 1, 0, 1, 1, 1, 0}, 46},
+    {{1, 0, 1, 1, 1, 0, 1, 1}, 47},
+    {{1, 2, 1, 2, 0, 2, 0, 2}, 4},
+    {{0, 2, 1, 2, 1, 2, 0, 2}, 5},
+    {{0, 2, 0, 2, 1, 2, 1, 2}, 6},
+    {{1, 2, 0, 2, 0, 2, 1, 2}, 7},
+    {{1, 2, 0, 2, 1, 2, 0, 2}, 0},
+    {{0, 2, 1, 2, 0, 2, 1, 2}, 1},
+    {{1, 2, 0, 2, 0, 2, 0, 2}, 8},
+    {{0, 2, 1, 2, 0, 2, 0, 2}, 9},
+    {{0, 2, 0, 2, 1, 2, 0, 2}, 10},
+    {{0, 2, 0, 2, 0, 2, 1, 2}, 11},
+    {{0, 0, 0, 0, 0, 0, 0, 0}, 12},
+    {{1, 1, 1, 1, 1, 1, 1, 1}, 48},
+    {{2, 2, 2, 2, 2, 2, 2, 2}, 12}
+};
+}
+
 eRoad::eRoad(eGameBoard& board, const eCityId cid) :
     eBuilding(board, eBuildingType::road, 1, 1, cid) {}
 
@@ -311,48 +396,55 @@ std::shared_ptr<eTexture> eRoad::getTexture(const eTileSize size) const {
         return bcoll.getTexture(12);
 
     } else {
-        const auto& pcoll = trrTexs.fPrettyRoad;
-        const auto& rcoll = trrTexs.fRoad;
-
+        // the original's road looks by the tile's appeal (zeus.exe
+        // 0x004A0190, 0x004A0450): below 0 rutted, 0-15 plain, 16-29
+        // paved, 30 or more plaza stones
         const auto& b = getBoard();
         const auto t = centerTile();
+        const double a = b.appeal(t->dx(), t->dy());
 
-        const int dx = t->dx();
-        const int dy = t->dy();
-        const double a = b.appeal(dx, dy);
+        if(a >= 30) {
+            const auto& coll = trrTexs.fPlazaRoad;
+            return coll.getTexture(seed() % coll.size());
+        }
 
+        const eRoadPiece* pieces;
+        int nPieces;
         const eTextureCollection* coll;
-        // paved above appeal 4 (original exe 0x004A0480)
-        if(a > 4) {
-            coll = &pcoll;
+        if(a < 16) {
+            pieces = gPlainRoad;
+            nPieces = sizeof(gPlainRoad)/sizeof(gPlainRoad[0]);
         } else {
-            coll = &rcoll;
+            pieces = gWideRoad;
+            nPieces = sizeof(gWideRoad)/sizeof(gWideRoad[0]);
+        }
+        if(a < 0) {
+            coll = &trrTexs.fRuttedRoad;
+        } else if(a < 16) {
+            coll = &trrTexs.fRoad;
+        } else {
+            coll = &trrTexs.fPrettyRoad;
         }
 
-        if(tlRoad && blRoad && trRoad && brRoad) return coll->getTexture(17);
-        if(trRoad && brRoad && blRoad) return coll->getTexture(13);
-        if(tlRoad && blRoad && brRoad) return coll->getTexture(14);
-        if(tlRoad && blRoad && trRoad) return coll->getTexture(15);
-        if(tlRoad && brRoad && trRoad) return coll->getTexture(16);
-
-        if(blRoad && trRoad) {
-            if(seed() % 2) return coll->getTexture(0);
-            else return coll->getTexture(2);
+        // the 8 tiles around, in the tables' order; off the map counts
+        // as road
+        const decltype(tr) ns[8] = {tr, ti->rightRotated(dir),
+                                    br, ti->bottomRotated(dir),
+                                    bl, ti->leftRotated(dir),
+                                    tl, ti->topRotated(dir)};
+        bool road[8];
+        for(int i = 0; i < 8; i++) {
+            road[i] = !ns[i] || ns[i]->hasRoad();
         }
-        if(tlRoad && brRoad) {
-            if(seed() % 2) return coll->getTexture(1);
-            else return coll->getTexture(3);
+        for(int p = 0; p < nPieces; p++) {
+            const auto& pc = pieces[p];
+            bool fits = true;
+            for(int i = 0; i < 8 && fits; i++) {
+                if(pc.fN[i] == 2) continue;
+                fits = road[i] == (pc.fN[i] == 1);
+            }
+            if(fits) return coll->getTexture(pc.fImg);
         }
-
-        if(trRoad && brRoad) return coll->getTexture(4);
-        if(blRoad && brRoad) return coll->getTexture(5);
-        if(blRoad && tlRoad) return coll->getTexture(6);
-        if(tlRoad && trRoad) return coll->getTexture(7);
-        if(trRoad) return coll->getTexture(8);
-        if(brRoad) return coll->getTexture(9);
-        if(blRoad) return coll->getTexture(10);
-        if(tlRoad) return coll->getTexture(11);
-
         return coll->getTexture(12);
     }
     return std::shared_ptr<eTexture>();
