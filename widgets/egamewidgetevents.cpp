@@ -416,6 +416,47 @@ void eGameWidget::handleEvent(const eEvent e, eEventData& ed) {
         return;
     } break;
 
+    case eEvent::rescueGranted: {
+        showMessage(ed, inst.fRescueGranted.fGranted);
+        return;
+    } break;
+    case eEvent::rescuePartialSpace: {
+        showMessage(ed, inst.fRescueGranted.fPartialSpace);
+        return;
+    } break;
+    case eEvent::rescueInsufficientSpace: {
+        showMessage(ed, inst.fRescueGranted.fInsufficientSpace);
+        return;
+    } break;
+    case eEvent::rescueLastChance: {
+        showMessage(ed, inst.fRescueGranted.fLastChance);
+        return;
+    } break;
+    case eEvent::rescueAccepted: {
+        showMessage(ed, inst.fRescueGranted.fAccepted, true);
+        return;
+    } break;
+    case eEvent::rescuePostponed: {
+        showMessage(ed, inst.fRescueGranted.fPostponed, true);
+        return;
+    } break;
+    case eEvent::rescueRefused: {
+        showMessage(ed, inst.fRescueGranted.fRefused, true);
+        return;
+    } break;
+    case eEvent::rescueForfeited: {
+        showMessage(ed, inst.fRescueGranted.fForfeited, true);
+        return;
+    } break;
+    case eEvent::rescueCashGranted: {
+        showMessage(ed, inst.fRescueGranted.fCashGranted, true);
+        return;
+    } break;
+    case eEvent::rescueCashAccepted: {
+        showMessage(ed, inst.fRescueGranted.fCashAccepted, true);
+        return;
+    } break;
+
     case eEvent::demandRefused: {
         showMessage(ed, inst.fDemandRefused, true);
         return;

@@ -416,7 +416,19 @@ enum class eEvent {
     invasionBribedMonn,
     atlanteanAlliesHateYou,
     favorIncrease,
-    favorDecrease
+    favorDecrease,
+
+    // debt relief from an ally or the parent city (eventmsg "rescue_cash")
+    rescueGranted,
+    rescueCashGranted,
+    rescuePartialSpace,
+    rescueInsufficientSpace,
+    rescueLastChance,
+    rescueForfeited,
+    rescueAccepted,
+    rescueCashAccepted,
+    rescuePostponed,
+    rescueRefused
 };
 
 #endif // EEVENT_H

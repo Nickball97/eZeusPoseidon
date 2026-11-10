@@ -265,6 +265,7 @@ public:
     eReceiveRequestMessages fTributeRequest;
 
     eResourceGrantedMessages fGiftGranted;
+    eResourceGrantedMessages fRescueGranted;
 
     eMessageType fSupportTroopsArrive;
     eMessageType fSupportTroopsDepart;

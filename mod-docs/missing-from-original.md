@@ -6,11 +6,10 @@ Status on 9 Nov 2026, after Phases 0-7 and the zeus.exe reading. Details and add
 
 | # | Missing | Source | What it would take |
 |---|---|---|---|
-| A3 | Boulevard (3 wide; cost 15/24/30/36/45; appeal 3, -2 every 2 tiles, range 4) | Model BUILD_BOULEVARD, game text, Citadel (plan 7.1) | Graphics: not found in eZeus's images; unclear whether the original has art for it |
+| A3 | Boulevard (3 wide; cost 15/24/30/36/45; appeal 3, step size 2, -2 a step, range 4). eZeus's Avenue also differs: the original's is 2 wide | Model BUILD_AVENUE (118) and BUILD_BOULEVARD (126), building names 118 and 126 with their own descriptions, zeus.exe: separate allowed-building switches (`0x00402B80`), placement preview `0x00419760` (width = 3 for type 126, else 2; the cursor tile must be a road), appeal from every tile (`0x00493C80`). Art: Zeus_General SPR_BOUL_* groups, which eZeus already uses for its Avenue | Trace how the original lays the 2 or 3 tiles along a road (which become trees, what happens to the road, cost per tile) before building it; then rework eZeus's Avenue to match |
 | A5 | Hotkeys not added: Shift+1-4 company bookmarks and 1-4 to select them; Tab for the overview map; M "freeze footprint"; F5-F7 window/resolution; pressing 1 twice for the full population report | Citadel: hotkeys | Overview map doesn't exist in eZeus; "freeze footprint" meaning unknown |
 | A6 | Cosmetic cheats: Bowvine and Arrow (towers shoot cows), Cheese Puff (dairy workers in cheese suits), Mammaldrome (animals race in the hippodrome) | Citadel: cheats | Each needs art swaps |
 | A7 | Apollo's sanctuary: +20 to the Pan-Hellenic games score | zeus.exe `0x00565D40` | eZeus's games use their own winning chance; the original's games scoring wasn't traced |
-| A8 | Rescue cash shown with its own "A helping hand from..." message (eZeus uses the gift message) | zeus.exe, eventmsg | New message type |
 
 ## B. Described by the sources, but the numbers or the rule weren't found
 
@@ -24,7 +23,6 @@ Status on 9 Nov 2026, after Phases 0-7 and the zeus.exe reading. Details and add
 | B6 | How a house's plague "disease score" grows before an outbreak | Outbreak picks the highest scores | The growth rule (eZeus uses its own) |
 | B7 | Rescue cash: accepting sometimes lowers that city's attitude by 10 | zeus.exe `0x00474A80` | When exactly (one branch's condition is unclear) |
 | B8 | Workshops' finished-goods limits | Cap table and cart code (sculpture carts 400 units, others 100) | Which stock the cap applies to on the output side (eZeus keeps 8) |
-| B9 | Flat road paving (which road image by appeal) | Slope roads pave above appeal 4 | Flat roads weren't traced (eZeus uses the slope rule for all) |
 | B10 | Building appeal "+10 when a flag is set" | zeus.exe appeal code | What the flag is |
 | B11 | A sanctuary without sacrifices "loses its benefits" (Zeus manual) | The exe never shows its "This Sanctuary is inactive" text and nothing found turns a sanctuary off | Whether the manual describes a cut feature; not applied |
 

@@ -30,6 +30,27 @@ eResourceGrantedEventBase::eResourceGrantedEventBase(
     mGiftInsufficientSpace(giftInsufficientSpace),
     mGiftPartialSpace(giftPartialSpace) {}
 
+void eResourceGrantedEventBase::setEvents(
+        const eEvent giftCashAccepted,
+        const eEvent giftAccepted,
+        const eEvent giftPostponed,
+        const eEvent giftRefused,
+        const eEvent giftForfeited,
+        const eEvent giftGranted,
+        const eEvent giftLastChance,
+        const eEvent giftInsufficientSpace,
+        const eEvent giftPartialSpace) {
+    mGiftCashAccepted = giftCashAccepted;
+    mGiftAccepted = giftAccepted;
+    mGiftPostponed = giftPostponed;
+    mGiftRefused = giftRefused;
+    mGiftForfeited = giftForfeited;
+    mGiftGranted = giftGranted;
+    mGiftLastChance = giftLastChance;
+    mGiftInsufficientSpace = giftInsufficientSpace;
+    mGiftPartialSpace = giftPartialSpace;
+}
+
 void eResourceGrantedEventBase::initialize(
         const bool postpone,
         const eResourceType res,
@@ -72,6 +93,7 @@ void eResourceGrantedEventBase::trigger() {
         using eRGEB = eResourceGrantedEventBase;
         const auto ee = static_cast<eRGEB*>(e.get());
         ee->initialize(false, mResource, mCount, mCity);
+        setupPostponed(ee);
         const auto date = board->date() + 31;
         e->initializeDate(date);
         addConsequence(e);

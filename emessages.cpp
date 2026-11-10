@@ -797,6 +797,7 @@ bool eMessages::loadImpl() {
     loadGeneralRequest(fTributeRequest, "D", "tribute_due");
 
     loadResourceGranted(fGiftGranted, "gift");
+    loadResourceGranted(fRescueGranted, "rescue_cash");
 
     fSupportTroopsArrive.fFull.fTitle = loadMessage("PHRASE_support_troops_arrive_title");
     fSupportTroopsArrive.fFull.fText = loadMessage("PHRASE_support_troops_arrive_initial_announcement");

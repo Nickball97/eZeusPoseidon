@@ -6,6 +6,7 @@
 #include "evectorhelpers.h"
 #include "egifthelpers.h"
 #include "erand.h"
+#include "gameEvents/egiftfromevent.h"
 
 #include <algorithm>
 
@@ -305,5 +306,12 @@ void eBoardPlayer::rescueCash() {
     const int d = std::clamp(static_cast<int>(mDifficulty), 0, 4);
     const int amount = static_cast<int>((c->wealth() + 1)*sDiff[d]*200);
     c->setRescueGiven(true);
-    mBoard.planGiftFrom(c, eResourceType::drachmas, amount, 0);
+    // offered with the original's "A helping hand from..." messages
+    const auto e = e::make_shared<eGiftFromEvent>(
+                       mBoard.currentCityId(),
+                       eGameEventBranch::root, mBoard);
+    e->initialize(true, eResourceType::drachmas, amount, c);
+    e->setRescue(true);
+    e->initializeDate(mBoard.date());
+    mBoard.addRootGameEvent(e);
 }

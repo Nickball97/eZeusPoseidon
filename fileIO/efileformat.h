@@ -30,6 +30,7 @@ namespace eFileFormat {
         cityPeaceMonths,
         invasionWarships,
         sanctuaryPriests,
+        giftRescue,
 
         nextVersion
     };
