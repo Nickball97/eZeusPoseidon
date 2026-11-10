@@ -22,6 +22,7 @@
 #include "gameEvents/eearthquakeevent.h"
 #include "gameEvents/ecitybecomesevent.h"
 #include "gameEvents/eeconomicchangeevent.h"
+#include "gameEvents/efavorchangeevent.h"
 #include "gameEvents/emilitarychangeevent.h"
 #include "gameEvents/egoddisasterevent.h"
 #include "gameEvents/elavaevent.h"
@@ -289,7 +290,11 @@ enum class ePakEventType {
     tidalWave,
     monsterInvasion,
     godAttack,
-    sinkLand
+    sinkLand,
+    favorIncrease,
+    favorDecrease,
+    triggerOnly,
+    noEffect
 };
 
 ePakEventType pakIdToEventType(const uint8_t id, bool& valid) {
@@ -299,6 +304,13 @@ ePakEventType pakIdToEventType(const uint8_t id, bool& valid) {
     else if(id == 3) return ePakEventType::earthquake;
     else if(id == 4) return ePakEventType::godQuest;
     else if(id == 5) return ePakEventType::landSlide;
+    // zeus.exe 0x0046DFD0: 6, 7, 10 and 11 only set off their linked event
+    // (0x00472EC0); 12 does nothing (0x004733F0); 17 and 18 raise or lower
+    // a city's favor (0x0046E840, 0x0046E970)
+    else if(id == 6 || id == 7 || id == 10 || id == 11) return ePakEventType::triggerOnly;
+    else if(id == 12) return ePakEventType::noEffect;
+    else if(id == 17) return ePakEventType::favorIncrease;
+    else if(id == 18) return ePakEventType::favorDecrease;
     else if(id == 8) return ePakEventType::wageIncrease;
     else if(id == 9) return ePakEventType::wageDecrease;
     else if(id == 13) return ePakEventType::demandIncrease;
@@ -400,6 +412,8 @@ void readEpisodeEvents(eEpisode& ep, ZeusFile& file,
         const auto type = pakIdToEventType(eventTypeId, valid);
         if(!valid) {
             file.skipBytes(123);
+            // keep its place so linked-event numbers still line up
+            events.push_back(nullptr);
             continue;
         }
 
@@ -913,6 +927,34 @@ void readEpisodeEvents(eEpisode& ep, ZeusFile& file,
 
             e = ee;
         } break;
+        case ePakEventType::favorIncrease:
+        case ePakEventType::favorDecrease: {
+            const auto ee = e::make_shared<eFavorChangeEvent>(
+                cid, eGameEventBranch::root, *ep.fBoard);
+            ee->setMinCityId(cityMin);
+            ee->setMaxCityId(cityMax);
+            if(type == ePakEventType::favorDecrease) {
+                ee->setMinCount(-amountMax);
+                ee->setMaxCount(-amountMin);
+            } else {
+                ee->setMinCount(amountMin);
+                ee->setMaxCount(amountMax);
+            }
+
+            e = ee;
+        } break;
+        case ePakEventType::triggerOnly: {
+            // no effect of its own; its linked events still fire
+            const auto ee = e::make_shared<eFavorChangeEvent>(
+                cid, eGameEventBranch::root, *ep.fBoard);
+            ee->setMinCount(0);
+            ee->setMaxCount(0);
+
+            e = ee;
+        } break;
+        case ePakEventType::noEffect:
+            events.push_back(nullptr);
+            continue;
         default:
             printf("Unhandled event type %i\n", eventTypeId);
             events.push_back(nullptr);

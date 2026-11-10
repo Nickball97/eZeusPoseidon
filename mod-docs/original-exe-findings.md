@@ -170,3 +170,7 @@ The Dragon and Cerberus use the single "Monster" row (500 HP, attack 50, armor 1
 - Applied (eZeus used 8 loads for all, and 4 raw for workshops): timber mill, foundry, refinery, hunting lodge, urchin quay, carding shed, dairy 5; mint 3; corral 6; marble quarry and black marble workshop stay 8; winery, olive press and armory accept 3 loads of raw material (sculpture studio stays 4).
 - A blessed batch (4+ loads at once) may exceed the cap by 3. The original sends a blessed batch straight out on a cart (`0x0048D3DA` area).
 - Not applied: workshop output limits. The workshop cart code (`0x0048D3DA` area: sculpture studio carts 400 units, others 100) isn't fully read. eZeus keeps 8.
+
+## Adventure event types eZeus didn't read (verified in code, `0x0046DFD0`, applied 9 Nov 2026)
+- The event dispatcher switches on the event type byte. 6, 7, 10 and 11 share `0x00472EC0`, which only marks the event done and sets off its linked event. 12 (`0x004733F0`) only marks it done. 17 (`0x0046E840`) raises a city's favor by the event amount (`0x0042CED0`), with message PHRASE_favor_change_*_I. 18 (`0x0046E970`) lowers it, with message *_D.
+- Applied: new eFavorChangeEvent (save type favorChange, appended); adventure events 17 and 18 load as favor increases and decreases. 6, 7, 10 and 11 load as a favor change of 0, which does nothing but fire the linked events. 12 is skipped. Also fixed: an unreadable event no longer shifts the numbering, so linked events stay matched.

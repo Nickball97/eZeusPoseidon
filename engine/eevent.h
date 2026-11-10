@@ -414,7 +414,9 @@ enum class eEvent {
 
     // added at the end so existing values keep their numbers
     invasionBribedMonn,
-    atlanteanAlliesHateYou
+    atlanteanAlliesHateYou,
+    favorIncrease,
+    favorDecrease
 };
 
 #endif // EEVENT_H

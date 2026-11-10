@@ -907,6 +907,16 @@ bool eMessages::loadImpl() {
     fEconomicDecline.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_economic_change_title_D");
     fEconomicDecline.fCondensed.fText = loadMessage("PHRASE_CONDENSED_economic_change_initial_announcement_D");
 
+    fFavorIncrease.fFull.fTitle = loadMessage("PHRASE_favor_change_title_I");
+    fFavorIncrease.fFull.fText = loadMessage("PHRASE_favor_change_initial_announcement_I");
+    fFavorIncrease.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_favor_change_title_I");
+    fFavorIncrease.fCondensed.fText = loadMessage("PHRASE_CONDENSED_favor_change_initial_announcement_I");
+
+    fFavorDecrease.fFull.fTitle = loadMessage("PHRASE_favor_change_title_D");
+    fFavorDecrease.fFull.fText = loadMessage("PHRASE_favor_change_initial_announcement_D");
+    fFavorDecrease.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_favor_change_title_D");
+    fFavorDecrease.fCondensed.fText = loadMessage("PHRASE_CONDENSED_favor_change_initial_announcement_D");
+
     load(fAllyTroopsRequest, "ally", "S");
     load(fVassalTroopsRequest, "vassal", "P");
     load(fColonyTroopsRequest, "colony", "P");

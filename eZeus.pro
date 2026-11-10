@@ -456,6 +456,7 @@ SOURCES += \
         gameEvents/edemandchangeevent.cpp \
         gameEvents/eearthquakeevent.cpp \
         gameEvents/eeconomicchangeevent.cpp \
+        gameEvents/efavorchangeevent.cpp \
         gameEvents/eeconomicmilitarychangeeventbase.cpp \
         gameEvents/eeventtrigger.cpp \
         gameEvents/egameevent.cpp \
@@ -1170,6 +1171,7 @@ HEADERS += \
     gameEvents/edemandchangeevent.h \
     gameEvents/eearthquakeevent.h \
     gameEvents/eeconomicchangeevent.h \
+    gameEvents/efavorchangeevent.h \
     gameEvents/eeconomicmilitarychangeeventbase.h \
     gameEvents/eeventtrigger.h \
     gameEvents/egameevent.h \

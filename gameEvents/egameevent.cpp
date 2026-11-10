@@ -21,6 +21,7 @@
 #include "earmyreturnevent.h"
 #include "emilitarychangeevent.h"
 #include "eeconomicchangeevent.h"
+#include "efavorchangeevent.h"
 #include "etroopsrequestevent.h"
 #include "etroopsrequestfulfilledevent.h"
 #include "egoddisasterevent.h"
@@ -128,6 +129,8 @@ stdsptr<eGameEvent> eGameEvent::sCreate(
         return e::make_shared<eArmyReturnEvent>(cid, branch, board);
     case eGameEventType::economicChange:
         return e::make_shared<eEconomicChangeEvent>(cid, branch, board);
+    case eGameEventType::favorChange:
+        return e::make_shared<eFavorChangeEvent>(cid, branch, board);
     case eGameEventType::militaryChange:
         return e::make_shared<eMilitaryChangeEvent>(cid, branch, board);
 

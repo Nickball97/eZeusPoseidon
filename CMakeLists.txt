@@ -925,6 +925,8 @@ add_executable(eZeus
     gameEvents/eearthquakeevent.h
     gameEvents/eeconomicchangeevent.cpp
     gameEvents/eeconomicchangeevent.h
+    gameEvents/efavorchangeevent.cpp
+    gameEvents/efavorchangeevent.h
     gameEvents/eeconomicmilitarychangeeventbase.cpp
     gameEvents/eeconomicmilitarychangeeventbase.h
     gameEvents/eeventtrigger.cpp

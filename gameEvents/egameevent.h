@@ -67,7 +67,10 @@ enum class eGameEventType {
     sinkLand,
     landSlide,
 
-    reinforcementsEvent
+    reinforcementsEvent,
+
+    // added at the end so existing values keep their numbers
+    favorChange
 };
 
 enum class eGameEventBranch {

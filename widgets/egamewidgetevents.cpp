@@ -1313,6 +1313,14 @@ void eGameWidget::handleEvent(const eEvent e, eEventData& ed) {
         showMessage(ed, inst.fEconomicDecline, true);
         return;
     } break;
+    case eEvent::favorIncrease: {
+        showMessage(ed, inst.fFavorIncrease, true);
+        return;
+    } break;
+    case eEvent::favorDecrease: {
+        showMessage(ed, inst.fFavorDecrease, true);
+        return;
+    } break;
 
     case eEvent::troopsRequestVassalInitial: {
         showMessage(ed, inst.fVassalTroopsRequest.fInitialAnnouncement, true);

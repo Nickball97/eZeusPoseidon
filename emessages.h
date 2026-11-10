@@ -299,6 +299,8 @@ public:
     eMessageType fMilitaryDecline;
 
     eMessageType fEconomicProsperity;
+    eMessageType fFavorIncrease;
+    eMessageType fFavorDecrease;
     eMessageType fEconomicDecline;
 
     eTroopsRequestedMessages fAllyTroopsRequest;

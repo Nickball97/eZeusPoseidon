@@ -59,6 +59,7 @@ void eEventSelectionWidget::initialize(
             eGameEventType::godQuest,
             eGameEventType::militaryChange,
             eGameEventType::economicChange,
+            eGameEventType::favorChange,
             eGameEventType::troopsRequest,
             eGameEventType::godDisaster,
             eGameEventType::rivalArmyAway,
@@ -85,6 +86,7 @@ void eEventSelectionWidget::initialize(
             eLanguage::zeusText(156, 4), // quest
             eLanguage::text("military_change_long_name"),
             eLanguage::text("economic_change_long_name"),
+            eLanguage::text("favor_change_long_name"),
             eLanguage::zeusText(290, 6), // military request
             eLanguage::zeusText(35, 13), // god disaster
             eLanguage::zeusText(156, 20), // rival army away
