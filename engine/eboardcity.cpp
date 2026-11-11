@@ -1459,44 +1459,82 @@ std::vector<bool> eBoardCity::pyramidLevels(const eBuildingType type) const {
     return mAvailableBuildings.pyramidLevels(type);
 }
 
-double coverageMultiplier(const int pop) {
-    if(pop < 250) return 0.125;
-    else if(pop < 500) return 0.25;
-    else if(pop < 1000) return 0.375;
-    else return 0.5;
+namespace {
+    // zeus.exe counts buildings of each type that have workers
+    // (0x00782888, filled each cycle)
+    int countWorking(const eBoardCity& c, const eBuildingType t) {
+        return c.countBuildings([t](eBuilding* const b) {
+            if(b->type() != t) return false;
+            const auto eb = dynamic_cast<eEmployingBuilding*>(b);
+            return eb && eb->employed() > 0;
+        });
+    }
 }
 
-double eBoardCity::coverageMultiplier() const {
-    const int pop = mPopData.population();
-    return ::coverageMultiplier(pop);
-}
-
-double eBoardCity::winningChance(const eGames game) const {
-    int coverage = 0;
+bool eBoardCity::canTakePartInGames(const eGames game) const {
+    if(mAtlantean) return false;
+    const int colleges = countWorking(*this, eBuildingType::college);
+    const int dramaSchools = countWorking(*this, eBuildingType::dramaSchool);
+    const int gyms = countWorking(*this, eBuildingType::gymnasium);
+    const int stadiums = countWorking(*this, eBuildingType::stadium);
     switch(game) {
     case eGames::isthmian:
-        coverage = mPhilosophyCoverage;
+        return colleges > 0;
+    case eGames::nemean:
+        return gyms + stadiums > 0;
+    case eGames::pythian:
+        return dramaSchools > 0;
+    case eGames::olympian:
+        return colleges + dramaSchools + gyms + stadiums > 0;
+    }
+    return false;
+}
+
+int eBoardCity::gamesScore(const eGames game, const bool roll) const {
+    const int colleges = countWorking(*this, eBuildingType::college);
+    const int dramaSchools = countWorking(*this, eBuildingType::dramaSchool);
+    const int gyms = countWorking(*this, eBuildingType::gymnasium);
+    const int stadiums = countWorking(*this, eBuildingType::stadium);
+    const int podiums = countWorking(*this, eBuildingType::podium);
+    const int theaters = countWorking(*this, eBuildingType::theater);
+
+    // coverage is the share of people whose house had a visit, 0-100
+    const int phil = mPhilosophyCoverage/4 + colleges + podiums;
+    const int ath = mAthleticsCoverage/4 + 5*stadiums + gyms;
+    const int drama = mDramaCoverage/4 + dramaSchools + theaters;
+    const auto as = sanctuary(eGodType::apollo);
+    const int apollo = as && as->finished() ? 20 : 0;
+
+    int score = 0;
+    switch(game) {
+    case eGames::isthmian:
+        score = phil + apollo;
         break;
     case eGames::nemean:
-        coverage = mAthleticsCoverage;
+        score = ath + apollo;
         break;
     case eGames::pythian:
-        coverage = mDramaCoverage;
+        score = drama + apollo;
         break;
     case eGames::olympian:
-        coverage = mAllDiscCoverage;
+        score = apollo + (phil + ath + drama)/3 + 4*stadiums;
         break;
     }
-
-    const double mult = coverageMultiplier();
-
-    if(mult*coverage < 15) {
-        return 0.;
-    } else {
-        const double coveragef = coverage/100.;
-        const double chance = mult*coveragef*coveragef;
-        return chance;
+    if(!roll || score == 0) return score;
+    // while Hercules' Hall stands and the city hasn't won the games he
+    // asks for, the score is squared and multiplied by 0.16
+    if(heroHall(eHeroType::hercules) && mWonGames == 0) {
+        score = static_cast<int>(score*score*0.16);
     }
+    return score;
+}
+
+int eBoardCity::sGamesScoreText(const int score) {
+    if(score < 5) return 14; // terrible
+    if(score < 10) return 13; // poor
+    if(score < 20) return 12; // ok
+    if(score < 30) return 11; // not bad
+    return 10; // good
 }
 
 void eBoardCity::updateResources() {

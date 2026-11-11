@@ -1698,9 +1698,8 @@ void eGameBoard::handleGamesBegin(const eGames game) {
     for(const auto cid : pcids) {
         const auto c = boardCityWithId(cid);
         if(c->atlantean()) continue;
-        const double chance = c->winningChance(game);
         eEventData ed(cid);
-        if(chance > 0) {
+        if(c->canTakePartInGames(game)) {
             showMessage(ed, msgs->fBegin);
         } else {
             showMessage(ed, msgs->fNoPart);
@@ -1725,20 +1724,23 @@ void eGameBoard::handleGamesEnd(const eGames game) {
         break;
     }
 
-    using eCityChance = std::pair<eCityId, double>;
+    // zeus.exe (0x00565E90): a roll of 0-99 below the score wins; otherwise
+    // a score of 30 or more places second and a lower one loses
+    using eCityChance = std::pair<eCityId, int>;
     std::vector<eCityChance> chances;
     for(const auto c : mActiveCitiesOnBoard) {
         if(c->atlantean()) continue;
         const auto id = c->id();
-        const double chance = c->winningChance(game);
-        chances.push_back(eCityChance{id, chance});
+        const int score = c->canTakePartInGames(game) ?
+                              c->gamesScore(game, true) : 0;
+        chances.push_back(eCityChance{id, score});
     }
     if(chances.empty()) return;
     eRand::randomShuffle(chances);
 
     eCityId winner = eCityId::neutralFriendly;
     for(const auto& c : chances) {
-        const bool won = eRand::rand() % 101 < 100*c.second;
+        const bool won = eRand::rand() % 100 < c.second;
         if(!won) continue;
         const auto cid = c.first;
         const auto city = boardCityWithId(cid);
@@ -1775,7 +1777,7 @@ void eGameBoard::handleGamesEnd(const eGames game) {
     for(const auto& c : chances) {
         const auto cid = c.first;
         if(cid == winner) continue;
-        const bool second = eRand::rand() % 101 < 200*c.second;
+        const bool second = c.second >= 30;
         eEventData ed(cid);
         if(second && secondCid == eCityId::neutralFriendly) {
             secondCid = cid;

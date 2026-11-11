@@ -112,6 +112,17 @@ Progress per cycle by staffing (10 / 8 / 6 / 4 / 2); a ship is launched past 319
 - Applied 10 Nov 2026: eZeus now uses this table, the tree map, the road-between-roads rule and the straight-side variants for Avenue and Boulevard tree tiles, and the same table for the road tiles beside them (this also fixes Boulevard roads, which used plain road pictures). eZeus works out the pictures from what is on screen as if in the default view, so the original's extra remaps for the turned views aren't copied. A tree tile shown as road stays a tree tile for walkers and building (the original turns it into real road). eZeus keeps road tiles as separate roads, so any road tile touching an Avenue/Boulevard tile gets these pictures, not only the piece's own road.
 - Not applied: the scenario on/off switch (eZeus has none for either).
 
+## Pan-Hellenic games (verified in code and eventmsg, applied 10 Nov 2026)
+- Which game: (year, or the next year after month 8) & 3: 0 Olympian, 1 Isthmian, 2 Nemean, 3 Pythian (the begin messages 0x4B0, 0x488, 0x474, 0x49C follow eventmsg's order Nemean, Isthmian, Pythian, Olympian). eZeus has the same order in its own year count (not changed).
+- Building counts (`0x00782888`, per type, buildings with workers): college 77, drama school 78, gymnasium 79, stadium 80, podium 81, theater 82.
+- Taking part (`0x00565A80`): Isthmian needs a working college, Nemean a working gymnasium or stadium, Pythian a working drama school, Olympian any of the four. When a flag in the games record is set, the Olympian year needs a working stadium instead (possibly Poseidon's Home Games; not traced).
+- Coverage (`0x00566A90`): the share of people whose house has a philosopher (+0x6d), athlete (+0x6f) or actor (+0x71) visit, 0-100.
+- Score (`0x00565D40`): Isthmian = philosophy / 4 + colleges + podiums; Nemean = athletics / 4 + 5 x stadiums + gymnasiums; Pythian = drama / 4 + drama schools + theaters; Olympian = (the three) / 3 + 4 x stadiums. Apollo's sanctuary adds 20 to each (`0x004E9440`).
+- Hercules (`0x00565E30`, hero record 1 at `0x00F0E504`): while his hall stands, he hasn't come and his games requirement (6) isn't met, a non-zero score becomes score x score x 0.16 (`0x005E4800`) for the roll.
+- Result (`0x00565E90`): a random 0-99 below the score wins; otherwise a score of 30 or more is second, lower is lost.
+- Culture advisor (`0x00519BD0`, Zeus_Text group 58): score under 5 terrible, under 10 poor, under 20 ok, under 30 not bad, else good.
+- Applied: eZeus uses these rules for Greek cities; the Hercules boost applies while his hall stands and the city has won no games. Its June begin / August end timing is kept; the original rolls when the games begin. The Poseidon home games aren't traced.
+
 ## Hippodrome (verified in code, table `0x006429F0`, 5 numbers per length band)
 Bands 4–10, 12–22, 24–34, 36–58, 60–98, 100–198, 200+: mood +1, +1, +1, +1, +1, +2, −5 at each mood update while working (`0x0056FDC0`); income 10, 20, 40, 60, 100, 200, 500 and horses 4, 4, 8, 8, 12, 12, 24 (as the site says); two more columns (0,1,1,1,2,3,0 and 0,0,0,1,1,3,15) not identified.
 

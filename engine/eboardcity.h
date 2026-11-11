@@ -197,8 +197,14 @@ public:
     int wonGames() const { return mWonGames; }
     void incWonGames() { mWonGames++; }
 
-    double coverageMultiplier() const;
-    double winningChance(const eGames game) const;
+    // Pan-Hellenic games as zeus.exe runs them (0x00565A80, 0x00565D40,
+    // 0x00565E30): whether the city can take part, and its score; a roll
+    // of 0-99 below the score wins
+    bool canTakePartInGames(const eGames game) const;
+    // roll = true adds the Hercules' Hall boost used for the roll only
+    int gamesScore(const eGames game, const bool roll = false) const;
+    // culture advisor text (Zeus_Text group 58) for the score (0x00519BD0)
+    static int sGamesScoreText(const int score);
 
     void updateResources();
     using eResources = std::vector<std::pair<eResourceType, int>>;

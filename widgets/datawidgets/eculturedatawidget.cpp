@@ -134,10 +134,18 @@ void eCultureDataWidget::initialize() {
 
 void eCultureDataWidget::updateCoverage() {
     const auto cid = viewedCity();
+    // a Greek city sees its likely standing from the games score, as in
+    // zeus.exe (0x00519BD0); Atlantean cities keep the coverage text
+    const auto city = mBoard.boardCityWithId(cid);
+    const bool greek = city && !city->atlantean();
+    const auto toText = [&](const int cov, const eGames game) {
+        if(greek) return eBoardCity::sGamesScoreText(city->gamesScore(game));
+        return sCoverageToText(cov);
+    };
 
     {
         const int pc = mBoard.philosophyResearchCoverage(cid);
-        const auto pt = sCoverageToText(pc);
+        const auto pt = toText(pc, eGames::isthmian);
         const auto ptt = eLanguage::zeusText(58, pt);
         mPhilosophyCoverage->setText(ptt);
         mPhilosophyCoverage->fitContent();
@@ -145,7 +153,7 @@ void eCultureDataWidget::updateCoverage() {
 
     {
         const int ac = mBoard.athleticsLearningCoverage(cid);
-        const auto at = sCoverageToText(ac);
+        const auto at = toText(ac, eGames::nemean);
         const auto att = eLanguage::zeusText(58, at);
         mAthleticsCoverage->setText(att);
         mAthleticsCoverage->fitContent();
@@ -153,7 +161,7 @@ void eCultureDataWidget::updateCoverage() {
 
     {
         const int dc = mBoard.dramaAstronomyCoverage(cid);
-        const auto dt = sCoverageToText(dc);
+        const auto dt = toText(dc, eGames::pythian);
         const auto dtt = eLanguage::zeusText(58, dt);
         mDramaCoverage->setText(dtt);
         mDramaCoverage->fitContent();
@@ -161,7 +169,7 @@ void eCultureDataWidget::updateCoverage() {
 
     {
         const int ddc = mBoard.allCultureScienceCoverage(cid);
-        const auto ddt = sCoverageToText(ddc);
+        const auto ddt = toText(ddc, eGames::olympian);
         const auto ddtt = eLanguage::zeusText(58, ddt);
         mAllCoverage->setText(ddtt);
         mAllCoverage->fitContent();
