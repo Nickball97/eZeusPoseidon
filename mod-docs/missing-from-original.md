@@ -1,12 +1,12 @@
 # What eZeus still lacks compared with the original
 
-Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 Nov: Avenue/Boulevard, Pan-Hellenic games, rescue cash attitude, waterfront appeal, plague notes, all 57 scenario allowed-structures switches, workshop output, company bookmarks, monster behaviour files, hippodrome standing, the original angry-god curses incl. Demeter and Hera, angry Ares and Artemis armies, the M freeze-footprint key, F5 and F8). Details and addresses for anything taken from the exe are in `original-exe-findings.md`.
+Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 Nov: Avenue/Boulevard, Pan-Hellenic games, rescue cash attitude, waterfront appeal, plague notes, all 57 scenario allowed-structures switches, workshop output, company bookmarks, monster behaviour files, hippodrome standing, the original angry-god curses incl. Demeter and Hera, angry Ares and Artemis armies, the M freeze-footprint key, F5, F8 and Tab). Details and addresses for anything taken from the exe are in `original-exe-findings.md`.
 
 ## A. Features the manuals or sources describe that eZeus doesn't have
 
 | # | Missing | Source | What it would take |
 |---|---|---|---|
-| A5 | Hotkeys not added: Tab for the overview map; F6 and F7 screen sizes (eZeus changes size only in the settings menu). (Company bookmarks, Ctrl/Alt+1-5 in the exe, a tab key pressed twice, M "freeze footprint", F5 full screen and F8 centre window were added on 11 Nov 2026.) | Citadel: hotkeys; zeus.exe `0x005C4A90` | Overview map doesn't exist in eZeus; full reports exist for only 3 tabs |
+| A5 | Hotkeys not added: F6 and F7 screen sizes (eZeus changes size only in the settings menu). Tab shows the overview tab, but the build buttons stay (the original hides them). (Company bookmarks, Ctrl/Alt+1-5 in the exe, a tab key pressed twice, M "freeze footprint", F5 full screen, F8 centre window and Tab were added on 11 Nov 2026.) | Citadel: hotkeys; zeus.exe `0x005C4A90` | Full reports exist for only 3 tabs |
 | A6 | Cosmetic cheats: Bowvine and Arrow (towers shoot cows), Cheese Puff (dairy workers in cheese suits), Mammaldrome (animals race in the hippodrome) | Citadel: cheats | Each needs art swaps |
 
 ## B. Described by the sources, but the numbers or the rule weren't found

@@ -136,3 +136,25 @@ bool eGameMenuBase::selectTab(const int i) {
     }
     return true;
 }
+
+void eGameMenuBase::toggleOverviewTab(const int overviewTab) {
+    const int n = mButtons.size();
+    if(overviewTab < 0 || overviewTab >= n) return;
+    const auto ob = mButtons[overviewTab];
+    if(ob->checked()) {
+        const int t = mTabBeforeOverview;
+        mTabBeforeOverview = -1;
+        if(t < 0 || t >= n || t == overviewTab) return;
+        const auto b = mButtons[t];
+        if(b->visible()) b->trigger();
+        return;
+    }
+    mTabBeforeOverview = -1;
+    for(int i = 0; i < n; i++) {
+        if(mButtons[i]->checked()) {
+            mTabBeforeOverview = i;
+            break;
+        }
+    }
+    ob->trigger();
+}

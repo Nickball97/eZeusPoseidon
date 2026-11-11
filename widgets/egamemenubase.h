@@ -30,6 +30,8 @@ public:
     void connectButtons();
     // the original's number-key shortcuts: open tab i (0 = first) if it's shown
     bool selectTab(const int i);
+    // Tab: switch to the overview tab (the minimap) and back
+    void toggleOverviewTab(const int overviewTab);
 protected:
     bool mousePressEvent(const eMouseEvent& e) override;
     bool mouseReleaseEvent(const eMouseEvent& e) override;
@@ -40,6 +42,7 @@ private:
     eWidget* mButtonsWidget = nullptr;
     std::vector<eCheckableButton*> mButtons;
     std::vector<eWid> mWidgets;
+    int mTabBeforeOverview = -1;
 };
 
 #endif // EGAMEMENUBASE_H
