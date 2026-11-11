@@ -1,6 +1,6 @@
 # What eZeus still lacks compared with the original
 
-Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 Nov: Avenue/Boulevard, Pan-Hellenic games, rescue cash attitude, waterfront appeal, plague notes, all 57 scenario allowed-structures switches, workshop output, company bookmarks, monster behaviour files, hippodrome standing, the original angry-god curses incl. Demeter and Hera). Details and addresses for anything taken from the exe are in `original-exe-findings.md`.
+Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 Nov: Avenue/Boulevard, Pan-Hellenic games, rescue cash attitude, waterfront appeal, plague notes, all 57 scenario allowed-structures switches, workshop output, company bookmarks, monster behaviour files, hippodrome standing, the original angry-god curses incl. Demeter and Hera, angry Ares and Artemis armies). Details and addresses for anything taken from the exe are in `original-exe-findings.md`.
 
 ## A. Features the manuals or sources describe that eZeus doesn't have
 
@@ -18,7 +18,7 @@ Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 N
 
 ## C. Found in zeus.exe but not yet put into eZeus
 
-None left: C1 (military service mood) and C2 (11% tax coverage) were applied on 9 Nov 2026. A1 (enemy warships) was applied on 9 Nov 2026 too; still open there: a warship count in the scenario editor, and the warships of the original's special invasion record 0x8c (see original-exe-findings.md). A2 (sanctuary priests and sacrifices) was applied on 10 Nov 2026; not traced there: the bull's standing animation and the Poseidon art of a priest leading cattle.
+None left: C1 (military service mood) and C2 (11% tax coverage) were applied on 9 Nov 2026. A1 (enemy warships) was applied on 9 Nov 2026 too; still open there: a warship count in the scenario editor (low priority). The special invasion record 0x8c turned out to be the spare slot used by angry Ares and Artemis armies, which come by land, so no warships apply (11 Nov 2026). A2 (sanctuary priests and sacrifices) was applied on 10 Nov 2026; not traced there: the bull's standing animation and the Poseidon art of a priest leading cattle.
 
 ## D. Upstream eZeus gaps (GitHub issues, not original-game rules)
 

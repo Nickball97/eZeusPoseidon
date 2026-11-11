@@ -346,14 +346,18 @@ void eGodAttackAction::applyArrivalEffects() {
     }
 }
 
-// An angry Ares or Artemis brings an army hostile to the city. The manual
-// gives no size; it uses the size of the army these gods lend a city that
-// worships them (2 companies, eNumbers::sSoldiersPerAresArtemisBanner each).
+// An angry Ares or Artemis brings an army hostile to the city. zeus.exe
+// (arrival 0x004EC410 Artemis, 0x004EC560 Ares, both calling 0x00504650):
+// one company of 8 soldiers, Amazons (nation 4) or Ares' warriors (nation
+// 10), at the map's entry point, or the exit point when there is none;
+// with neither, no army comes. The invasion uses the spare event slot 140.
 void eGodAttackAction::spawnArmy(const ePlayerSoldierType type) {
     auto& board = this->board();
-    const auto tile = character()->tile();
+    const auto cid = cityId();
+    auto tile = board.entryPoint(cid);
+    if(!tile) tile = board.exitPoint(cid);
     if(!tile) return;
-    const int count = 2*eNumbers::sSoldiersPerAresArtemisBanner;
+    const int count = 8;
     // the handler registers itself with the city, saves with it and
     // deletes itself when the army is gone
     const auto h = new eInvasionHandler(board, cityId(), nullptr, nullptr);
