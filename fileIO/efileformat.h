@@ -31,6 +31,7 @@ namespace eFileFormat {
         invasionWarships,
         sanctuaryPriests,
         giftRescue,
+        allowedSwitches,
 
         nextVersion
     };

@@ -2,6 +2,7 @@
 #define EAVAILABLEBUILDINGS_H
 
 #include <map>
+#include <set>
 
 #include "characters/gods/egod.h"
 
@@ -112,6 +113,16 @@ public:
     eAvailable fTheseusHall = eAvailable::notAvailable;
 
     std::map<eBuildingType, ePyramidAvailable> fPyramids;
+
+    // The scenario's "allowed structures" switches (zeus.exe build menu
+    // 0x00402B80, values at 0x00902D32): buildings switched off that have no
+    // field of their own above, plus the hero's halls; and the roadblock.
+    // Saved since eFileFormat::allowedSwitches; older saves allow them all.
+    std::set<eBuildingType> fSwitchedOff;
+    bool fRoadblockOff = false;
+
+    // buildings only the scenario switches control (no field of their own)
+    static bool sSwitchOnly(const eBuildingType type);
 
     int fPopulationMonument = 0;
     int fVictoryMonument = 0;

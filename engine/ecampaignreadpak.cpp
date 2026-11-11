@@ -75,76 +75,101 @@ eResourceType pakCityResourceByteToType(
     return eResourceType::none;
 }
 
+// The scenario's 57 "allowed structures" switches, 2 bytes each, in the
+// order of Zeus_Editor_Text's list. Which buildings each one controls is
+// taken from zeus.exe's build menu (0x00402B80, values at 0x00902D32).
+// Switch 36 controls the Flower Garden and 37 the Gazebo, the other way
+// round from the editor's labels.
 void readEpisodeAllowedBuildings(eEpisode& ep, ZeusFile& file,
                                  const bool atlantean, const eCityId cid) {
     auto& av = ep.fAvailableBuildings[cid];
-    for(const auto type : {eBuildingType::mint,
-                           eBuildingType::huntingLodge,
-                           eBuildingType::olivePress,
-                           eBuildingType::grandAgora,
-                           atlantean ? eBuildingType::corral : eBuildingType::none,
-                           eBuildingType::granary,
-                           eBuildingType::commonAgora,
-                           eBuildingType::warehouse,
-                           eBuildingType::tradePost, // trade buildings
-                           atlantean ? eBuildingType::museum : eBuildingType::stadium,
-                           atlantean ? eBuildingType::laboratory : eBuildingType::theater,
-                           atlantean ? eBuildingType::bibliotheke : eBuildingType::gymnasium,
-                           eBuildingType::winery,
-                           eBuildingType::sculptureStudio,
-                           atlantean ? eBuildingType::observatory : eBuildingType::podium,
-                           atlantean ? eBuildingType::university : eBuildingType::college,
-                           eBuildingType::fountain,
-                           eBuildingType::horseRanch,
-                           atlantean ? eBuildingType::inventorsWorkshop : eBuildingType::dramaSchool,
-                           eBuildingType::maintenanceOffice,
-                           eBuildingType::hospital,
-                           eBuildingType::taxOffice,
-                           eBuildingType::watchPost,
-                           eBuildingType::palace,
-                           eBuildingType::none, // hero's hall
-                           eBuildingType::none, // road block
-                           eBuildingType::bridge,
-                           eBuildingType::none, // columns
-                           eBuildingType::park,
-                           eBuildingType::avenue,
-                           eBuildingType::boulevard,
-                           eBuildingType::wall,
-                           eBuildingType::tower,
-                           eBuildingType::gatehouse,
-                           eBuildingType::bench,
-                           eBuildingType::gazebo,
-                           eBuildingType::flowerGarden,
-                           eBuildingType::hedgeMaze,
-                           eBuildingType::fishPond,
-                           eBuildingType::armory,
-                           eBuildingType::triremeWharf,
-                           eBuildingType::eliteHousing,
-                           atlantean ? eBuildingType::hippodromePiece : eBuildingType::none, // hippodrome
-                           atlantean ? eBuildingType::chariotFactory : eBuildingType::none,
-                           eBuildingType::tallObelisk,
-                           eBuildingType::sundial,
-                           eBuildingType::topiary,
-                           eBuildingType::spring,
-                           eBuildingType::stoneCircle,
-                           eBuildingType::shortObelisk,
-                           eBuildingType::waterPark,
-                           eBuildingType::dolphinSculpture,
-                           eBuildingType::orrery,
-                           eBuildingType::shellGarden,
-                           eBuildingType::baths,
-                           eBuildingType::birdBath}) {
+    using eTypes = std::vector<eBuildingType>;
+    using eBT = eBuildingType;
+    const eTypes heroHall{}; // switch 25, handled below
+    const eTypes roadblock{}; // switch 26, handled below
+    const std::vector<eTypes> switches{
+        {eBT::mint},
+        {eBT::huntingLodge},
+        {eBT::olivePress},
+        {eBT::grandAgora},
+        {}, // fishing wharf: the original's menu doesn't read it
+        {eBT::corral}, // any city in Poseidon
+        {eBT::granary},
+        {eBT::commonAgora},
+        {eBT::warehouse},
+        {eBT::tradePost, eBT::pier},
+        {eBT::stadium, eBT::museum},
+        {eBT::theater, eBT::laboratory},
+        {eBT::gymnasium, eBT::bibliotheke},
+        {eBT::winery},
+        {eBT::sculptureStudio},
+        {eBT::podium, eBT::observatory},
+        {eBT::college, eBT::university},
+        {eBT::fountain},
+        {eBT::horseRanch},
+        {eBT::dramaSchool, eBT::inventorsWorkshop},
+        {eBT::maintenanceOffice},
+        {eBT::hospital},
+        {eBT::taxOffice},
+        {eBT::watchPost},
+        {eBT::palace},
+        heroHall,
+        roadblock,
+        {eBT::bridge},
+        {eBT::doricColumn, eBT::ionicColumn, eBT::corinthianColumn},
+        {eBT::park},
+        {eBT::avenue},
+        {eBT::boulevard},
+        {eBT::wall},
+        {eBT::tower},
+        {eBT::gatehouse},
+        {eBT::bench},
+        {eBT::flowerGarden},
+        {eBT::gazebo},
+        {eBT::hedgeMaze},
+        {eBT::fishPond},
+        {eBT::armory},
+        {eBT::triremeWharf},
+        {eBT::eliteHousing},
+        // the original offers the hippodrome to Atlantean cities only
+        atlantean ? eTypes{eBT::hippodromePiece, eBT::crosswalk} : eTypes{},
+        atlantean ? eTypes{eBT::chariotFactory} : eTypes{},
+        {eBT::tallObelisk},
+        {eBT::sundial},
+        {eBT::topiary},
+        {eBT::spring},
+        {eBT::stoneCircle},
+        {eBT::shortObelisk},
+        {eBT::waterPark},
+        {eBT::dolphinSculpture},
+        {eBT::orrery},
+        {eBT::shellGarden},
+        {eBT::baths},
+        {eBT::birdBath}};
+    const eTypes halls{eBT::achillesHall, eBT::atalantaHall,
+                       eBT::bellerophonHall, eBT::herculesHall,
+                       eBT::jasonHall, eBT::odysseusHall,
+                       eBT::perseusHall, eBT::theseusHall};
+    for(int i = 0; i < static_cast<int>(switches.size()); i++) {
         const auto allowedByte = file.readUByte();
         file.skipBytes(1);
-        if(type == eBuildingType::grandAgora) file.skipBytes(2);
-        if(allowedByte != 1) {
-            printf("%s %i\n", eBuilding::sNameForBuilding(type).c_str(), allowedByte);
-        }
         const bool allowed = allowedByte == 1;
-        if(allowed) av.allow(type);
-        else av.disallow(type);
+        if(i == 25) {
+            for(const auto h : halls) {
+                if(allowed) av.fSwitchedOff.erase(h);
+                else av.fSwitchedOff.insert(h);
+            }
+            continue;
+        }
+        if(i == 26) {
+            av.fRoadblockOff = !allowed;
+            continue;
+        }
+        for(const auto type : switches[i]) {
+            if(allowed) av.allow(type);
+            else av.disallow(type);
+        }
     }
-    printf("\n");
 }
 
 void readEpisodeResources(eEpisode& ep, ZeusFile& file,

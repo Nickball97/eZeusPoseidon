@@ -47,6 +47,9 @@ void tradePosts(const eCityId cid, std::vector<eSPR>& cs,
     const auto pid = board.cityIdToPlayerId(cid);
     const auto ppid = board.personPlayer();
     if(pid != ppid && !showAllPossibleBuildings) return;
+    // the scenario's trade buildings switch (zeus.exe 0x005B9410)
+    if(!showAllPossibleBuildings &&
+       !board.supportsBuilding(cid, eBuildingMode::tradePost)) return;
     const auto& wrld = board.world();
     int i = -1;
     for(const auto& c : wrld.cities()) {
@@ -103,11 +106,17 @@ public:
             tradePosts(cid, cs, mBoard, showAllPossibleBuildings);
             vis = !cs.empty();
         } else if(mMode == eBuildingMode::palace) {
-            vis = !mBoard.hasPalace(cid);
+            vis = !mBoard.hasPalace(cid) &&
+                  (showAllPossibleBuildings ||
+                   mBoard.supportsBuilding(cid, mMode));
         } else if(mMode == eBuildingMode::stadium) {
-            vis = !mBoard.atlantean(cid) && !mBoard.hasStadium(cid);
+            vis = !mBoard.atlantean(cid) && !mBoard.hasStadium(cid) &&
+                  (showAllPossibleBuildings ||
+                   mBoard.supportsBuilding(cid, mMode));
         } else if(mMode == eBuildingMode::museum) {
-            vis = mBoard.atlantean(cid) && !mBoard.hasMuseum(cid);
+            vis = mBoard.atlantean(cid) && !mBoard.hasMuseum(cid) &&
+                  (showAllPossibleBuildings ||
+                   mBoard.supportsBuilding(cid, mMode));
         } else if(mMode == eBuildingMode::none) {
             for(const auto& c : mChildren) {
                 const bool s = showAllPossibleBuildings ||
@@ -1032,6 +1041,8 @@ void eGameMenu::initialize(eGameBoard* const b,
         });
         const auto rb = eButton::sCreate(coll.fRoadBlock, window(), btmButtons);
         rb->setPressAction([this]() {
+            const auto cid = mGW->viewedCity();
+            if(!mBoard->supportsBuilding(cid, eBuildingMode::roadblock)) return;
             setMode(eBuildingMode::roadblock);
         });
         const auto e = eButton::sCreate(coll.fClear, window(), btmButtons);

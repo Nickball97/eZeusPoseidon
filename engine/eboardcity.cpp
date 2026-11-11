@@ -1142,6 +1142,10 @@ void eBoardCity::unregisterPalace() {
 }
 
 bool eBoardCity::supportsBuilding(const eBuildingMode mode) const {
+    // the scenario's roadblock switch (zeus.exe 0x00402B80, switch 26)
+    if(mode == eBuildingMode::roadblock) {
+        return !mAvailableBuildings.fRoadblockOff;
+    }
     const auto type = eBuildingModeHelpers::toBuildingType(mode);
     int id = -1;
     switch(mode) {
@@ -1186,6 +1190,11 @@ bool eBoardCity::availableBuilding(const eBuildingType type,
     case eBuildingType::chariotVendor:
     case eBuildingType::chariotFactory: {
         if(!mAtlantean) return false;
+        // zeus.exe also needs the horse ranch switch (0x00402B80)
+        if(type == eBuildingType::chariotFactory &&
+           !mAvailableBuildings.available(eBuildingType::horseRanch)) {
+            return false;
+        }
     } break;
     case eBuildingType::horseTrainer: {
         if(mAtlantean) return false;
