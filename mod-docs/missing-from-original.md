@@ -1,6 +1,6 @@
 # What eZeus still lacks compared with the original
 
-Status on 9 Nov 2026, after Phases 0-7 and the zeus.exe reading. Details and addresses for anything taken from the exe are in `original-exe-findings.md`.
+Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 Nov: Avenue/Boulevard, Pan-Hellenic games, rescue cash attitude, waterfront appeal, plague notes). Details and addresses for anything taken from the exe are in `original-exe-findings.md`.
 
 ## A. Features the manuals or sources describe that eZeus doesn't have
 
