@@ -2718,18 +2718,29 @@ void eBuilding::setHP(const int hp) {
 
 // A building's appeal is the highest appeal over its footprint (original
 // exe 0x004842A0, documented by zeus-poseidon-arm64 docs/engine/terrain.md
-// 7.4, "verified"). The original adds 10 more when an unidentified flag is
-// set; that is not done here.
+// 7.4, "verified"), plus 10 when a tile sharing an edge with the footprint
+// is water: the building creator 0x00493E70 sets +0xD0 from 0x004A4500,
+// which checks tile flag 4 (water) on the ring in table 0x005F1680.
 double eBuilding::appeal() const {
     const auto& b = getBoard();
     const auto& tiles = tilesUnder();
     if(tiles.empty()) return 0;
     double best = -1e9;
+    bool water = false;
     for(const auto t : tiles) {
         const int dx = t->dx();
         const int dy = t->dy();
         best = std::max(best, b.appeal(dx ,dy));
+        if(water) continue;
+        for(const auto n : {t->topLeft<eTile>(), t->topRight<eTile>(),
+                            t->bottomLeft<eTile>(), t->bottomRight<eTile>()}) {
+            if(n && n->hasWater()) {
+                water = true;
+                break;
+            }
+        }
     }
+    if(water) best += 10;
     return best;
 }
 

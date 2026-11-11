@@ -26,7 +26,7 @@ Read with Ghidra 12.2 from Nicolás's Steam `zeus.exe` (same build as GOG: compi
 
 ## Appeal (from zeus-poseidon-arm64 docs/engine/terrain.md §7, applied 9 Nov 2026)
 - Spread ring by ring from the footprint, at most 6 rings; the footprint itself gets nothing; each tile clamped to −100..100.
-- A building's appeal is the highest over its footprint (+10 when an unidentified flag is set).
+- A building's appeal is the highest over its footprint, +10 when a tile sharing an edge with the footprint is water (tile flag 4). The building creator `0x00493E70` stores this as +0xD0 from `0x004A4500`, which reads the ring of edge tiles in table `0x005F1680` (24 offsets per size); `0x004842A0` adds it each cycle. Placing an elite home (`0x004FF430`) uses the same value over the 4x4 spot against the Model elite level-1 appeal (Aphrodite included). Applied 10 Nov 2026 to eBuilding::appeal and the elite placement check (which used the average appeal).
 
 ## Outlaws' behaviour (verified in code)
 - Action table per figure type at `0x0063969C` (40 bytes each): disgruntled `0x004B5A20`, thief `0x004B5B70`, mugger `0x004B68B0`, vandal `0x004B6A00`.

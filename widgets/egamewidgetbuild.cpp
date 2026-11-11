@@ -1085,21 +1085,33 @@ bool eGameWidget::buildMouseRelease() {
                     warn(206, 1);
                     return true;
                 }
-                double sum = 0;
+                // zeus.exe (0x004FF430): the highest appeal over the 4x4
+                // spot, plus 10 when a tile along its edge is water
+                // (0x004A4500)
+                double best = -1e9;
                 int n = 0;
-                for(int x = t1->x() + 1; x < t1->x() + 5; x++) {
-                    for(int y = t1->y() + 1; y < t1->y() + 5; y++) {
+                bool water = false;
+                for(int x = t1->x(); x < t1->x() + 6; x++) {
+                    for(int y = t1->y(); y < t1->y() + 6; y++) {
                         const auto t = mBoard->tile(x, y);
                         if(!t) continue;
-                        sum += mBoard->appeal(t->dx(), t->dy());
-                        n++;
+                        const bool inX = x > t1->x() && x < t1->x() + 5;
+                        const bool inY = y > t1->y() && y < t1->y() + 5;
+                        if(inX && inY) {
+                            best = std::max(best,
+                                            mBoard->appeal(t->dx(), t->dy()));
+                            n++;
+                        } else if(inX || inY) {
+                            if(t->hasWater()) water = true;
+                        }
                     }
                 }
+                if(water) best += 10;
                 const auto diff = mBoard->difficulty(pid);
                 int need = eHouseModel::eliteEvolve(diff, 1);
                 const auto aph = mBoard->sanctuary(vcid, eGodType::aphrodite);
                 if(aph && aph->finished()) need -= 10; // Aphrodite
-                if(n == 0 || sum/n < need) {
+                if(n == 0 || best < need) {
                     showTip(cid, eLanguage::zeusText(19, 207));
                     return true;
                 }
