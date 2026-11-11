@@ -47,6 +47,7 @@ private:
     int mLookForTargetedAttack = eRand::rand() % 2000;
     int mLookForGod = eRand::rand() % 2000;
     int mLookForSpecial = eRand::rand() % 2000;
+    int mCursesLeft = 10; // curses left this visit (zeus.exe +0x8BA)
 
     stdptr<eSanctuary> mSanctuary;
 };

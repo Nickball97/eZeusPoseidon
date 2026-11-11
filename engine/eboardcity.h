@@ -439,6 +439,8 @@ public:
     void updateHippodromes();
     // January and July: a working hippodrome raises other cities' standing
     void hippodromeStanding();
+    // an angry Apollo's curse starts a plague outbreak (zeus.exe 0x004481B0)
+    void godPlagueOutbreak() { plagueOutbreak(); }
     void clearHippodromes();
 
     void addReinforcements(const eCityId fromCid,

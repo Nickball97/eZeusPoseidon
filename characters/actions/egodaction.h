@@ -15,6 +15,15 @@
 class eDestructionTextures;
 enum class eGodSound;
 
+// The building a curse aimed at this one falls on (a sanctuary part or
+// palace tile stands for its sanctuary or palace); nullptr if none.
+eBuilding* eGodCurseTargetBuilding(eBuilding* const b);
+// The original's angry-god curse (zeus.exe 0x004ED2A0, 0x004ED350,
+// 0x004EDFC0): every building of the target's type in its city stops
+// working for the god's months, plus the god's extra.
+void eGodCurseBuildingType(eGameBoard& board, eBuilding* const target,
+                           const eGodType god);
+
 enum class eGodActType {
     lookForSoldierAttack,
     lookForBless,
@@ -286,12 +295,28 @@ public:
         eLookForBlessGodActBase(board, eGodActType::lookForTargetedBless),
         mType(type) {
         mBless = bless;
+        // an angry Zeus picks one of lists 0-10 at random each time
+        // (zeus.exe 0x004ABBF0; list 10 is empty)
+        mCurseKind = eGod::sCurseKind(type);
+        if(mCurseKind == 10) mCurseKind = eRand::rand() % 11;
     }
     eLookForTargetedBlessGodAct(eGameBoard& board) :
         eLookForTargetedBlessGodAct(board, 0, eGodType::zeus) {}
 
     eMissileTarget find(eTile* const t) {
         const auto null = static_cast<eTile*>(nullptr);
+        if(mBless < 0) {
+            // the original's curse lists (see eGod::sCurseKindTarget)
+            const auto b = eGodCurseTargetBuilding(t->underBuilding());
+            if(!b || b->cursed()) return null;
+            if(mCurseKind < 0 || mCurseKind > 9) return null;
+            if(!eGod::sCurseKindTarget(mCurseKind, b->type())) return null;
+            if(const auto rb = dynamic_cast<eResourceBuilding*>(b)) {
+                if(rb->sanctuary()) return null;
+            }
+            mTarget = b;
+            return b->centerTile();
+        }
         const auto b = t->underBuilding();
         if(!b) {
             return null;
@@ -316,6 +341,15 @@ public:
         return b->centerTile();
     }
 
+    void act() {
+        if(mBless < 0) {
+            // the curse falls on every building of the target's type
+            if(mTarget) eGodCurseBuildingType(board(), mTarget, mType);
+            return;
+        }
+        eLookForBlessGodActBase::act();
+    }
+
     void read(eReadStream& src) {
         eLookForBlessGodActBase::read(src);
         src >> mType;
@@ -327,6 +361,7 @@ public:
     }
 private:
     eGodType mType;
+    int mCurseKind = -1; // not saved: only used while looking for a target
 };
 
 class eLookForBlessGodAct : public eLookForBlessGodActBase {

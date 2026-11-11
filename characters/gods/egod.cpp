@@ -9,6 +9,8 @@
 
 #include "buildings/ebuilding.h"
 
+#include <algorithm>
+
 #include "textures/egametextures.h"
 
 eGod::eGod(eGameBoard& board, const eGodType gt) :
@@ -566,55 +568,102 @@ bool eGod::sAttackTarget(const eGodType gt, const eBuildingType bt) {
 
 // Buildings an angry god curses; cursed buildings stop working until the
 // curse is lifted.
-bool eGod::sCurseTarget(const eGodType gt, const eBuildingType bt) {
+int eGod::sCurseKind(const eGodType gt) {
     switch(gt) {
-    case eGodType::zeus: // "He can perform any god's curse"
-        return true;
-    case eGodType::poseidon: // Trireme Wharves, Urchin Quays and Fisheries
-        return bt == eBuildingType::triremeWharf ||
-               bt == eBuildingType::urchinQuay ||
-               bt == eBuildingType::fishery;
-    case eGodType::hades: // Foundries and Mints
-        return bt == eBuildingType::foundry ||
-               bt == eBuildingType::mint;
-    case eGodType::dionysus: // the city's Grapevines
-        return bt == eBuildingType::vine;
-    case eGodType::athena: // "a number on the city's olive oil industry"
-        return bt == eBuildingType::oliveTree ||
-               bt == eBuildingType::olivePress;
+    case eGodType::zeus: return 10;
+    case eGodType::poseidon: return 1;
+    case eGodType::demeter:
+    case eGodType::artemis: return 0;
     case eGodType::apollo:
-        // "prevent the city's cultural institutions from enriching the
-        // masses"; in Atlantis "he curses all science buildings"
-        return bt == eBuildingType::podium ||
-               bt == eBuildingType::gymnasium ||
-               bt == eBuildingType::theater ||
-               bt == eBuildingType::stadium ||
-               bt == eBuildingType::bibliotheke ||
-               bt == eBuildingType::laboratory ||
-               bt == eBuildingType::observatory ||
-               bt == eBuildingType::museum ||
-               // "and curses infirmaries" (Citadel of Poseidon)
-               bt == eBuildingType::hospital;
-    // Citadel of Poseidon, sanctuary.html:
-    case eGodType::hera: // "Hera curses your corrals"
-        return bt == eBuildingType::corral;
-    case eGodType::demeter: // "curses farms"
-        return bt == eBuildingType::wheatFarm ||
-               bt == eBuildingType::carrotsFarm ||
-               bt == eBuildingType::onionsFarm;
-    case eGodType::artemis: // "curses hunting lodges"
-        return bt == eBuildingType::huntingLodge;
-    case eGodType::hephaestus: // Sculpture Studios and Armories
-        return bt == eBuildingType::sculptureStudio ||
-               bt == eBuildingType::armory;
-    case eGodType::atlas:
-        // Black Marble Workshops, Masonry Shops and Artisans' Guilds
-        return bt == eBuildingType::blackMarbleWorkshop ||
-               bt == eBuildingType::masonryShop ||
-               bt == eBuildingType::artisansGuild;
+    case eGodType::dionysus: return 6;
+    case eGodType::hephaestus:
+    case eGodType::atlas: return 2;
+    case eGodType::athena: return 3;
+    case eGodType::hades: return 4;
+    case eGodType::hera: return 9;
+    // Ares (list 10), Aphrodite (7) and Hermes (2) have 0 months
+    default: return -1;
+    }
+}
+
+bool eGod::sCurseKindTarget(const int kind, const eBuildingType bt) {
+    using T = eBuildingType;
+    const auto in = [bt](const std::initializer_list<T> l) {
+        return std::find(l.begin(), l.end(), bt) != l.end();
+    };
+    const bool sanct = bt >= T::templeAphrodite && bt <= T::templeZeus;
+    switch(kind) {
+    case 0: // granary, farms, agoras, dairy, hunting, fishing, corral,
+            // fruit growers' lodge
+        return in({T::granary, T::wheatFarm, T::onionsFarm, T::carrotsFarm,
+                   T::commonAgora, T::grandAgora, T::dairy,
+                   T::huntingLodge, T::fishery, T::urchinQuay, T::corral,
+                   T::orangeTendersLodge});
+    case 1:
+        return in({T::fishery, T::urchinQuay, T::triremeWharf, T::pier});
+    case 2:
+        return in({T::timberMill, T::masonryShop, T::foundry, T::mint,
+                   T::cardingShed, T::sculptureStudio, T::olivePress,
+                   T::winery, T::armory, T::warehouse, T::refinery,
+                   T::chariotFactory, T::blackMarbleWorkshop});
+    case 3:
+        return in({T::armory, T::horseRanch, T::wall, T::tower,
+                   T::gatehouse, T::triremeWharf, T::foundry,
+                   T::chariotFactory, T::watchPost});
+    case 4:
+        return in({T::taxOffice, T::eliteHousing, T::mint, T::pier,
+                   T::tradePost, T::hippodromePiece});
+    case 5:
+        return in({T::tower, T::triremeWharf});
+    case 6:
+        return in({T::commonHouse, T::watchPost, T::hospital,
+                   T::maintenanceOffice, T::commonAgora, T::grandAgora,
+                   T::fountain, T::bibliotheke, T::gymnasium});
+    case 7:
+        return in({T::doricColumn, T::ionicColumn, T::corinthianColumn,
+                   T::bench, T::flowerGarden, T::gazebo, T::hedgeMaze,
+                   T::fishPond, T::tallObelisk, T::sundial, T::topiary,
+                   T::spring, T::stoneCircle, T::shortObelisk,
+                   T::dolphinSculpture, T::orrery, T::shellGarden,
+                   T::baths, T::birdBath, T::commemorative, T::waterPark});
+    case 8:
+        return sanct || eBuilding::sHeroHall(bt) ||
+               in({T::artisansGuild, T::masonryShop});
+    case 9:
+        return sanct || eBuilding::sHeroHall(bt) ||
+               in({T::palace, T::stadium, T::theater, T::hippodromePiece,
+                   T::museum, T::observatory, T::eliteHousing});
     default:
         return false;
     }
+}
+
+int eGod::sCurseMonths(const eGodType gt, const int difficulty) {
+    const int d = std::clamp(difficulty, 0, 4);
+    switch(gt) {
+    case eGodType::apollo: {
+        const int m[5] = {1, 1, 2, 2, 3};
+        return m[d];
+    }
+    case eGodType::ares:
+    case eGodType::aphrodite:
+    case eGodType::hermes:
+        return 0;
+    default: {
+        const int m[5] = {1, 2, 4, 6, 9};
+        return m[d];
+    }
+    }
+}
+
+bool eGod::sCurseTarget(const eGodType gt, const eBuildingType bt) {
+    const int kind = sCurseKind(gt);
+    if(kind < 0) return false;
+    if(kind < 10) return sCurseKindTarget(kind, bt);
+    for(int k = 0; k < 10; k++) {
+        if(sCurseKindTarget(k, bt)) return true;
+    }
+    return false;
 }
 
 // Gods that smash buildings and kill people wherever they walk. Zeus

@@ -32,6 +32,7 @@ namespace eFileFormat {
         sanctuaryPriests,
         giftRescue,
         allowedSwitches,
+        godCurseCount,
 
         nextVersion
     };

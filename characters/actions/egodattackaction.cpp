@@ -11,6 +11,7 @@
 #include "engine/eboardcity.h"
 #include "engine/eworldcity.h"
 #include "einvasionhandler.h"
+#include "fileIO/efileformat.h"
 
 #include <algorithm>
 #include <cmath>
@@ -27,8 +28,6 @@ void eGodAttackAction::increment(const int by) {
     const auto type = this->type();
     const auto at = c->actionType();
     if(at == eCharacterActionType::walk) {
-        const int cursePeriod = eNumbers::sGodAttackCursePeriod;
-        const int curseRange = eNumbers::sGodAttackCurseRange;
         const int lookForGodCheck = 1000;
         int attackPeriod;
         switch(type) {
@@ -60,36 +59,25 @@ void eGodAttackAction::increment(const int by) {
         const int targetedCurseRange = eNumbers::sGodAttackTargetedCurseRange;
         const int godFightRange = eNumbers::sGodAttackGodFightRange;
 
-        // Only Zeus curses any building; the others curse their own
-        // targets (targeted curse below). Only some gods smash and kill
+        // Curses follow the original (eGodCurseBuildingType): each god
+        // curses from its own list, Zeus from a random list, at most 10
+        // times a visit (zeus.exe +0x8BA). Only some gods smash and kill
         // at random (eGod::sGeneralAttack).
         bool r = false;
-        if(type == eGodType::zeus) {
-            r = lookForBlessCurse(by, mLookForCurse, cursePeriod, curseRange, -1);
-        }
-        if(!r && eGod::sGeneralAttack(type)) {
+        if(eGod::sGeneralAttack(type)) {
             r = lookForAttack(by, mLookForAttack, attackPeriod, attackRange);
         }
         if(!r) r = lookForTargetedAttack(by, mLookForTargetedAttack,
                                          targetedAttackPeriod, targetedAttackRange);
-        if(!r) r = lookForTargetedBlessCurse(by, mLookForTargetedCurse,
-                                             targetedCursePeriod, targetedCurseRange, -1);
+        if(!r && mCursesLeft > 0 && eGod::sCurseKind(type) >= 0) {
+            r = lookForTargetedBlessCurse(by, mLookForTargetedCurse,
+                                          targetedCursePeriod, targetedCurseRange, -1);
+            if(r) mCursesLeft--;
+        }
         if(!r) lookForGodAttack(by, mLookForGod, lookForGodCheck, godFightRange);
         if(!r) {
-            if(type == eGodType::apollo) {
-                auto& board = this->board();
-                using eLFPG = eLookForPlagueGodAct;
-                const auto act = std::make_shared<eLFPG>(board);
-                const auto at = eCharacterActionType::curse;
-                const auto s = eGodSound::curse;
-                const auto c = character();
-                const auto chart = c->type();
-                const int plaguePeriod = eNumbers::sGodAttackApolloPlaguePeriod;
-                const int plagueRange = eNumbers::sGodAttackApolloPlagueRange;
-                lookForRangeAction(by, mLookForSpecial,
-                                   plaguePeriod, plagueRange,
-                                   at, act, chart, s);
-            } else if(type == eGodType::aphrodite) {
+            // (Apollo's plague now comes with each of his curses)
+            if(type == eGodType::aphrodite) {
                 auto& board = this->board();
                 using eLFEG = eLookForEvictGodAct;
                 const auto act = std::make_shared<eLFEG>(board);
@@ -237,6 +225,9 @@ void eGodAttackAction::read(eReadStream& src) {
     src >> mLookForTargetedAttack;
     src >> mLookForGod;
     src >> mLookForSpecial;
+    if(src.formatVersion() >= eFileFormat::godCurseCount) {
+        src >> mCursesLeft;
+    }
     auto& board = this->board();
     src.readBuilding(&board, [this](eBuilding* const b) {
         mSanctuary = static_cast<eSanctuary*>(b);
@@ -252,6 +243,7 @@ void eGodAttackAction::write(eWriteStream& dst) const {
     dst << mLookForTargetedAttack;
     dst << mLookForGod;
     dst << mLookForSpecial;
+    dst << mCursesLeft;
     dst.writeBuilding(mSanctuary);
 }
 
@@ -282,14 +274,7 @@ void eGodAttackAction::initialize() {
     } else if(type == eGodType::hades) {
         const auto p = board.palace(cid);
         if(p) p->setBlessed(-1.);
-        const auto& chars = board.characters();
-        for(const auto c : chars) {
-            const auto cType = c->type();
-            const bool r = eDionysusFollowAction::sShouldFollow(cType);
-            if(!r) continue;
-            if(c->dead()) continue;
-            c->killWithCorpse();
-        }
+        // (the walkers die with each of his curses, eGodCurseBuildingType)
     }
     applyArrivalEffects();
 }
@@ -320,35 +305,11 @@ void eGodAttackAction::applyArrivalEffects() {
             if(i++ % everyNth == 0) ch->killWithCorpse();
         }
     };
-    const int year = 365*eNumbers::sDayLength;
 
     switch(type) {
     case eGodType::hermes: { // steals 33% of the treasury
         const int d = board.drachmas(pid);
         if(d > 0) board.setDrachmas(pid, d - (33*d)/100);
-    } break;
-    case eGodType::demeter: // kills half the sheep and goats
-        killShare({eCharacterType::sheep}, 2);
-        killShare({eCharacterType::goat}, 2);
-        break;
-    case eGodType::hera: { // half the cattle and half the orange trees
-        killShare({eCharacterType::cattle1, eCharacterType::cattle2,
-                   eCharacterType::cattle3, eCharacterType::bull}, 2);
-        // (trees that are part of a sanctuary are left alone)
-        const auto trees = board.buildings(cid, [](eBuilding* const b) {
-            if(b->type() != eBuildingType::orangeTree) return false;
-            const auto rb = dynamic_cast<eResourceBuilding*>(b);
-            return !(rb && rb->sanctuary());
-        });
-        for(int i = 0; i < (int)trees.size(); i += 2) {
-            trees[i]->erase();
-        }
-        // other leaders think one attitude tier (20 points) less of you
-        const auto& cts = board.world().cities();
-        for(const auto& ct : cts) {
-            if(ct->isCurrentCity()) continue;
-            ct->incAttitude(-20, pid);
-        }
     } break;
     case eGodType::aphrodite: { // 25% of the people leave with her
         const auto bc = board.boardCityWithId(cid);
@@ -380,10 +341,6 @@ void eGodAttackAction::applyArrivalEffects() {
             ch->setHP(2*ch->hp());
             ch->setAttack(2*ch->attack());
         }
-    } break;
-    case eGodType::athena: { // walls and towers unmanned for a year
-        const auto towers = board.buildings(cid, eBuildingType::tower);
-        for(const auto t : towers) t->setBlessed(-1., year);
     } break;
     default: break;
     }

@@ -7,6 +7,13 @@
 #include "ewaitaction.h"
 #include "characters/actions/emovetoaction.h"
 #include "ekillcharacterfinishfail.h"
+#include "edionysusfollowaction.h"
+#include "buildings/epalacetile.h"
+#include "buildings/epalace.h"
+#include "buildings/sanctuaries/esanctbuilding.h"
+#include "buildings/emonument.h"
+#include "engine/eboardcity.h"
+#include "enumbers.h"
 
 eGodAction::eGodAction(eCharacter* const c,
                        const eCharActionType type) :
@@ -182,4 +189,73 @@ void eGodAction::goToTarget() {
     using eGTTT = eGoToTargetTeleport;
     const auto tele = std::make_shared<eGTTT>(board(), this);
     eGodMonsterAction::goToTarget(hg, tele);
+}
+
+eBuilding* eGodCurseTargetBuilding(eBuilding* const b) {
+    if(!b) return nullptr;
+    if(const auto pt = dynamic_cast<ePalaceTile*>(b)) return pt->palace();
+    if(const auto sb = dynamic_cast<eSanctBuilding*>(b)) {
+        return sb->monument();
+    }
+    return b;
+}
+
+void eGodCurseBuildingType(eGameBoard& board, eBuilding* const target,
+                           const eGodType god) {
+    if(!target) return;
+    const auto cid = target->cityId();
+    const auto pid = board.cityIdToPlayerId(cid);
+    const int diff = static_cast<int>(board.difficulty(pid));
+    const int months = eGod::sCurseMonths(god, diff);
+    if(months <= 0) return;
+    // the original counts months x 16 days down one day at a time
+    const int ticks = months*365*eNumbers::sDayLength/12;
+    const auto curseType = [&](const eBuildingType bt) {
+        const auto bs = board.buildings(cid, bt);
+        for(const auto b : bs) {
+            b->setBlessed(-1., ticks);
+            // Poseidon manual (Atlas): cursed marble workshops lose the
+            // marble on the premises; a cursed Artisans' Guild's artisan
+            // out working dies.
+            if(bt == eBuildingType::masonryShop ||
+               bt == eBuildingType::blackMarbleWorkshop) {
+                if(const auto rb = dynamic_cast<eResourceBuildingBase*>(b)) {
+                    rb->take(rb->resourceType(), rb->resource());
+                }
+            } else if(const auto g = dynamic_cast<eArtisansGuild*>(b)) {
+                g->killArtisan();
+            }
+        }
+    };
+    curseType(target->type());
+
+    // the god's extra (zeus.exe 0x004EDFC0), on every curse
+    const auto walkersInCity = [&]() {
+        std::vector<eCharacter*> r;
+        for(const auto ch : board.characters()) {
+            if(!ch || ch->dead()) continue;
+            const auto t = ch->tile();
+            if(!t || t->cityId() != cid) continue;
+            if(!eDionysusFollowAction::sShouldFollow(ch->type())) continue;
+            r.push_back(ch);
+        }
+        return r;
+    };
+    switch(god) {
+    case eGodType::hera: // walkers turn into cows, walk home and vanish
+        for(const auto ch : walkersInCity()) ch->kill();
+        break;
+    case eGodType::hades: // the same walkers die
+        for(const auto ch : walkersInCity()) ch->killWithCorpse();
+        break;
+    case eGodType::athena: // walls and towers too (type slots 130, 132)
+        curseType(eBuildingType::wall);
+        curseType(eBuildingType::tower);
+        break;
+    case eGodType::apollo: // a plague outbreak (0x004481B0)
+        if(const auto c = board.boardCityWithId(cid)) c->godPlagueOutbreak();
+        break;
+    default:
+        break;
+    }
 }

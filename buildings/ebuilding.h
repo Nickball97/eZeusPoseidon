@@ -375,6 +375,7 @@ public:
     // uses up part of the blessing (1 = all of a normal blessing)
     void spendBlessing(const double amount = 1.);
     bool cursed() const { return mBlessed < -0.01; }
+    int blessTime() const { return mBlessTime; }
 
     bool accessToRoad() const;
 

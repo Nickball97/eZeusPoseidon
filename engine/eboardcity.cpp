@@ -47,6 +47,7 @@
 
 #include "spawners/espawner.h"
 #include "buildings/ehippodrome.h"
+#include "characters/gods/egod.h"
 #include "epathfinder.h"
 #include "eevent.h"
 
@@ -898,6 +899,15 @@ void eBoardCity::registerBuilding(eBuilding* const b) {
     mAllBuildings.push_back(b);
     mAllBuildingsState++;
     const auto type = b->type();
+    // a building put up while its type is cursed is cursed too: the
+    // original keeps one curse counter per type (zeus.exe 0x00EF60B0)
+    if(eGod::sCurseTarget(eGodType::zeus, type)) {
+        for(const auto o : mAllBuildings) {
+            if(o == b || o->type() != type || !o->cursed()) continue;
+            b->setBlessed(-1., o->blessTime());
+            break;
+        }
+    }
     if(eBuilding::sTimedBuilding(type)) {
         mTimedBuildings.push_back(b);
     }
