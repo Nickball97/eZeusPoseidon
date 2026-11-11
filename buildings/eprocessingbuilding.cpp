@@ -31,6 +31,11 @@ eProcessingBuilding::eProcessingBuilding(
     setOverlayEnabledFunc([this]() {
         return enabled() && mRawCount > 0;
     });
+    // zeus.exe (0x0048CFB0, workshop types 0x35-0x37 and 0x87) keeps no
+    // finished goods: each batch leaves at once on a cart (100 units, a
+    // statue 400), and nothing more leaves until that cart is back. One
+    // load here plays the same part; a blessed batch may still go over.
+    setMaxResource(1);
 }
 
 eProcessingBuilding::~eProcessingBuilding() {
@@ -72,7 +77,13 @@ void eProcessingBuilding::timeChanged(const int by) {
             eff *= step/filled;
         }
         mProcessTime += by*eff;
-        if(mProcessTime > mProcessWaitTime) {
+        const auto product = resourceType();
+        if(mProcessTime > mProcessWaitTime && mRawCount >= mRawUse &&
+           eResourceBuildingBase::spaceLeft(product) <= 0) {
+            // a finished batch waits for the cart, as in the original,
+            // where the progress stays until the batch can leave
+            mProcessTime = mProcessWaitTime;
+        } else if(mProcessTime > mProcessWaitTime) {
             mProcessTime -= mProcessWaitTime;
             if(mRawCount >= mRawUse) {
                 const auto type = resourceType();
