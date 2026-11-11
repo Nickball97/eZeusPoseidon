@@ -37,7 +37,8 @@ std::string eStringHelpers::pathToName(const std::string& path) {
     std::string name;
     for(int i = path.size() - 1; i >= 0; i--) {
         const auto c = path[i];
-        if(c == '/') break;
+        // Windows paths from std::filesystem use backslashes (upstream #28)
+        if(c == '/' || c == '\\') break;
         name = c + name;
     }
     return name;

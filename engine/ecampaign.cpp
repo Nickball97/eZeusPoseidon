@@ -8,6 +8,7 @@
 #include "egamedir.h"
 #include "elanguage.h"
 #include "enumbers.h"
+#include "estringhelpers.h"
 
 #include <algorithm>
 
@@ -307,9 +308,13 @@ void eCampaign::read(eReadStream& src) {
     src >> mIsPak;
     if(mIsPak) {
         src >> mPakFilename;
+        // saves made on Windows before the fix for upstream #28 hold the
+        // pak's folder in these names ("Folder\Folder.pak")
+        mPakFilename = eStringHelpers::pathToName(mPakFilename);
     }
     std::string name;
     src >> name;
+    if(mIsPak) name = eStringHelpers::pathToName(name);
     if(mName.empty()) mName = name;
     src >> mCurrentParentEpisode;
     src >> mCurrentColonyEpisode;
