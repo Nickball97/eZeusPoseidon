@@ -41,6 +41,9 @@ public:
 
     void setResolution(const eResolution& res);
     void setFullscreen(const bool f);
+    // F5 and F8 in the game (zeus.exe window procedure 0x005C4A90)
+    void toggleFullscreen();
+    void centerWindow();
 
     void startGameAction(eGameBoard* const board,
                          const eGameWidgetSettings& settings);

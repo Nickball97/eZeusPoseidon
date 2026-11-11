@@ -2031,6 +2031,15 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
         } else {
             viewBookmark(4);
         }
+    } else if(k == SDL_Scancode::SDL_SCANCODE_F5) {
+        // F5 switches between full screen and a window, F8 centres the
+        // window (zeus.exe window procedure 0x005C4A90). The original's F6
+        // and F7 pick a screen size (800x600 and, in the Steam exe,
+        // 1920x1080, 0x0050BCC0); eZeus changes size only from the settings
+        // menu, since the art has to be loaded again.
+        window()->toggleFullscreen();
+    } else if(k == SDL_Scancode::SDL_SCANCODE_F8) {
+        window()->centerWindow();
     } else if(k == SDL_Scancode::SDL_SCANCODE_ESCAPE ||
               (k == SDL_Scancode::SDL_SCANCODE_X && alt)) {
         // Esc or Alt+X: the game menu (exit)

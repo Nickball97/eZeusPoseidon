@@ -115,6 +115,17 @@ void eMainWindow::setFullscreen(const bool f) {
     SDL_SetWindowFullscreen(mSdlWindow, f ? SDL_WINDOW_FULLSCREEN : 0);
 }
 
+void eMainWindow::toggleFullscreen() {
+    setFullscreen(!mSettings.fFullscreen);
+    mSettings.write();
+}
+
+void eMainWindow::centerWindow() {
+    if(mSettings.fFullscreen) return;
+    SDL_SetWindowPosition(mSdlWindow, SDL_WINDOWPOS_CENTERED,
+                          SDL_WINDOWPOS_CENTERED);
+}
+
 void eMainWindow::startGameAction(eGameBoard* const board,
                                   const eGameWidgetSettings& settings) {
     const auto show = [this, board, settings]() {
