@@ -1,12 +1,12 @@
 # What eZeus still lacks compared with the original
 
-Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 Nov: Avenue/Boulevard, Pan-Hellenic games, rescue cash attitude, waterfront appeal, plague notes, all 57 scenario allowed-structures switches). Details and addresses for anything taken from the exe are in `original-exe-findings.md`.
+Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 Nov: Avenue/Boulevard, Pan-Hellenic games, rescue cash attitude, waterfront appeal, plague notes, all 57 scenario allowed-structures switches, workshop output, company bookmarks). Details and addresses for anything taken from the exe are in `original-exe-findings.md`.
 
 ## A. Features the manuals or sources describe that eZeus doesn't have
 
 | # | Missing | Source | What it would take |
 |---|---|---|---|
-| A5 | Hotkeys not added: Shift+1-4 company bookmarks and 1-4 to select them; Tab for the overview map; M "freeze footprint"; F5-F7 window/resolution; pressing 1 twice for the full population report | Citadel: hotkeys | Overview map doesn't exist in eZeus; "freeze footprint" meaning unknown |
+| A5 | Hotkeys not added: Tab for the overview map; M "freeze footprint"; F5-F7 window/resolution. (Company bookmarks, Ctrl/Alt+1-5 in the exe, and a tab key pressed twice were added on 11 Nov 2026.) | Citadel: hotkeys; zeus.exe `0x005C4A90` | Overview map doesn't exist in eZeus; what M looks like in play wasn't worked out; full reports exist for only 3 tabs |
 | A6 | Cosmetic cheats: Bowvine and Arrow (towers shoot cows), Cheese Puff (dairy workers in cheese suits), Mammaldrome (animals race in the hippodrome) | Citadel: cheats | Each needs art swaps |
 
 ## B. Described by the sources, but the numbers or the rule weren't found

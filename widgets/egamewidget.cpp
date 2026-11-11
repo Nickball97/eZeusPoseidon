@@ -1811,6 +1811,25 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
         window()->execDialog(cw);
         return true;
     }
+    if(e.ctrlPressed() != alt && !mBoard->editorMode()) {
+        // Ctrl+1-5 stores the selected companies, Alt+1-5 selects them again
+        // (zeus.exe window procedure 0x005C4A90; the Citadel's hotkey page
+        // says Shift and plain 1-4, but the game reads Ctrl and Alt)
+        int slot = -1;
+        switch(k) {
+        case SDL_Scancode::SDL_SCANCODE_1: slot = 0; break;
+        case SDL_Scancode::SDL_SCANCODE_2: slot = 1; break;
+        case SDL_Scancode::SDL_SCANCODE_3: slot = 2; break;
+        case SDL_Scancode::SDL_SCANCODE_4: slot = 3; break;
+        case SDL_Scancode::SDL_SCANCODE_5: slot = 4; break;
+        default: break;
+        }
+        if(slot != -1) {
+            if(alt) selectCompanyBookmark(slot);
+            else setCompanyBookmark(slot);
+            return true;
+        }
+    }
     if(!e.ctrlPressed() && !e.shiftPressed() && !alt) {
         // 1-9, 0 and -: side panel tabs (7 is Culture, or Science in an
         // Atlantean city)
@@ -2460,6 +2479,39 @@ void eGameWidget::viewBookmark(const int id) {
     const auto tile = mBoard->tile(tx, ty);
     if(!tile) return;
     viewTile(tile);
+}
+
+void eGameWidget::setCompanyBookmark(const int id) {
+    if(!mBoard || id < 0 || id >= 5) return;
+    const auto& banners = mBoard->selectedSoldiers();
+    const auto& triremes = mBoard->selectedTriremes();
+    // the original does nothing while no company is selected
+    if(banners.empty() && triremes.empty()) return;
+    auto& b = mCompanyBookmarks[id];
+    b.fBanners.clear();
+    b.fTriremes.clear();
+    for(const auto s : banners) b.fBanners.push_back(s);
+    for(const auto t : triremes) b.fTriremes.push_back(t);
+}
+
+void eGameWidget::selectCompanyBookmark(const int id) {
+    if(!mBoard || id < 0 || id >= 5) return;
+    auto& b = mCompanyBookmarks[id];
+    // companies that no longer exist are dropped
+    std::vector<eSoldierBanner*> banners;
+    for(const auto& s : b.fBanners) {
+        if(s) banners.push_back(s.get());
+    }
+    std::vector<eTrireme*> triremes;
+    for(const auto& t : b.fTriremes) {
+        if(t && t->selectable()) triremes.push_back(t.get());
+    }
+    // an empty bookmark keeps the current selection, as in the original
+    if(banners.empty() && triremes.empty()) return;
+    mBoard->clearBannerSelection();
+    mBoard->clearTriremeSelection();
+    for(const auto s : banners) mBoard->selectBanner(s);
+    for(const auto t : triremes) mBoard->selectTrireme(t);
 }
 
 void eGameWidget::updateTopBottomAltitude() {

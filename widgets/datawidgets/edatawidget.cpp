@@ -79,6 +79,11 @@ int eDataWidget::spacing() const {
     return 3*m;
 }
 
+void eDataWidget::openMoreInfo() {
+    if(!mMoreInfo || !mMoreInfo->visible()) return;
+    openMoreInfoWiget();
+}
+
 void eDataWidget::showMoreInfoButton() {
     mMoreInfo->show();
 }

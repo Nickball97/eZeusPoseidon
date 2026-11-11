@@ -23,6 +23,8 @@
 #include "echeckbox.h"
 
 #include "engine/eeventdata.h"
+#include "characters/esoldierbanner.h"
+#include "characters/etrireme.h"
 
 class eTerrainEditMenu;
 class eDomesticatedAnimal;
@@ -169,6 +171,10 @@ private:
 
     void setBookmark(const int id);
     void viewBookmark(const int id);
+    // the original's company bookmarks (zeus.exe 0x00433AB0 / 0x00433B60):
+    // Ctrl+1-5 stores the selected companies, Alt+1-5 selects them again
+    void setCompanyBookmark(const int id);
+    void selectCompanyBookmark(const int id);
 
     using eApply = std::function<void(eTile* const)>;
     eApply editFunc();
@@ -314,6 +320,11 @@ private:
     int mSpeedId = 1;
     int mSpeed = sSpeeds[mSpeedId];
     std::map<int, std::pair<int, int>> mBookmarks;
+    struct eCompanyBookmark {
+        std::vector<stdptr<eSoldierBanner>> fBanners;
+        std::vector<stdptr<eTrireme>> fTriremes;
+    };
+    eCompanyBookmark mCompanyBookmarks[5];
 
     int mWheel = 0;
 

@@ -19,6 +19,8 @@ public:
     void setGameWidget(eGameWidget* const gw);
     virtual void shown();
     void update();
+    // opens the full report if this tab has one ("more info" button shown)
+    void openMoreInfo();
 protected:
     virtual void openMoreInfoWiget() {}
 

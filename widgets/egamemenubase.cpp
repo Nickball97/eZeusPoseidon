@@ -124,6 +124,15 @@ bool eGameMenuBase::selectTab(const int i) {
     if(i < 0 || i >= static_cast<int>(mButtons.size())) return false;
     const auto b = mButtons[i];
     if(!b->visible()) return false;
-    if(!b->checked()) b->trigger();
+    if(!b->checked()) {
+        b->trigger();
+        return true;
+    }
+    // the same key again opens the tab's full report (zeus.exe 0x0051CA20
+    // opens the tab's advisor); eZeus has one only where the tab shows
+    // its "more info" button
+    if(i < static_cast<int>(mWidgets.size()) && mWidgets[i].fDW) {
+        mWidgets[i].fDW->openMoreInfo();
+    }
     return true;
 }
