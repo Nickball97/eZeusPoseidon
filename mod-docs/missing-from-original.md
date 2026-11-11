@@ -1,6 +1,6 @@
 # What eZeus still lacks compared with the original
 
-Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 Nov: Avenue/Boulevard, Pan-Hellenic games, rescue cash attitude, waterfront appeal, plague notes, all 57 scenario allowed-structures switches, workshop output, company bookmarks). Details and addresses for anything taken from the exe are in `original-exe-findings.md`.
+Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 Nov: Avenue/Boulevard, Pan-Hellenic games, rescue cash attitude, waterfront appeal, plague notes, all 57 scenario allowed-structures switches, workshop output, company bookmarks, monster behaviour files). Details and addresses for anything taken from the exe are in `original-exe-findings.md`.
 
 ## A. Features the manuals or sources describe that eZeus doesn't have
 
@@ -16,7 +16,6 @@ Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 N
 | B1 | Demeter's invasion "renders your land infertile" | Oracle and invasion messages | No code found; eZeus kills half the sheep and goats only |
 | B2 | Hera's invasion "turns your citizens into cows" | Invasion message | No code found; eZeus kills half the cattle and orange trees and lowers attitudes by 20 |
 | B3 | Zeus' sanctuary improves your standing abroad | Sanctuary description | His record is only used for god behaviour; no attitude bonus found |
-| B4 | Monster behaviour files (`Model/monster_behavior_*.txt`: "NEVER" plus 9 numbers) | The files exist | What the numbers mean |
 | B5 | Hippodrome table: two of its five columns (0,1,1,1,2,3,0 and 0,0,0,1,1,3,15) | zeus.exe `0x006429F0` | What they do |
 | B11 | A sanctuary without sacrifices "loses its benefits" (Zeus manual) | The exe never shows its "This Sanctuary is inactive" text and nothing found turns a sanctuary off | Whether the manual describes a cut feature; not applied |
 
