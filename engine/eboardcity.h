@@ -437,6 +437,8 @@ public:
     bool handleEpisodeCompleteEvents();
 
     void updateHippodromes();
+    // January and July: a working hippodrome raises other cities' standing
+    void hippodromeStanding();
     void clearHippodromes();
 
     void addReinforcements(const eCityId fromCid,

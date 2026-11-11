@@ -592,6 +592,7 @@ void eBoardCity::nextMonth() {
     for(const auto& h : mHippodromes) {
         h->nextMonth();
     }
+    hippodromeStanding();
 
     replace3By3AestheticByCommemorative();
 
@@ -2564,6 +2565,36 @@ eInvasionHandler* eBoardCity::invasionHandlerWithIOID(const int id) const {
 
 bool eBoardCity::handleEpisodeCompleteEvents() {
     return mCityEvents.handleEpisodeCompleteEvents();
+}
+
+void eBoardCity::hippodromeStanding() {
+    // zeus.exe 0x0056FC60, run at the start of months 0 and 6 (January and
+    // July) while the hippodrome races: the first two columns of table
+    // 0x006429E8 by track length are added to the attitude of allies,
+    // vassals and colonies (first column) and of rivals (second column).
+    // (The exe doesn't reset the value between cities, so a parent city or
+    // distant city after one of those gets the same amount; not copied.)
+    const auto m = mBoard.date().month();
+    if(m != eMonth::january && m != eMonth::july) return;
+    int len = 0;
+    for(const auto& h : mHippodromes) {
+        if(!h || !h->working()) continue;
+        len = h->length();
+        break;
+    }
+    if(len < 4) return;
+    const int band = len < 12 ? 0 : len < 24 ? 1 : len < 36 ? 2 :
+                     len < 60 ? 3 : len < 100 ? 4 : len < 200 ? 5 : 6;
+    const int friendly[7] = {0, 0, 1, 1, 1, 2, 3};
+    const int rivals[7] = {0, 0, 0, 0, 1, 1, 3};
+    const auto pid = mBoard.cityIdToPlayerId(mId);
+    for(const auto& c : mBoard.world().cities()) {
+        if(!c || c->isCurrentCity()) continue;
+        int a = 0;
+        if(c->isAlly() || c->isVassal() || c->isColony()) a = friendly[band];
+        else if(c->isRival()) a = rivals[band];
+        if(a != 0) c->incAttitude(a, pid);
+    }
 }
 
 void eBoardCity::updateHippodromes() {

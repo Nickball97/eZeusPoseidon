@@ -131,8 +131,13 @@ Progress per cycle by staffing (10 / 8 / 6 / 4 / 2); a ship is launched past 319
 - Before 11 Nov 2026, eZeus (`readEpisodeAllowedBuildings`) read 36 as gazebo and 37 as flower garden, skipped 25, 26 and 28, used 5 only for Atlantean cities, and stored only 12 switches (the rest were always available).
 - Applied 11 Nov 2026: eZeus maps all 57 as above. Buildings without a field of their own, and the hero's halls, are kept in eAvailableBuildings::fSwitchedOff, and the roadblock in fRoadblockOff (saved since eFileFormat::allowedSwitches; older saves and campaigns allow everything). The build menu, including the palace, stadium, museum and trade buttons and the roadblock button, respects them; the chariot factory also needs the horse ranch switch; eZeus's scenario editor lists the new switches. Not copied: the original's extra checks for map resources and for the Poseidon expansion.
 
-## Hippodrome (verified in code, table `0x006429F0`, 5 numbers per length band)
-Bands 4–10, 12–22, 24–34, 36–58, 60–98, 100–198, 200+: mood +1, +1, +1, +1, +1, +2, −5 at each mood update while working (`0x0056FDC0`); income 10, 20, 40, 60, 100, 200, 500 and horses 4, 4, 8, 8, 12, 12, 24 (as the site says); two more columns (0,1,1,1,2,3,0 and 0,0,0,1,1,3,15) not identified.
+## Hippodrome (verified in code, table `0x006429E8`, 5 numbers per length band)
+Bands by track length (`DAT_00782F18`): under 4 none; then 4-11, 12-23, 24-35, 36-59, 60-99, 100-199, 200+. Columns per band:
+- 1: 0, 0, 1, 1, 1, 2, 3 and 2: 0, 0, 0, 0, 1, 1, 3. Twice a year `0x0056FC60` adds these to the attitude (+0x164, kept within 0-100) of every world city while the hippodrome races. It runs at the start of months 0 and 6, January and July (month 0 is the first name in text group 25, as in eZeus). Column 1 goes to relation codes 0, 1 and 4 (ally, vassal, colony) and column 2 to code 2 (rival). The amount isn't reset between cities, so a city with another code (parent city, distant city) gets whatever the city before it got. Applied 11 Nov 2026 as eBoardCity::hippodromeStanding for allies, vassals, colonies and rivals; the carried amount isn't copied.
+- 3: mood +1, +1, +1, +1, +1, +2, −5 at each mood update while working (`0x0056FDC0`).
+- 4: income 10, 20, 40, 60, 100, 200, 500.
+- 5: horses 4, 4, 8, 8, 12, 12, 24 (as the site says).
+- The earlier reading started the table 8 bytes late, which is why the two unknown columns were once listed as 0,1,1,1,2,3,0 and 0,0,0,1,1,3,15.
 
 ## Debt
 The month counter rises each month in debt and resets when the treasury is positive; every 12 months a message is shown and the year counter rises (`0x00483B20`). After 36 months in debt the episode is lost (goal check `0x00526990`, message 0xB91). Applied 9 Nov 2026 (Nicolás: yes): eZeus now warns every full year in debt and loses the episode at 36 months.
