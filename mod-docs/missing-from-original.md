@@ -26,9 +26,9 @@ None left: C1 (military service mood) and C2 (11% tax coverage) were applied on 
 |---|---|
 | #59 | Trade fails with some cities (not re-checked) |
 | #73, #61 | Military overview misses soldiers in houses; overlays by category |
-| #4 | Painting many sheep or goats blocks roads |
+| #4 | Painted sheep or goats block roads like a building, and erasing them kills them (the original lets many animals share one meadow) |
 | #58, #51, #62, #37 | Undo, message inbox, audio settings, minimap |
-| #43, #40, #28 | Missing text, shovel icon, adventure text |
+| #43, #40, #28 | Missing text (owner suspects SDL2 textures after a window resize), shovel cursor (the red tint on things being cleared already exists in eZeus; only the cursor is missing), adventure text (Open Play Sandbox 2 / Economic 2 look for a wrongly nested folder) |
 
 ## E. Differences kept on purpose (Nicolás's decisions)
 
