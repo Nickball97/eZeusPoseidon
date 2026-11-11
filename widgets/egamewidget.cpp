@@ -254,6 +254,7 @@ void eGameWidget::initialize() {
 
     mGm->setModeChangedAction([this]() {
         setPatrolBuilding(nullptr);
+        mFreezeFootprint = false;
     });
 
     const auto mm = mGm->miniMap();
@@ -1771,6 +1772,13 @@ bool eGameWidget::inPatrolBuildingHover(eBuilding* const b) {
     return false;
 }
 
+bool eGameWidget::footprintFrozen() const {
+    // only while a building tool is picked; eZeus also uses the hovered
+    // tile for other things (placing companies)
+    return mFreezeFootprint && mGm->mode() != eBuildingMode::none &&
+           mHoverTX >= 0 && mHoverTY >= 0;
+}
+
 void eGameWidget::switchPause() {
     mPaused = !mPaused;
     if(mPaused && !mPausedLabel) {
@@ -1893,6 +1901,13 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
         if(mRotateId > 3) mRotateId = 0;
     } else if(k == SDL_Scancode::SDL_SCANCODE_P) {
         switchPause();
+    } else if(k == SDL_Scancode::SDL_SCANCODE_M && !e.ctrlPressed() &&
+              !e.shiftPressed() && !alt && !mBoard->editorMode()) {
+        // M freezes the build preview on its tile (zeus.exe window procedure
+        // 0x005C4A90 toggles DAT_00665e3e; 0x004059C0 then stops moving the
+        // hovered build tile, a click builds there, and choosing another
+        // tool clears it). The Citadel calls it "freeze footprint".
+        mFreezeFootprint = !mFreezeFootprint;
 #ifdef EZEUS_DEV_CHEATS
     } else if(k == SDL_Scancode::SDL_SCANCODE_M &&
               e.ctrlPressed() && e.shiftPressed()) {
@@ -2091,6 +2106,12 @@ bool eGameWidget::mousePressEvent(const eMouseEvent& e) {
         int tx;
         int ty;
         pixToId(e.x(), e.y(), tx, ty);
+        if(footprintFrozen()) {
+            // a frozen preview builds on its own tile (zeus.exe 0x00404CD0
+            // takes the start from the frozen build tile)
+            tx = mHoverTX;
+            ty = mHoverTY;
+        }
         if(mCheatFireball) {
             mCheatFireball = false;
             mLeftPressed = false;
@@ -2240,7 +2261,9 @@ bool eGameWidget::mouseMoveEvent(const eMouseEvent& e) {
     } else {
         mHoverX = e.x();
         mHoverY = e.y();
-        pixToId(e.x(), e.y(), mHoverTX, mHoverTY);
+        if(!footprintFrozen()) {
+            pixToId(e.x(), e.y(), mHoverTX, mHoverTY);
+        }
 
         const bool left = static_cast<bool>(e.buttons() & eMouseButton::left);
         if(left && mTem->visible()) {

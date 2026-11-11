@@ -289,6 +289,7 @@ private:
     eInfoWidget* openInfoWidget(const std::vector<eCharacter *> chars);
 
     void switchPause();
+    bool footprintFrozen() const;
 
     stdsptr<eTexture> getBasementTexture(
             const int tx, const int ty, eBuilding* const d,
@@ -304,6 +305,9 @@ private:
     bool mTerrainEditMode = false;
 
     bool mRotate = false;
+    // M: the build preview stays on its tile while the mouse moves
+    // (zeus.exe DAT_00665e3e)
+    bool mFreezeFootprint = false;
     int mRotateId = 0;
 
     const int sSpeeds[6] = {2, 10, 25, 50, 100, 100};
