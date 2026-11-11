@@ -6,7 +6,7 @@ Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 N
 
 | # | Missing | Source | What it would take |
 |---|---|---|---|
-| A3 | Avenue and Boulevard leftover: the scenario on/off switch for both (eZeus has none) | zeus.exe tools `0x005D85E4` / `0x005D85C0` (see original-exe-findings.md, Avenue and Boulevard) | The build rules, the Boulevard itself, its cost, appeal and the tree pictures were applied on 10 Nov 2026; the switch needs a new saved field |
+| A3 | Scenario "allowed structures" switches: eZeus reads all 57 in the right order but keeps only 12 (production buildings, elite housing, hippodrome), so the other 45 buildings (granary, agoras, culture, services, palace, bridge, parks, Avenue, Boulevard, walls, beautification and others) are always available; Gazebo and Flower Garden are read the wrong way round; Corral is ignored for Greek cities | zeus.exe `0x00402B80`, values at `0x00902D32`, Zeus_Editor_Text "Allowed structures" (see original-exe-findings.md) | Store the missing switches in the city's allowed-buildings data (a new saved field; old saves load with everything allowed) and check them in the build menu |
 | A5 | Hotkeys not added: Shift+1-4 company bookmarks and 1-4 to select them; Tab for the overview map; M "freeze footprint"; F5-F7 window/resolution; pressing 1 twice for the full population report | Citadel: hotkeys | Overview map doesn't exist in eZeus; "freeze footprint" meaning unknown |
 | A6 | Cosmetic cheats: Bowvine and Arrow (towers shoot cows), Cheese Puff (dairy workers in cheese suits), Mammaldrome (animals race in the hippodrome) | Citadel: cheats | Each needs art swaps |
 
