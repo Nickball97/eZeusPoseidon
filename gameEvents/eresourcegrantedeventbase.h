@@ -39,6 +39,8 @@ public:
 protected:
     // lets a subclass pass its own settings on to a postponed offer
     virtual void setupPostponed(eResourceGrantedEventBase* const e) const { (void)e; }
+    // called when the player takes drachmas from this offer
+    virtual void drachmasAccepted(const ePlayerId pid) { (void)pid; }
     void setEvents(const eEvent giftCashAccepted,
                    const eEvent giftAccepted,
                    const eEvent giftPostponed,

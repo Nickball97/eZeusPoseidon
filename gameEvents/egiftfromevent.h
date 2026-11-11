@@ -21,6 +21,7 @@ public:
     void read(eReadStream& src) override;
 protected:
     void setupPostponed(eResourceGrantedEventBase* const e) const override;
+    void drachmasAccepted(const ePlayerId pid) override;
 private:
     bool mRescue = false;
 };

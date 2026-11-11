@@ -72,3 +72,11 @@ void eGiftFromEvent::read(eReadStream& src) {
         setRescue(r);
     }
 }
+
+// zeus.exe (0x00474A80): taking rescue cash lowers the giving city's
+// attitude by 10
+void eGiftFromEvent::drachmasAccepted(const ePlayerId pid) {
+    if(!mRescue) return;
+    const auto c = city();
+    if(c) c->incAttitude(-10., pid);
+}

@@ -19,8 +19,6 @@ Status on 9 Nov 2026, after Phases 0-7 and the zeus.exe reading. Details and add
 | B3 | Zeus' sanctuary improves your standing abroad | Sanctuary description | His record is only used for god behaviour; no attitude bonus found |
 | B4 | Monster behaviour files (`Model/monster_behavior_*.txt`: "NEVER" plus 9 numbers) | The files exist | What the numbers mean |
 | B5 | Hippodrome table: two of its five columns (0,1,1,1,2,3,0 and 0,0,0,1,1,3,15) | zeus.exe `0x006429F0` | What they do |
-| B6 | How a house's plague "disease score" grows before an outbreak | Outbreak picks the highest scores | The growth rule (eZeus uses its own) |
-| B7 | Rescue cash: accepting sometimes lowers that city's attitude by 10 | zeus.exe `0x00474A80` | When exactly (one branch's condition is unclear) |
 | B8 | Workshops' finished-goods limits | Cap table and cart code (sculpture carts 400 units, others 100) | Which stock the cap applies to on the output side (eZeus keeps 8) |
 | B10 | Building appeal "+10 when a flag is set" | zeus.exe appeal code | What the flag is |
 | B11 | A sanctuary without sacrifices "loses its benefits" (Zeus manual) | The exe never shows its "This Sanctuary is inactive" text and nothing found turns a sanctuary off | Whether the manual describes a cut feature; not applied |
