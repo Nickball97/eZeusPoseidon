@@ -13,8 +13,8 @@ Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 N
 
 | # | Missing | What is known | What wasn't found |
 |---|---|---|---|
-| B1 | Demeter's invasion "renders your land infertile" | Oracle and invasion messages | No code found; eZeus kills half the sheep and goats only |
-| B2 | Hera's invasion "turns your citizens into cows" | Invasion message | No code found; eZeus kills half the cattle and orange trees and lowers attitudes by 20 |
+| B1 | Demeter's attack "renders your land infertile" | Found 11 Nov 2026: the original's angry gods curse whole building types for months; Demeter curses food buildings (see "Angry gods" in original-exe-findings.md) | Not applied yet: replaces eZeus's per-building curses for every god, waiting for Nicolás's go-ahead |
+| B2 | Hera's attack "turns your citizens into cows" | Found 11 Nov 2026: every walker becomes a cow and walks home, plus her curse on palace, culture and elite buildings | Not applied yet, same decision as B1 |
 | B3 | Zeus' sanctuary improves your standing abroad | Sanctuary description | His record is only used for god behaviour; no attitude bonus found |
 | B11 | A sanctuary without sacrifices "loses its benefits" (Zeus manual) | The exe never shows its "This Sanctuary is inactive" text and nothing found turns a sanctuary off | Whether the manual describes a cut feature; not applied |
 
