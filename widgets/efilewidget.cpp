@@ -113,12 +113,13 @@ void eFileWidget::intialize(const std::string& title,
         const auto name = path.filename().stem().u8string();
         const auto b = new eButton(name, window());
         b->setUnderline(false);
-        b->setDarkFontColor();
+        // pale in the dark list box, white under the mouse (the original)
+        b->setFontColor(eFontColor::panel);
         b->setMouseEnterAction([b]() {
             b->setLightFontColor();
         });
         b->setMouseLeaveAction([b]() {
-            b->setDarkFontColor();
+            b->setFontColor(eFontColor::panel);
         });
         b->setTextAlignment(eAlignment::left | eAlignment::vcenter);
         b->setNoPadding();

@@ -206,10 +206,10 @@ void eEditorMainMenu::initialize(const stdsptr<eCampaign>& campaign) {
         const auto q = new eQuestionWidget(window());
         const auto saveA = [this, campaign]() {
             campaign->save();
-            window()->showMainMenu();
+            window()->showGameChooser(); // the editor is opened from there
         };
         const auto closeA = [this]() {
-            window()->showMainMenu();
+            window()->showGameChooser();
         };
         q->initialize(eLanguage::zeusText(195, 23),
                       eLanguage::zeusText(195, 25),

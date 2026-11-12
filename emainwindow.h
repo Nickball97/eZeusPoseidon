@@ -66,11 +66,14 @@ public:
     bool loadGame(const std::string& path);
     void closeGame();
 
+    // home page, as in the original: game chooser -> roster of leaders ->
+    // player menu (showMainMenu) -> adventure lists
+    void showGameChooser();
     void showRosterOfLeaders();
     void showMenuLoading();
     void showMainMenu();
     void showSettingsMenu();
-    void showChooseGameMenu();
+    void showChooseGameMenu(const bool custom = false);
     void showChooseGameEditMenu();
     void showGame(const stdsptr<eCampaign>& c,
                   const eGameWidgetSettings& settings);
@@ -94,6 +97,10 @@ public:
     const std::string& leader() const { return mLeader; }
     void setLeader(const std::string& leader) { mLeader = leader; }
     std::string leaderSaveDir() const;
+    // Zeus or Poseidon picked on the first screen (logos, roster picture
+    // and which original adventures are listed)
+    bool poseidon() const { return mPoseidon; }
+    void setPoseidon(const bool p) { mPoseidon = p; }
 private:
     void updateLogicalSize();
     void clearWidgets();
@@ -101,6 +108,7 @@ private:
     eSettings mSettings;
 
     std::string mLeader;
+    bool mPoseidon = false;
 
     bool mQuit = false;
     bool mFirstFullscrenSetting = true;

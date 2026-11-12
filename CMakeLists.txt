@@ -2842,6 +2842,8 @@ add_executable(eZeus
     widgets/eloadingwidget.h
     widgets/emainmenu.cpp
     widgets/emainmenu.h
+    widgets/egamechooser.cpp
+    widgets/egamechooser.h
     widgets/emainmenubase.cpp
     widgets/emainmenubase.h
     widgets/emainwidget.cpp

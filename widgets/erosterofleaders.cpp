@@ -9,6 +9,9 @@
 #include "enamewidget.h"
 #include "engine/eworldcity.h"
 #include "egamedir.h"
+#include "textures/egametextures.h"
+
+#include <cmath>
 
 #include <string>
 #include <iostream>
@@ -16,7 +19,13 @@
 namespace fs = std::filesystem;
 
 void eRosterOfLeaders::initialize() {
-    eMainMenuBase::initialize();
+    // as in the original: Zeus's Acropolis or Poseidon's Atlantis picture,
+    // with the game's logo above the roster
+    const auto& texs = eGameTextures::interface()[
+        static_cast<int>(resolution().uiScale())];
+    eMainMenuBase::initialize(window()->poseidon() ?
+                              texs.fPoseidonRegistryImage :
+                              texs.fMainMenuImage);
 
     const auto frame = new eFramedWidget(window());
     frame->setType(eFrameType::message);
@@ -30,6 +39,17 @@ void eRosterOfLeaders::initialize() {
     frame->resize(cww, cwh);
 
     frame->align(eAlignment::center);
+    {
+        const auto logo = new eFitPicture(window());
+        logo->setNoPadding();
+        logo->setTexture(window()->poseidon() ? texs.fPoseidonLogo :
+                                                texs.fZeusLogo);
+        const double s = picScale();
+        logo->resize(std::round(160*s), std::round(96*s));
+        addWidget(logo);
+        logo->move(frame->x() + (frame->width() - logo->width())/2,
+                   frame->y() - logo->height() - p);
+    }
 
     const auto inner = new eWidget(window());
     inner->setNoPadding();
@@ -118,9 +138,7 @@ void eRosterOfLeaders::initialize() {
     buttons1->fitHeight();
     buttons->addWidget(buttons1);
 
-    const auto w = window();
-    const auto leader = w->leader();
-    if(!leader.empty()) {
+    {
         const auto returnB = new eFramedButton(window());
         returnB->setSmallFontSize();
         returnB->setSmallPadding();
@@ -130,8 +148,7 @@ void eRosterOfLeaders::initialize() {
         buttons->addWidget(returnB);
         returnB->align(eAlignment::hcenter);
         returnB->setPressAction([this]() {
-            const auto w = window();
-            w->showMainMenu();
+            window()->showGameChooser();
         });
     }
     buttons->stackVertically(p);
@@ -157,15 +174,17 @@ void eRosterOfLeaders::initialize() {
         for(const auto& name : leaders) {
             const auto b = new eButton(name, window());
             b->setUnderline(false);
-            b->setDarkFontColor();
+            // pale in the dark list box, as in the original
+            b->setFontColor(eFontColor::panel);
+            // white marks the item under the mouse or selected, as in the original
             b->setMouseEnterAction([b]() {
-                b->setDarkFontColor();
+                b->setLightFontColor();
             });
             b->setMouseLeaveAction([b, selected]() {
                 if(b->text() == *selected) {
-                    b->setDarkFontColor();
+                    b->setLightFontColor();
                 } else {
-                    b->setDarkFontColor();
+                    b->setFontColor(eFontColor::panel);
                 }
             });
             b->setTextAlignment(eAlignment::left | eAlignment::vcenter);
@@ -177,11 +196,11 @@ void eRosterOfLeaders::initialize() {
             y += b->height();
             b->setPressAction([b, selected, selectedB]() {
                 if(*selectedB) {
-                    (*selectedB)->setDarkFontColor();
+                    (*selectedB)->setFontColor(eFontColor::panel);
                 }
                 *selectedB = b;
                 *selected = b->text();
-                b->setDarkFontColor();
+                b->setLightFontColor();
             });
         }
         filesWidget->setNoPadding();

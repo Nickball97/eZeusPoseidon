@@ -1,6 +1,7 @@
 #include "emainwindow.h"
 
 #include "widgets/emainmenu.h"
+#include "widgets/egamechooser.h"
 #include "widgets/esettingsmenu.h"
 #include "widgets/egamewidget.h"
 #include "widgets/egameloadingwidget.h"
@@ -433,15 +434,31 @@ void eMainWindow::showMenuLoading() {
     mlw->setDoneAction([this]() {
         const auto ls = eRosterOfLeaders::sLeaders();
         if(ls.size() == 1) setLeader(ls[0]);
-        if(mLeader.empty()) {
-            showRosterOfLeaders();
-        } else {
-            showMainMenu();
-        }
+        showGameChooser();
     });
     mlw->initialize();
     mlw->resize(width(), height());
     setWidget(mlw);
+}
+
+void eMainWindow::showGameChooser() {
+    mCampaign = nullptr;
+    clearWidgets();
+    eMusic::playMenuMusic();
+
+    const auto gc = new eGameChooser(this);
+    gc->resize(width(), height());
+    setWidget(gc);
+
+    const auto play = [this](const bool poseidon) {
+        setPoseidon(poseidon);
+        showRosterOfLeaders();
+    };
+    gc->initialize([play]() { play(false); },
+                   [play]() { play(true); },
+                   [this]() { showChooseGameEditMenu(); },
+                   [this]() { showSettingsMenu(); },
+                   [this]() { mQuit = true; });
 }
 
 void eMainWindow::showMainMenu() {
@@ -453,9 +470,28 @@ void eMainWindow::showMainMenu() {
     mm->resize(width(), height());
     setWidget(mm);
 
-    const auto newGameAction = [this]() {
-        showChooseGameMenu();
-    };
+    // Resume Adventure loads the leader's most recent save, if any
+    std::string latest;
+    {
+        std::error_code ec;
+        const auto dir = leaderSaveDir();
+        std::filesystem::file_time_type latestTime;
+        for(const auto& entry : std::filesystem::directory_iterator(dir, ec)) {
+            if(!entry.is_regular_file(ec)) continue;
+            if(entry.path().extension() != ".ez") continue;
+            const auto t = entry.last_write_time(ec);
+            if(latest.empty() || t > latestTime) {
+                latestTime = t;
+                latest = entry.path().u8string();
+            }
+        }
+    }
+    eAction resumeAction;
+    if(!latest.empty()) {
+        resumeAction = [this, latest]() {
+            loadGame(latest);
+        };
+    }
 
     const auto loadGameAction = [this, mm]() {
         const auto fw = new eFileWidget(this);
@@ -467,34 +503,17 @@ void eMainWindow::showMainMenu() {
             fw->deleteLater();
         };
         const auto dir = leaderSaveDir();
-        fw->intialize(eLanguage::zeusText(1, 3),
+        fw->intialize(eLanguage::zeusText(293, 3),
                       dir, func, closeAct);
         mm->addWidget(fw);
         fw->align(eAlignment::center);
     };
 
-    const auto editGameAction = [this]() {
-        showChooseGameEditMenu();
-    };
-
-    const auto settingsAction = [this]() {
-        showSettingsMenu();
-    };
-
-    const auto quitAction = [this]() {
-        mQuit = true;
-    };
-
-    const auto leaderAction = [this]() {
-        showRosterOfLeaders();
-    };
-
-    mm->initialize(newGameAction,
+    mm->initialize(resumeAction,
                    loadGameAction,
-                   editGameAction,
-                   settingsAction,
-                   quitAction,
-                   leaderAction);
+                   [this]() { showChooseGameMenu(false); },
+                   [this]() { showChooseGameMenu(true); },
+                   [this]() { showRosterOfLeaders(); });
 }
 
 void eMainWindow::showSettingsMenu() {
@@ -517,7 +536,7 @@ void eMainWindow::showSettingsMenu() {
         }
         eGameTextures::setSettings(mSettings);
         if(loadNeeded) showMenuLoading();
-        else showMainMenu();
+        else showGameChooser();
     };
     const auto fullscrennA = [this](const bool f, const bool b) {
         setFullscreen(f, b);
@@ -526,10 +545,10 @@ void eMainWindow::showSettingsMenu() {
     setWidget(esm);
 }
 
-void eMainWindow::showChooseGameMenu() {
+void eMainWindow::showChooseGameMenu(const bool custom) {
     const auto gem = new eChooseGameEditMenu(this);
     gem->resize(width(), height());
-    gem->initialize(false);
+    gem->initialize(false, custom);
     setWidget(gem);
 }
 

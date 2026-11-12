@@ -663,6 +663,7 @@ SOURCES += \
         widgets/elinewidget.cpp \
         widgets/eloadingwidget.cpp \
         widgets/emainmenu.cpp \
+        widgets/egamechooser.cpp \
         widgets/emainmenubase.cpp \
         widgets/emainwidget.cpp \
         widgets/emenuloadingwidget.cpp \
@@ -2886,6 +2887,7 @@ HEADERS += \
     widgets/elinewidget.h \
     widgets/eloadingwidget.h \
     widgets/emainmenu.h \
+    widgets/egamechooser.h \
     widgets/emainmenubase.h \
     widgets/emainwidget.h \
     widgets/emenuloadingwidget.h \

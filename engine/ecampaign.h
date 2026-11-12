@@ -32,6 +32,11 @@ struct eCampaignGlossary {
 
     std::string fPakPath;
 
+    // a .pak adventure from Poseidon (as opposed to Zeus)
+    bool fPoseidon = false;
+    // found in a subfolder of the game's Adventures: a custom adventure
+    bool fCustom = false;
+
     int fBitmap = 0;
     std::string fTitle;
     std::string fIntroduction;

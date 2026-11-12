@@ -13,3 +13,4 @@ Poseidon_GrandStatue2.sg3 201 201 poseidonGrandStatue2
 Poseidon_GrandStatue3.sg3 201 201 poseidonGrandStatue3
 Poseidon_GrandStatue3.sg3 202 206 poseidonGrandStatueWater
 Zeus_General.sg3 201 207 plaza
+PoseidonImps.sg3 8525 8537 gameLogos

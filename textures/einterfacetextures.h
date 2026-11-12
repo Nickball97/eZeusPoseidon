@@ -246,6 +246,15 @@ public:
     std::shared_ptr<eTexture> fLoadImage11;
     std::shared_ptr<eTexture> fLoadImage12;
     std::shared_ptr<eTexture> fMainMenuImage;
+    // home page, as in the original: game chooser (Zeus or Poseidon), the
+    // player menu, the adventure list, Poseidon's roster picture, and
+    // the two game logos (PoseidonImps.sg3, via tools/sgextract)
+    std::shared_ptr<eTexture> fChooseGameImage;
+    std::shared_ptr<eTexture> fPlayerMenuImage;
+    std::shared_ptr<eTexture> fCampaignImage;
+    std::shared_ptr<eTexture> fPoseidonRegistryImage;
+    std::shared_ptr<eTexture> fZeusLogo;
+    std::shared_ptr<eTexture> fPoseidonLogo;
     std::shared_ptr<eTexture> fIntroductionImage;
     std::shared_ptr<eTexture> fDefeatImage;
 
