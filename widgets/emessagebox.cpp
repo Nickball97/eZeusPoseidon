@@ -521,6 +521,9 @@ void eMessageBox::initialize(eGameBoard& board,
 
     ww->stackVertically();
     ww->fitContent();
+    // the inner box fills the message box from side to side, as in the
+    // original, instead of shrinking to the text in the middle
+    ww->setWidth(width() - 2*p);
 
     stackVertically();
     fitContent();

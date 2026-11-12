@@ -64,3 +64,9 @@ void eTextScroller::setSmallTextFontSize() {
 void eTextScroller::setTinyTextPadding() {
     mTextLabel->setTinyPadding();
 }
+
+void eTextScroller::setTextColor(const eFontColor c) {
+    mBg->setTextColor(c);
+    mTextLabel->setFontColor(c);
+    mScrollTextLabel->setFontColor(c);
+}

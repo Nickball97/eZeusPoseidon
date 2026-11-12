@@ -1230,7 +1230,8 @@ void eGameWidget::showMessage(eEventData& ed,
     const auto msgb = new eMessageBox(window());
     mMsgBox = msgb;
     msgb->setHeight(height()/3);
-    msgb->setWidth(width()/2);
+    // as wide as the map, as in the original (the panel stays uncovered)
+    msgb->setWidth(width() - mGm->width() - 2*padding());
     eAction a;
     if(ed.fChar) {
         const auto ch = ed.fChar;

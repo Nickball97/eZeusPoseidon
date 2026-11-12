@@ -74,6 +74,7 @@ void eEpisodeIntroductionWidget::initialize(
     if(type != eEpisodeIntroType::campaingVictory) {
         goalsFrame = new eFramedWidget(window());
         goalsFrame->setType(eFrameType::inner);
+        goalsFrame->setTextColor(eFontColor::panel); // pale, as in the original
         goalsFrame->setNoPadding();
         goalsFrame->setWidth(iw);
 
@@ -282,6 +283,7 @@ void eEpisodeIntroductionWidget::initialize(
     introText->initialize();
     introText->setSmallTextFontSize();
     introText->setTinyTextPadding();
+    introText->setTextColor(eFontColor::panel); // pale, as in the original
     auto textPrep = text;
     eStringHelpers::replaceSpecial(textPrep);
     introText->setText(textPrep);
