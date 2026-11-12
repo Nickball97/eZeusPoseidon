@@ -13,6 +13,7 @@
 #include "widgets/eprogressbar.h"
 
 #include <algorithm>
+#include <cctype>
 
 eSanctuaryInfoWidget::eSanctuaryInfoWidget(
         eMainWindow* const window,
@@ -100,6 +101,28 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
         descLabel->fitContent();
         cw->addWidget(descLabel);
 
+        // mod feature 1B: the original's unused texts, "This Sanctuary is
+        // inactive..." (132, 5) and "This Sanctuary is active for another"
+        // (132, 8) followed by the days left (Days: 8, 45)
+        {
+            const auto activeLabel = new eLabel(window());
+            activeLabel->setNoPadding();
+            activeLabel->setSmallFontSize();
+            activeLabel->setWrapWidth(cww);
+            if(s->active()) {
+                auto days = eLanguage::zeusText(8, 45);
+                if(!days.empty()) days[0] = std::tolower(days[0]);
+                const int n = s->activeDaysLeft();
+                activeLabel->setText(eLanguage::zeusText(132, 8) + " " +
+                                     std::to_string(n) + " " + days + ".");
+            } else {
+                activeLabel->setYellowFontColor();
+                activeLabel->setText(eLanguage::zeusText(132, 5));
+            }
+            activeLabel->fitContent();
+            cw->addWidget(activeLabel);
+        }
+
         const auto buttonReasonW = new eWidget(window());
         buttonReasonW->setNoPadding();
         cw->addWidget(buttonReasonW);
@@ -139,6 +162,9 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
                     case eHelpDenialReason::error:
                         string = -1;
                         break;
+                    case eHelpDenialReason::inactive:
+                        string = 5; // This Sanctuary is inactive...
+                        break;
                     }
                     reasonLabel->setYellowFontColor();
                 } else {
@@ -176,12 +202,14 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
             pb->fitContent();
             bw->addWidget(pb);
             pb->setPressAction([s, buttonReasonW, reasonLabel]() {
-                if(s->oracleReady()) {
+                const bool active = s->active();
+                if(active && s->oracleReady()) {
                     s->consultOracle();
                     return;
                 }
                 reasonLabel->setYellowFontColor();
-                reasonLabel->setText(eLanguage::zeusText(132, 110)); // Oracle Unavailable
+                // inactive: "This Sanctuary is inactive...", else Oracle Unavailable
+                reasonLabel->setText(eLanguage::zeusText(132, active ? 110 : 5));
                 reasonLabel->fitContent();
                 buttonReasonW->stackVertically();
                 buttonReasonW->fitHeight();
@@ -229,6 +257,9 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
                         case eHelpDenialReason::error:
                             string = -1;
                             break;
+                        case eHelpDenialReason::inactive:
+                            string = -2;
+                            break;
                         }
                         reasonLabel->setYellowFontColor();
                     } else {
@@ -237,7 +268,9 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
                     }
                     const auto godType = s->godType();
                     const auto godName = eGod::sGodName(godType);
-                    const auto txt = godName + " " + eLanguage::zeusText(59, string);
+                    const auto txt = string == -2 ?
+                        eLanguage::zeusText(132, 5) : // This Sanctuary is inactive...
+                        godName + " " + eLanguage::zeusText(59, string);
                     reasonLabel->setText(txt);
                     reasonLabel->fitContent();
 

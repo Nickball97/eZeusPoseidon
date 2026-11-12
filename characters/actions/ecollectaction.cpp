@@ -78,7 +78,7 @@ void eCollectAction::increment(const int by) {
         // marble faster (Citadel of Poseidon, industries.html); no number
         // is known, so 3/4 of the time like Poseidon's fishing (Nicolás)
         const auto s = c->getBoard().sanctuary(c->cityId(), eGodType::atlas);
-        if(s && s->finished()) period = period*3/4;
+        if(s && s->active()) period = period*3/4;
     }
     if(cType == eCharacterType::fishingBoat ||
        cType == eCharacterType::urchinGatherer) {
@@ -87,7 +87,7 @@ void eCollectAction::increment(const int by) {
         // 66% of the time (original exe 0x004B5F10); urchins: 3/4 (Nicolás,
         // no number found for them)
         const auto s = c->getBoard().sanctuary(c->cityId(), eGodType::poseidon);
-        if(s && s->finished()) {
+        if(s && s->active()) {
             period = cType == eCharacterType::fishingBoat ?
                      period*66/100 : period*3/4;
         }

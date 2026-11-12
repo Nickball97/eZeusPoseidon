@@ -169,6 +169,7 @@ int eNumbers::sAggressiveWaterMonsterMoveAroundPeriod;
 
 int eNumbers::sFriendlyGodVisitPeriod;
 int eNumbers::sGodHelpPeriod;
+int eNumbers::sSanctuaryActivePeriod;
 int eNumbers::sGodHelpAttackPeriod;
 int eNumbers::sGodHelpAttackPlayerPeriod;
 
@@ -527,6 +528,9 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("god_help_period_i", sGodHelpPeriod, 250000, 1, 1000000);
     loadI("god_help_attack_period_i", sGodHelpAttackPeriod, 500000, 1, 1000000);
     loadI("god_help_attack_player_period_i", sGodHelpAttackPlayerPeriod, 250000, 1, 1000000);
+    // Nicolás's mod rule (mod feature 1B): one sacrifice keeps a sanctuary
+    // active for a month
+    loadI("sanctuary_active_period_i", sSanctuaryActivePeriod, (365*sDayLength)/12, 1, 100000000);
 
     loadI("god_attack_curse_period_i", sGodAttackCursePeriod, 6000, 1, 1000000);
     loadI("god_attack_curse_range_i", sGodAttackCurseRange, 10, 1, 20);

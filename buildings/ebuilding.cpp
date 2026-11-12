@@ -2798,7 +2798,7 @@ bool eBuilding::riskCycle(const int by) {
         {
             // Forge of Hephaestus finished: no risk of fire (exe 0x00433D50)
             const auto s = b.sanctuary(cityId(), eGodType::hephaestus);
-            if(s && s->finished()) fireRisk = 0;
+            if(s && s->active()) fireRisk = 0;
         }
         if(!sFlammable(mType)) fireRisk = 0;
         if(eRand::rand() % 8 == 0) {

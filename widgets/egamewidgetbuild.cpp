@@ -1110,7 +1110,7 @@ bool eGameWidget::buildMouseRelease() {
                 const auto diff = mBoard->difficulty(pid);
                 int need = eHouseModel::eliteEvolve(diff, 1);
                 const auto aph = mBoard->sanctuary(vcid, eGodType::aphrodite);
-                if(aph && aph->finished()) need -= 10; // Aphrodite
+                if(aph && aph->active()) need -= 10; // Aphrodite
                 if(n == 0 || best < need) {
                     showTip(cid, eLanguage::zeusText(19, 207));
                     return true;

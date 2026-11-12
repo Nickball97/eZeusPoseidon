@@ -60,6 +60,7 @@ eSanctuary::eSanctuary(eGameBoard& board,
     eMonument(board, type, sw, sh,
               maxEmployees, cid) {
     eGameTextures::loadSanctuary();
+    mActiveTime = eNumbers::sSanctuaryActivePeriod;
     sLoadMonumentTextures(godType());
     board.registerSanctuary(this);
 }
@@ -232,6 +233,16 @@ void eSanctuary::godComeback() {
 
 double eSanctuary::helpTimeFraction() const {
     return double(mHelpTimer)/eNumbers::sGodHelpPeriod;
+}
+
+bool eSanctuary::active() const {
+    return finished() && mActiveTime > 0;
+}
+
+int eSanctuary::activeDaysLeft() const {
+    if(!active()) return 0;
+    const int d = eNumbers::sDayLength;
+    return (mActiveTime + d - 1)/d;
 }
 
 bool eSanctuary::hasOracle() const {
@@ -480,6 +491,7 @@ bool eSanctuary::tryToSacrifice(const eSacrifice s) {
     a->setSacrifice(s);
     mPriestsEnRoute--;
     mPriestTimer = 24;
+    mActiveTime = eNumbers::sSanctuaryActivePeriod;
     if(mPriestsEnRoute == -maxPriests()) mPriestsEnRoute = 0;
     return true;
 }
@@ -493,6 +505,7 @@ void eSanctuary::timeChanged(const int by) {
             mPriestCycleTime -= cycle;
             priestCycle();
         }
+        mActiveTime = std::max(0, mActiveTime - by);
     }
 
     mHelpTimer += by;
@@ -508,7 +521,7 @@ void eSanctuary::timeChanged(const int by) {
 
     // Nicolás's mod rule: Artemis, when out on her rounds, hunts down the
     // wolves left in her city (wolf dens there stop, see eWolfSpawner)
-    if(godType() == eGodType::artemis && mGod && !mGodAbroad && finished()) {
+    if(godType() == eGodType::artemis && mGod && !mGodAbroad && active()) {
         mWolfHuntCheck += by;
         if(mWolfHuntCheck > 1000) {
             mWolfHuntCheck = 0;
@@ -523,14 +536,14 @@ void eSanctuary::timeChanged(const int by) {
         }
     }
 
-    if(!mKraken && godType() == eGodType::poseidon && finished()) {
+    if(!mKraken && godType() == eGodType::poseidon && active()) {
         mKrakenWait -= by;
         if(mKrakenWait <= 0) {
             mKrakenWait = 5000;
             spawnKraken();
         }
     }
-    if(!mGuardian && finished() &&
+    if(!mGuardian && active() &&
        (godType() == eGodType::ares || godType() == eGodType::hades)) {
         mGuardianWait -= by;
         if(mGuardianWait <= 0) {
@@ -642,6 +655,9 @@ void eSanctuary::read(eReadStream& src) {
             src >> mPriests[id].fArrived;
         }
     }
+    if(src.formatVersion() >= eFileFormat::sanctuaryActive) {
+        src >> mActiveTime;
+    }
 }
 
 void eSanctuary::write(eWriteStream& dst) const {
@@ -677,6 +693,7 @@ void eSanctuary::write(eWriteStream& dst) const {
         dst.writeCharacter(p.fC);
         dst << p.fArrived;
     }
+    dst << mActiveTime;
 }
 
 std::vector<eTile*> eSanctuary::warriorTiles() const {
@@ -692,6 +709,10 @@ void eSanctuary::addSpecialTile(eTile* const t) {
 }
 
 bool eSanctuary::askForAttack(const eCityId cid, eHelpDenialReason& reason) {
+    if(!active()) {
+        reason = eHelpDenialReason::inactive;
+        return false;
+    }
     auto& board = getBoard();
     const auto pid = playerId();
     const auto p = board.boardPlayerWithId(pid);
@@ -733,6 +754,10 @@ bool eSanctuary::askForAttack(const eCityId cid, eHelpDenialReason& reason) {
 }
 
 bool eSanctuary::askForHelp(eHelpDenialReason& reason) {
+    if(!active()) {
+        reason = eHelpDenialReason::inactive;
+        return false;
+    }
     if(mGodAbroad || mHelpTimer < eNumbers::sGodHelpPeriod) {
         reason = eHelpDenialReason::tooSoon;
         return false;

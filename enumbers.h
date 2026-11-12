@@ -170,6 +170,7 @@ struct eNumbers {
 
     static int sFriendlyGodVisitPeriod;
     static int sGodHelpPeriod;
+    static int sSanctuaryActivePeriod;
     static int sGodHelpAttackPeriod;
     static int sGodHelpAttackPlayerPeriod;
 

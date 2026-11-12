@@ -15,7 +15,8 @@ enum class eSacrifice;
 enum class eHelpDenialReason {
     tooSoon,
     noTarget,
-    error
+    error,
+    inactive // no sacrifice for too long (mod feature 1B)
 };
 
 class eSanctuary : public eMonument {
@@ -112,6 +113,16 @@ public:
     void priestArrived(eCharacter* const p);
     bool tryToSacrifice(const eSacrifice s);
     bool sacrificeShown() const { return mSacrificeShown; }
+
+    // Nicolás's mod rule (mod feature 1B, after the Zeus manual: a
+    // sanctuary without sacrifices loses its benefits): a finished
+    // sanctuary stays active for eNumbers::sSanctuaryActivePeriod (a
+    // month) after each sacrifice, and starts with a full period when
+    // finished. Its god's gifts and prayers need it active; the god
+    // stays and it still counts as built.
+    bool active() const;
+    // days left before it goes inactive
+    int activeDaysLeft() const;
 private:
     void priestCycle();
     void sendPriest();
@@ -125,6 +136,7 @@ private:
     int mPriestCycleTime = 0;
     int mPriestsEnRoute = 0;
     bool mSacrificeShown = false;
+    int mActiveTime = 0; // ticks left, set in the constructor
 
     stdptr<eGod> mGod;
     bool mGodAbroad = false;

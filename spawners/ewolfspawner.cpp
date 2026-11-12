@@ -21,6 +21,6 @@ stdsptr<eWildAnimal> eWolfSpawner::create(eGameBoard& board) {
 
 void eWolfSpawner::incTime(const int by) {
     const auto s = board().sanctuary(cityId(), eGodType::artemis);
-    if(s && s->finished()) return;
+    if(s && s->active()) return;
     eAnimalSpawner::incTime(by);
 }

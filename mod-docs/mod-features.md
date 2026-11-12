@@ -11,7 +11,7 @@ Difficulty levels in code (`engine/edifficulty.h`): beginner, mortal, hero, tita
 | # | Feature | Complexity | New art |
 |---|---|---|---|
 | 1 | Sanctuary costs scaled by difficulty | Low | None |
-| 1B | Sanctuaries need sacrifices to keep their gifts | Low–Medium | None |
+| 1B | Sanctuaries need sacrifices to keep their gifts (built 11 Nov 2026) | Low–Medium | None |
 | 2 | Per-person fleece, oil and wine; difficulty production scaling | Low–Medium | None |
 | 3 | Farm harvest seasons | Low–Medium | None |
 | 4 | Walker gates (configurable roadblock) | Low–Medium | None |
@@ -34,9 +34,9 @@ Note: Manor wine needs no fix. eZeus elite levels start at 0 (unevolved), so Man
 ## 1B. Sanctuaries need sacrifices (Nicolás, 11 Nov 2026)
 
 - A finished sanctuary keeps its gifts only while its priests keep sacrificing; with no sheep, goats, cattle or food, or no workers, it goes inactive until sacrifices resume. Source: the Zeus manual ("you will lose the benefits that the Sanctuary provides"); zeus.exe has the panel texts (group 132: "This Sanctuary is inactive…", "This Sanctuary is active for another…") but never uses them and nothing turns a sanctuary off (was B11 in `missing-from-original.md`). No duration exists in the game, so the numbers are design choices.
-- Each sacrifice keeps the sanctuary active for a set time (proposal 3 months, to playtest; after a sacrifice the exe timer is set to 24 and counts down 16 steps a month; priests set out again once it is below 20, about 10 days later, and the next sacrifice follows when they bring the animal or food back, so a well-supplied sanctuary sacrifices every few weeks). A newly finished sanctuary starts with a full timer. The god stays, the sanctuary still counts for episode goals, and the god doesn't turn angry.
-- Gifts that stop (current `s->finished()` checks): prayers and the oracle (`widgets/infowidgets/esanctuaryinfowidget.cpp`); Poseidon fishing/urchins and Atlas marble (`characters/actions/ecollectaction.cpp`); Hermes speed (`characters/actions/emoveaction.cpp`); Athena missile armor (`characters/efigurestats.cpp`); Apollo games bonus, Dionysus crime, Hera growth, Aphrodite no emigration (`engine/eboardcity.cpp`); Aphrodite elite housing (`widgets/egamewidgetbuild.cpp`); Artemis wolves (`spawners/ewolfspawner.cpp`); borrowed Amazons and Ares' warriors.
-- Code: an active-time counter in `eSanctuary`, counted down monthly and refilled in `tryToSacrifice`; `eSanctuary::active()` replaces `finished()` at those checks (episode goals in `eboardcity.cpp` and god visits stay on `finished()`). New saved field; old saves load with a full timer. Panel shows the original texts.
+- Each sacrifice keeps the sanctuary active for a set time (1 month, Nicolás 11 Nov 2026, setting `sanctuary_active_period_i`; after a sacrifice the exe timer is set to 24 and counts down 16 steps a month; priests set out again once it is below 20, about 10 days later, and the next sacrifice follows when they bring the animal or food back, so a well-supplied sanctuary sacrifices every few weeks). A newly finished sanctuary starts with a full timer. The god stays, the sanctuary still counts for episode goals, and the god doesn't turn angry.
+- Gifts that stop (these checks now use `s->active()`): prayers and the oracle (`widgets/infowidgets/esanctuaryinfowidget.cpp`); Poseidon fishing/urchins and Atlas marble (`characters/actions/ecollectaction.cpp`); Hermes speed (`characters/actions/emoveaction.cpp`); Athena missile armor (`characters/efigurestats.cpp`); Apollo games bonus, Dionysus crime, Hera growth, Aphrodite no emigration (`engine/eboardcity.cpp`); Aphrodite elite housing (`widgets/egamewidgetbuild.cpp`); Artemis wolves (`spawners/ewolfspawner.cpp`) and her hunting; Hephaestus fire safety (`buildings/ebuilding.cpp`); new Kraken and guardians, and replacements for fallen Amazons and Ares' warriors (`esanctuary.cpp`, `eartemissanctuary.cpp`).
+- Built 11 Nov 2026: `eSanctuary::active()` and `activeDaysLeft()`, saved with `eFileFormat::sanctuaryActive`. Prayers, attack prayers and the oracle answer with "This Sanctuary is inactive..." (132:5); the panel shows that or "This Sanctuary is active for another" (132:8) and the days left. Applies to every city, AI ones included.
 
 ## 2. Goods economy
 
@@ -76,7 +76,6 @@ Note: Manor wine needs no fix. eZeus elite levels start at 0 (unevolved), so Man
 - Cisterns next to water, or only on fertile and marsh tiles.
 - Gate presentation: configurable roadblock or a full residential wall with gates.
 - Orichalc cost multiplier.
-- How long one sacrifice keeps a sanctuary active (proposal 3 months).
 
 ## Saved ideas (not in scope)
 

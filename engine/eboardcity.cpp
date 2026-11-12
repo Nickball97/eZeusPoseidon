@@ -1523,7 +1523,7 @@ int eBoardCity::gamesScore(const eGames game, const bool roll) const {
     const int ath = mAthleticsCoverage/4 + 5*stadiums + gyms;
     const int drama = mDramaCoverage/4 + dramaSchools + theaters;
     const auto as = sanctuary(eGodType::apollo);
-    const int apollo = as && as->finished() ? 20 : 0;
+    const int apollo = as && as->active() ? 20 : 0;
 
     int score = 0;
     switch(game) {
@@ -2833,7 +2833,7 @@ void eBoardCity::updateMood() {
     }
     // food: average over lived-in houses; crime updated in the same pass
     const auto ds = sanctuary(eGodType::dionysus);
-    const bool dionysus = ds && ds->finished();
+    const bool dionysus = ds && ds->active();
     int food = 0;
     {
         int sum = 0;
@@ -3063,7 +3063,7 @@ void eBoardCity::yearlyBirthsDeaths() {
     else if(h >= 11) pct = -3;
     else if(h > 0) pct = -5;
     const auto hs = sanctuary(eGodType::hera);
-    if(hs && hs->finished()) pct += 3;
+    if(hs && hs->active()) pct += 3;
     const int pop = mPopData.population();
     int n = (pop*std::abs(pct))/100;
     if(n <= 0 || pct == 0) return;
@@ -3086,7 +3086,7 @@ void eBoardCity::emigrationCycle() {
     else if(mMood < 36) n = 1;
     if(pop < 101) n = 0;
     const auto as = sanctuary(eGodType::aphrodite);
-    if(as && as->finished()) n = 0;
+    if(as && as->active()) n = 0;
     if(n <= 0) {
         mEmigrantsPending = 0;
         return;

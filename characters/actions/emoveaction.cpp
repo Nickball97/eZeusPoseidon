@@ -101,7 +101,7 @@ void eMoveAction::increment(const int by) {
         // speed code x1.33 (6 -> 7, 1.25x; Citadel of Poseidon speed.html
         // agrees), merchants, donkeys and trade ships x1.5
         const auto s = c->getBoard().sanctuary(c->cityId(), eGodType::hermes);
-        if(s && s->finished()) speed *= cart ? 1.25 : 1.5;
+        if(s && s->active()) speed *= cart ? 1.25 : 1.5;
     }
     // a normal walker covers 54.4 tiles a month (Citadel of Poseidon
     // speed.html; original exe: speed code 6 moves one of a tile's 15 steps

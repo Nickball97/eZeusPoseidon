@@ -293,7 +293,7 @@ double missileDamage(const int ma, const int rate,
                              tt == eCharacterType::archerPoseidon ||
                              tt == eCharacterType::hoplitePoseidon ||
                              tt == eCharacterType::chariotPoseidon;
-            if(own && s && s->finished()) marmor += 4;
+            if(own && s && s->active()) marmor += 4;
         }
         const int net = std::max(0, ma - marmor);
         const int refNet = sRefRabble.fMissileAttack - sRefHoplite.fMissileArmor;
