@@ -214,9 +214,10 @@ void eMainWindow::showEpisodeIntroduction(
     e->resize(width(), height());
     const auto ee = mCampaign->currentEpisode();
 
+    // the original plays the intro music under the narrator
+    eMusic::playMissionIntroMusic();
     const auto path = mCampaign->currentEpisodeAudioFilePath(true);
-    const bool played = eMusic::playCampaignVoice(path);
-    if(!played) eMusic::playMissionIntroMusic();
+    eMusic::playCampaignVoice(path);
 
     e->initialize(mCampaign,
                   mCampaign->titleText(),
@@ -280,9 +281,10 @@ void eMainWindow::adventureComplete() {
     };
     e->resize(width(), height());
 
+    // the original plays the victory music under the narrator
+    eMusic::playCampaignVictoryMusic();
     const auto path = mCampaign->adventureVictoryAudioFilePath();
-    const bool played = eMusic::playCampaignVoice(path);
-    if(!played) eMusic::playCampaignVictoryMusic();
+    eMusic::playCampaignVoice(path);
 
     e->initialize(mCampaign,
                   eLanguage::zeusText(62, 0),
@@ -586,6 +588,8 @@ void eMainWindow::showGame(eGameBoard* b,
         mBoard->waitUntilFinished();
     }
 
+    // entering the city: the mission narrator stops
+    eMusic::stopCampaignVoice();
     eMusic::playRandomMusic();
     mGW = new eGameWidget(this);
     mGW->setBoard(b);

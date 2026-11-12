@@ -27,7 +27,14 @@ public:
     static void playMissionVictoryMusic();
     static void playCampaignVictoryMusic();
 
+    // the narrator of mission intros and victories; it plays on its own
+    // sound channel so the music goes on under it, as in the original
+    // (zeus.exe 0x005A87A0 and 0x005A88C0 start the voice and then
+    // mission_intro.wav / mission_victory.wav together)
     static bool playCampaignVoice(const std::string& path);
+    static void stopCampaignVoice();
+    // sound channel kept for the narrator (reserved in main.cpp)
+    static const int sVoiceChannel = 0;
 private:
     void incTimeImpl();
 
@@ -38,6 +45,7 @@ private:
     void playMissionVictoryMusicImpl();
     void playCampaignVictoryMusicImpl();
     bool playCampaignVoiceImpl(const std::string& path);
+    void stopCampaignVoiceImpl();
 
     void loadImpl();
     void loadMenuImpl();
@@ -47,7 +55,7 @@ private:
     bool mMenuLoaded{false};
     eMusicType mMusicType{eMusicType::none};
 
-    std::map<std::string, std::shared_ptr<eMusicVector>> mCampaignVoice;
+    Mix_Chunk* mCampaignVoice = nullptr;
 
     eMusicVector mSetupMusic;
     eMusicVector mMusic;

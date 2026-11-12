@@ -50,6 +50,8 @@ bool init() {
                Mix_GetError());
         return false;
     }
+    // keep one channel for the mission narrator so game sounds never take it
+    Mix_ReserveChannels(1);
 
     if(TTF_Init()) {
         printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n",

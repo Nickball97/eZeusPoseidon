@@ -132,9 +132,10 @@ void eGameWidget::setBoard(eGameBoard* const board) {
         e->resize(width(), height());
         const auto ee = c->currentEpisode();
 
+        // the original plays the victory music under the narrator
+        eMusic::playMissionVictoryMusic();
         const auto path = c->currentEpisodeAudioFilePath(false);
-        const bool played = eMusic::playCampaignVoice(path);
-        if(!played) eMusic::playMissionVictoryMusic();
+        eMusic::playCampaignVoice(path);
 
         e->initialize(c,
                       eLanguage::zeusText(62, 0),
