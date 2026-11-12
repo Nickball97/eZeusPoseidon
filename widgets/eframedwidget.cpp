@@ -10,7 +10,10 @@ namespace {
 void recolorDarkText(eWidget* const w, const eFontColor to) {
     for(const auto c : w->children()) {
         if(const auto l = dynamic_cast<eLabelBase*>(c)) {
-            if(l->fontColor() == eFontColor::dark) l->setFontColor(to);
+            // only text labels: a label showing a picture has no text, and
+            // changing its colour would replace the picture
+            if(!l->text().empty() &&
+               l->fontColor() == eFontColor::dark) l->setFontColor(to);
         }
         recolorDarkText(c, to);
     }
