@@ -180,6 +180,7 @@ public:
             const auto b = new eSwitchButton(window());
             b->setUnderline(false);
             b->setRenderFrame(false);
+            b->setLightFontColor(); // the original's orders are white
             b->setNoPadding();
             b->setSmallFontSize();
             b->addValue(eLanguage::zeusText(130, 1)); // don't accept

@@ -131,7 +131,7 @@ void eSettingsMenu::initialize(const eApplyAction& settingsA,
             b->align(eAlignment::hcenter);
             b->setPressAction([this, currentButton, b, r]() {
                 if(*currentButton) {
-                    (*currentButton)->setLightFontColor();
+                    (*currentButton)->setDarkFontColor();
                 }
                 *currentButton = b;
                 b->setYellowFontColor();

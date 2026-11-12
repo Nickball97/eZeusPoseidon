@@ -159,11 +159,11 @@ void eRosterOfLeaders::initialize() {
             b->setUnderline(false);
             b->setDarkFontColor();
             b->setMouseEnterAction([b]() {
-                b->setLightFontColor();
+                b->setDarkFontColor();
             });
             b->setMouseLeaveAction([b, selected]() {
                 if(b->text() == *selected) {
-                    b->setLightFontColor();
+                    b->setDarkFontColor();
                 } else {
                     b->setDarkFontColor();
                 }
@@ -181,7 +181,7 @@ void eRosterOfLeaders::initialize() {
                 }
                 *selectedB = b;
                 *selected = b->text();
-                b->setLightFontColor();
+                b->setDarkFontColor();
             });
         }
         filesWidget->setNoPadding();

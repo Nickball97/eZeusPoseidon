@@ -38,7 +38,7 @@ public:
         }
         // as in the original: "Distributing" in yellow, the rest plain
         if(distributing) mStateLabel->setYellowFontColor();
-        else mStateLabel->setLightFontColor();
+        else mStateLabel->setDarkFontColor();
         mStateLabel->setText(text);
         mStateLabel->fitContent();
     }

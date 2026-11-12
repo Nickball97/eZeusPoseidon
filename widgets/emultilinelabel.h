@@ -27,7 +27,7 @@ private:
     const eResolution& res() const;
 
     int mFontSize = 0;
-    eFontColor mFontColor = eFontColor::light;
+    eFontColor mFontColor = eFontColor::dark; // the original's text is dark navy; white marks the selected item
     std::vector<eLabel*> mLabels;
 };
 

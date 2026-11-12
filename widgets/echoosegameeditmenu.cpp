@@ -405,11 +405,11 @@ void eChooseGameEditMenu::initialize(const bool editor) {
             });
             w->setMouseLeaveAction([w, selected]() {
                 const auto s = *selected;
-                if(s != w) w->setLightFontColor();
+                if(s != w) w->setDarkFontColor();
             });
             w->setPressAction([selected, w, g, this]() {
                 const auto s = *selected;
-                if(s) s->setLightFontColor();
+                if(s) s->setDarkFontColor();
                 setGlossary(g);
                 w->setYellowFontColor();
                 *selected = w;

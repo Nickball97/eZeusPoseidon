@@ -170,7 +170,7 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
                     reasonLabel->setYellowFontColor();
                 } else {
                     string = 24 + godId;
-                    reasonLabel->setLightFontColor();
+                    reasonLabel->setDarkFontColor();
                 }
                 const auto txt = eLanguage::zeusText(132, string);
                 reasonLabel->setText(txt);
@@ -253,7 +253,7 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
                         reasonLabel->setYellowFontColor();
                     } else {
                         string = 25;
-                        reasonLabel->setLightFontColor();
+                        reasonLabel->setDarkFontColor();
                     }
                     const auto godType = s->godType();
                     const auto godName = eGod::sGodName(godType);

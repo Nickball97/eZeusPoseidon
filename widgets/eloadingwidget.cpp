@@ -25,11 +25,12 @@ void eLoadingWidget::initialize() {
         const auto label = new eFramedLabel("Waiting...", window());
         mLabelW = label;
         mLabel = label;
-        mLabel->setLightFontColor();
+        mLabel->setDarkFontColor();
     } else {
         const auto label = new eLabel("Waiting...", window());
         mLabelW = label;
         mLabel = label;
+        mLabel->setLightFontColor(); // drawn on black at start-up
     }
     mLabelW->fitContent();
     addWidget(mLabelW);

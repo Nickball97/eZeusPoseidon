@@ -137,7 +137,7 @@ void eWorkforceAllocationWidget::initialize(
         const int e = distributor.employees(s);
         w3L->setText(std::to_string(e));
         if(e == maxE) {
-            w3L->setLightFontColor();
+            w3L->setDarkFontColor();
         } else {
             w3L->setYellowFontColor();
         }
@@ -275,7 +275,7 @@ void eWorkforceAllocationWidget::initialize(
             nameL->setYellowFontColor();
         } else {
             nameL->setText(name);
-            nameL->setLightFontColor();
+            nameL->setDarkFontColor();
         }
         nameL->fitContent();
         nameW->addWidget(nameL);
@@ -284,7 +284,7 @@ void eWorkforceAllocationWidget::initialize(
         nameL->setPressAction([this, rr, nameL, name, cid]() {
             const bool s = mBoard->isShutDown(cid, rr);
             if(s) {
-                nameL->setLightFontColor();
+                nameL->setDarkFontColor();
                 nameL->setText(name);
                 nameL->fitContent();
                 mBoard->removeShutDown(cid, rr);
@@ -358,7 +358,7 @@ void eWorkforceAllocationWidget::updateLabels() {
         l->setText(std::to_string(e));
         l->fitContent();
         if(e == maxE) {
-            l->setLightFontColor();
+            l->setDarkFontColor();
         } else {
             l->setYellowFontColor();
         }
