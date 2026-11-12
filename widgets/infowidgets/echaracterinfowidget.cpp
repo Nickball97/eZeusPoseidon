@@ -22,6 +22,9 @@
 #include "audio/esoundvector.h"
 #include "eiteratesquare.h"
 
+#include <algorithm>
+#include <cmath>
+
 eCharacterInfoWidget::eCharacterInfoWidget(
     eMainWindow* const window,
     eMainWidget* const mw) :
@@ -1619,99 +1622,131 @@ eCharMessage gCharMessage(eCharacter * const c) {
     return result;
 }
 
+namespace {
+// a walker's picture scaled to the strip's height, clickable to show
+// that walker (the original's strip of small pictures at the top)
+class eCharThumb : public eButtonBase {
+public:
+    using eButtonBase::eButtonBase;
+protected:
+    void paintEvent(ePainter& p) override {
+        const auto& tex = texture();
+        if(tex) p.drawTextureCover(rect(), tex);
+    }
+};
+}
+
+// Laid out like the original's walker window: a framed strip at the top
+// with a small picture of each walker on the spot, then a framed panel
+// with the portrait, the name in large letters, the occupation and what
+// the walker is saying, and below it what the walker is doing.
 void eCharacterInfoWidget::initialize(const std::vector<eCharacter*> chars) {
     eInfoWidget::initialize("");
     if(chars.empty()) return;
 
     const auto res = resolution();
-    if(chars.size() > 1) {
-        const auto w = new eWidget(window());
+    const double m = res.multiplier();
+    const int p = res.smallPadding();
+    const int fp = padding(); // inner frame margin (addFramedWidget)
 
+    {   // top strip
+        const int th = std::round(44*m);
+        const auto strip = addFramedWidget(th + 2*fp);
+        int x = 0;
         for(eCharacter* const c : chars) {
             const auto portrait = gCharPortrait(res, c);
-            const auto b = new eButtonBase(window());
+            if(!portrait) continue;
+            const auto b = new eCharThumb(window());
+            b->setNoPadding();
             b->setTexture(portrait);
+            const int pw = portrait->width();
+            const int ph = std::max(1, portrait->height());
+            const int tw = std::max(1, (int)std::round(double(th)*pw/ph));
+            b->resize(tw, th);
             b->setPressAction([this, c]() {
                 setCharacter(c);
             });
-            b->fitContent();
-            w->addWidget(b);
+            strip->addWidget(b);
+            b->move(x, 0);
+            x += tw + p;
         }
-
-        w->stackHorizontally();
-        w->fitContent();
-        addInfoWidget(w);
     }
 
     eCharacter * const c = chars[0];
-    const auto type = c->type();
     const auto portrait = gCharPortrait(res, c);
 
+    const int innerW = widgetWidth() - 2*fp;
     mContent = new eWidget(window());
-    mContent->setWidth(widgetWidth());
+    mContent->setNoPadding();
+    mContent->setWidth(innerW);
 
     mPortraitLabel = new eLabel(window());
+    mPortraitLabel->setNoPadding();
     mPortraitLabel->setTexture(portrait);
     mPortraitLabel->fitContent();
 
-    const int p = res.smallPadding();
-    const int remW = widgetWidth() - mPortraitLabel->width() - 2*p;
+    const int remW = innerW - mPortraitLabel->width() - 2*p;
 
     mTextWidget = new eWidget(window());
+    mTextWidget->setNoPadding();
     mTextWidget->setWidth(remW);
 
-    const int seedId = c->seedId();
-    const auto name = gCharName(type, seedId);
-
-    mNameLabel = new eLabel(name, window());
-    mNameLabel->setWrapWidth(remW);
+    mNameLabel = new eLabel(window());
+    mNameLabel->setNoPadding();
     mNameLabel->setHugeFontSize();
-    mNameLabel->setTinyPadding();
-    mNameLabel->fitContent();
+    mNameLabel->setWrapWidth(remW);
     mTextWidget->addWidget(mNameLabel);
 
-    const auto occupation = gCharOccupation(c);
-    mOccupationLabel = new eLabel(occupation, window());
+    mOccupationLabel = new eLabel(window());
+    mOccupationLabel->setNoPadding();
+    mOccupationLabel->setSmallFontSize();
     mOccupationLabel->setWrapWidth(remW);
-    mOccupationLabel->setTinyPadding();
-    mOccupationLabel->fitContent();
     mTextWidget->addWidget(mOccupationLabel);
 
-    const auto msg = gCharMessage(c);
     mMsgLabel = new eLabel(window());
-    mMsgLabel->setTinyPadding();
+    mMsgLabel->setNoPadding();
     mMsgLabel->setSmallFontSize();
     mMsgLabel->setWrapWidth(remW);
-    mMsgLabel->setText(msg.fText);
-    mMsgLabel->fitContent();
     mTextWidget->addWidget(mMsgLabel);
 
-    const auto speakButton = new eBasicButton(
+    mSpeakButton = new eBasicButton(
         &eInterfaceTextures::fSpeakButton, window());
-    speakButton->setPressAction([this]() {
+    mSpeakButton->setPressAction([this]() {
         if(mSpeakAction) mSpeakAction();
     });
-    mTextWidget->addWidget(speakButton);
-    speakButton->align(eAlignment::right);
-
-    mTextWidget->stackVertically(p);
+    mTextWidget->addWidget(mSpeakButton);
 
     mContent->addWidget(mPortraitLabel);
     mContent->addWidget(mTextWidget);
-    mContent->stackHorizontally(p);
-    mContent->fitContent();
-    addInfoWidget(mContent);
+    mPortraitLabel->move(0, 0);
+    mTextWidget->move(mPortraitLabel->width() + 2*p, 0);
+
+    // the panel is as tall as the tallest of the walkers on the spot
+    int contentH = std::round(100*m);
+    for(eCharacter* const cc : chars) {
+        fillTexts(cc, false);
+        contentH = std::max(contentH, mTextWidget->height());
+        const auto pt = gCharPortrait(res, cc);
+        if(pt) contentH = std::max(contentH, pt->height());
+    }
+    mContent->setHeight(contentH);
+    const auto panel = addFramedWidget(contentH + 2*fp);
+    panel->addWidget(mContent);
+    mContent->move(0, 0);
 
     mAdditionalInfo = new eLabel(window());
     mAdditionalInfo->setNoPadding();
     mAdditionalInfo->setSmallFontSize();
+    mAdditionalInfo->setTextAlignment(eAlignment::left | eAlignment::top);
+    mAdditionalInfo->setWrapWidth(widgetWidth());
+    mAdditionalInfo->setText(" ");
     mAdditionalInfo->fitContent();
-    addWidget(mAdditionalInfo);
+    addInfoWidget(mAdditionalInfo, 2*mAdditionalInfo->height());
 
     setCharacter(c);
 }
 
-void eCharacterInfoWidget::setCharacter(eCharacter * const c) {
+void eCharacterInfoWidget::fillTexts(eCharacter* const c, const bool sound) {
     const auto type = c->type();
     const auto res = resolution();
     const auto portrait = gCharPortrait(res, c);
@@ -1720,26 +1755,37 @@ void eCharacterInfoWidget::setCharacter(eCharacter * const c) {
     mPortraitLabel->fitContent();
 
     const int seedId = c->seedId();
-    const auto name = gCharName(type, seedId);
-    mNameLabel->setText(name);
+    mNameLabel->setText(gCharName(type, seedId));
     mNameLabel->fitContent();
 
-    const auto occupation = gCharOccupation(c);
-    mOccupationLabel->setText(occupation);
+    mOccupationLabel->setText(gCharOccupation(c));
     mOccupationLabel->fitContent();
 
     const auto msg = gCharMessage(c);
     mMsgLabel->setText(msg.fText);
-    msg.playSound();
-    mSpeakAction = [msg]() {
-        msg.playSound();
-    };
     mMsgLabel->fitContent();
+    if(sound) {
+        msg.playSound();
+        mSpeakAction = [msg]() {
+            msg.playSound();
+        };
+    }
 
     const int p = res.smallPadding();
-    mTextWidget->stackVertically(p);
-    mTextWidget->fitHeight();
-    mContent->fitHeight();
+    int y = 0;
+    mNameLabel->move(0, y);
+    y += mNameLabel->height();
+    mOccupationLabel->move(0, y);
+    y += mOccupationLabel->height() + p;
+    mMsgLabel->move(0, y);
+    y += mMsgLabel->height() + p;
+    mSpeakButton->move(mTextWidget->width() - mSpeakButton->width(), y);
+    y += mSpeakButton->height();
+    mTextWidget->setHeight(y);
+}
+
+void eCharacterInfoWidget::setCharacter(eCharacter * const c) {
+    fillTexts(c, true);
 
     std::string additionalTxt;
     if(const auto cta = dynamic_cast<eCartTransporterAction*>(c->action())) {
@@ -1760,7 +1806,4 @@ void eCharacterInfoWidget::setCharacter(eCharacter * const c) {
         }
     }
     mAdditionalInfo->setText(additionalTxt);
-    mAdditionalInfo->fitContent();
-    const int hp = res.hugePadding();
-    mAdditionalInfo->move(hp, height() - hp - mAdditionalInfo->height());
 }

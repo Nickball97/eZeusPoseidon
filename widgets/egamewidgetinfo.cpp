@@ -201,6 +201,15 @@ eInfoWidget* eGameWidget::openInfoWidget(eBuilding* const b) {
             if(!wid) {
                 const auto title = eBuilding::sNameForBuilding(b);
                 bWid->initialize(title);
+                // the building's description, as the original shows for
+                // walls, parks and the like
+                std::string t;
+                std::string info;
+                std::string ei;
+                std::string ai;
+                int group = 0;
+                eBuilding::sInfoText(b, t, info, ei, ai, &group);
+                if(group > 0 && !info.empty()) bWid->addText(info);
                 wid = bWid;
             }
         }
@@ -224,6 +233,7 @@ eInfoWidget *eGameWidget::openInfoWidget(const std::vector<eCharacter*> chars) {
     const auto wid = new eCharacterInfoWidget(window(), this);
     wid->initialize(chars);
     if(wid) {
+        wid->fitHeightToContent();
         addWidget(wid);
         wid->setX((width() - mGm->width() - wid->width())/2);
         wid->align(eAlignment::vcenter);

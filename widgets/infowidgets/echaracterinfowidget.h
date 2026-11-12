@@ -4,6 +4,7 @@
 #include "einfowidget.h"
 
 class eCharacter;
+class eBasicButton;
 
 class eCharacterInfoWidget : public eInfoWidget {
 public:
@@ -13,6 +14,8 @@ public:
     void initialize(const std::vector<eCharacter*> chars);
 private:
     void setCharacter(eCharacter* const c);
+    // fills the name, occupation and message and lays them out
+    void fillTexts(eCharacter* const c, const bool sound);
 
     eWidget* mContent = nullptr;
     eLabel* mPortraitLabel = nullptr;
@@ -21,6 +24,7 @@ private:
     eLabel* mOccupationLabel = nullptr;
     eLabel* mMsgLabel = nullptr;
     eLabel* mAdditionalInfo = nullptr;
+    eBasicButton* mSpeakButton = nullptr;
 
     eAction mSpeakAction;
 };
