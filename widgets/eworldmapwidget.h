@@ -30,6 +30,7 @@ protected:
     void paintEvent(ePainter& p);
     bool mousePressEvent(const eMouseEvent& e);
 private:
+    void paintEdgeFade(ePainter& p) const;
     void armyDrawXY(eWorldCity& c1, eWorldCity& c2,
                     const double frac, int& x, int& y);
 

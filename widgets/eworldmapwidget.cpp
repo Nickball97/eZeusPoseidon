@@ -179,7 +179,10 @@ void eWorldMapWidget::paintEvent(ePainter& p) {
     mFrame++;
     {
         const auto tex = mDrawTex ? mDrawTex : texture();
-        if(tex) p.drawTextureCover(rect(), tex);
+        if(tex) {
+            p.drawTextureCover(rect(), tex);
+            paintEdgeFade(p);
+        }
     }
     if(!mWorldBoard) return;
 
@@ -800,6 +803,32 @@ void eWorldMapWidget::setMap(const eWorldMap map) {
     setTexture(tex);
     mDrawTex = nullptr;
     fitContent();
+}
+
+void eWorldMapWidget::paintEdgeFade(ePainter& p) const {
+    // Fade the map's edges into the sea colour around it (35, 88, 120, see
+    // eWorldWidget::paintEvent) so its border, the land cut off at the top
+    // and right and the Typhon painting don't end in a hard line. Edges
+    // touching the screen's top or bottom are left alone.
+    const int band = std::max(1, height()/25);
+    const auto r = p.renderer();
+    SDL_BlendMode oldMode;
+    SDL_GetRenderDrawBlendMode(r, &oldMode);
+    SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
+    const bool vertical = y() > 0; // a gap above and below the map
+    for(int i = 0; i < band; i++) {
+        // fully sea at the very edge, clear at the inner end of the band
+        const double t = 1.0 - static_cast<double>(i)/band;
+        const Uint8 a = static_cast<Uint8>(std::round(255*t*t));
+        const SDL_Color c{35, 88, 120, a};
+        p.fillRect(SDL_Rect{i, 0, 1, height()}, c);
+        p.fillRect(SDL_Rect{width() - 1 - i, 0, 1, height()}, c);
+        if(vertical) {
+            p.fillRect(SDL_Rect{0, i, width(), 1}, c);
+            p.fillRect(SDL_Rect{0, height() - 1 - i, width(), 1}, c);
+        }
+    }
+    SDL_SetRenderDrawBlendMode(r, oldMode);
 }
 
 void eWorldMapWidget::fitTo(const int w, const int h) {
