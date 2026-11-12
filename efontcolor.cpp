@@ -9,10 +9,11 @@ void eFontColorHelpers::colors(const eFontColor c,
         col2 = SDL_Color{0, 0, 0, 255};
         break;
     case eFontColor::dark:
-        // the original's dark navy text (measured in its windows)
-        col1 = SDL_Color{8, 65, 115, 255};
-        // no light outline: the original's dark text is plain
-        col2 = col1;
+        // the original's carved look (measured in its windows): navy
+        // letters with a light-blue edge one pixel below and to the right
+        // (eTexture::loadText draws the edge under the letters)
+        col1 = SDL_Color{16, 65, 99, 255};
+        col2 = SDL_Color{140, 211, 247, 255};
         break;
     case eFontColor::yellow:
         col1 = SDL_Color{255, 207, 0, 255};
