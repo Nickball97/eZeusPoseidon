@@ -1,6 +1,7 @@
 #include "eworldwidget.h"
 
 #include "eworldmenu.h"
+#include "textures/egametextures.h"
 #include "eworldmapwidget.h"
 #include "erequestdialog.h"
 #include "egiftdialog.h"
@@ -407,6 +408,26 @@ void eWorldWidget::paintEvent(ePainter& p) {
     // Zeus_MapOfGreece*.JPG and Poseidon_map*.jpg do (35, 88, 120).
     const int w = mWM ? mWM->x() : width();
     p.fillRect(SDL_Rect{0, 0, w, height()}, SDL_Color{35, 88, 120, 255});
+    // Below a panel shorter than the screen, the original (Steam, 1080
+    // lines) shows the same cyan as its top bar; tile that texture there.
+    if(mWM) {
+        const int y0 = mWM->y() + mWM->height();
+        if(y0 < height()) {
+            int iRes;
+            int mult;
+            iResAndMult(iRes, mult);
+            const auto& tex = eGameTextures::interface()[iRes].fGameTopBar;
+            const int tw = tex ? tex->width() : 0;
+            const int th = tex ? tex->height() : 0;
+            if(tw > 0 && th > 0) {
+                for(int y = y0; y < height(); y += th) {
+                    for(int x = mWM->x(); x < width(); x += tw) {
+                        p.drawTexture(x, y, tex);
+                    }
+                }
+            }
+        }
+    }
     eMainWidget::paintEvent(p);
 }
 
