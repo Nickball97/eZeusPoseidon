@@ -116,6 +116,7 @@ gods "Gods"
 resume_game "Resume adventure"
 
 resolution "Resolution"
+borderless_fullscreen "Borderless full screen"
 
 tiny_textures "Tiny textures"
 small_textures "Small textures"

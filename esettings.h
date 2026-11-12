@@ -10,6 +10,9 @@ struct eSettings {
     bool fMediumTextures = true;
     bool fLargeTextures = true;
     bool fFullscreen = false;
+    // full screen as a borderless window the size of the desktop, so
+    // switching to another program doesn't drop the game to the desktop
+    bool fBorderless = false;
     eResolution fRes = eResolution(1280, 720);
 
     std::vector<eTileSize> availableSizes() const;

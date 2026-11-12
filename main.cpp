@@ -24,6 +24,10 @@ bool init() {
 #ifdef EZEUS_DEV_CHEATS
     eInstallDevCrashHandler();
 #endif
+    // Draw at the screen's real pixels when Windows enlarges programs
+    // (e.g. 125% display scaling); otherwise Windows stretches eZeus's
+    // picture and a 1920x1080 game no longer fits a 1920x1080 screen.
+    SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         printf("SDL could not initialize! SDL Error: %s\n",
                SDL_GetError());

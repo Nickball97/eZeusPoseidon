@@ -41,6 +41,14 @@ public:
 
     void setResolution(const eResolution& res);
     void setFullscreen(const bool f);
+    // borderless: full screen as a desktop-sized window (SDL "desktop"
+    // full screen); the game is drawn at the chosen resolution and
+    // stretched to the desktop if the two differ
+    void setFullscreen(const bool f, const bool borderless);
+    // mouse position and warping in game pixels, also when the picture is
+    // stretched in borderless full screen
+    void mousePosition(int& x, int& y) const;
+    void warpMouse(const int x, const int y);
     // F5 and F8 in the game (zeus.exe window procedure 0x005C4A90)
     void toggleFullscreen();
     void centerWindow();
@@ -87,6 +95,7 @@ public:
     void setLeader(const std::string& leader) { mLeader = leader; }
     std::string leaderSaveDir() const;
 private:
+    void updateLogicalSize();
     void clearWidgets();
 
     eSettings mSettings;

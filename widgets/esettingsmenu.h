@@ -7,6 +7,7 @@
 inline bool operator==(const eSettings& s0, const eSettings& s1) {
     if(s0.fRes != s1.fRes) return false;
     if(s0.fFullscreen != s1.fFullscreen) return false;
+    if(s0.fBorderless != s1.fBorderless) return false;
     return true;
 }
 
@@ -16,7 +17,7 @@ public:
                   eMainWindow* const window);
 
     using eApplyAction = std::function<void(const eSettings&)>;
-    using eFullscreenA = std::function<void(const bool)>;
+    using eFullscreenA = std::function<void(const bool, const bool)>;
     void initialize(const eApplyAction& settingsA,
                     const eFullscreenA& fullscreenA);
 

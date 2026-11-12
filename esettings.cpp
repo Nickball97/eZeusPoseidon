@@ -37,6 +37,8 @@ void eSettings::write() const {
             (fLargeTextures ? "\"true\"" : "\"false\"") << "\n";
     file << "fullscreen" << " " <<
             (fFullscreen ? "\"true\"" : "\"false\"") << "\n";
+    file << "borderless" << " " <<
+            (fBorderless ? "\"true\"" : "\"false\"") << "\n";
     const auto wStr = std::to_string(fRes.width());
     file << "width" << " " << "\"" << wStr << "\"" << "\n";
     const auto hStr = std::to_string(fRes.height());
@@ -54,6 +56,7 @@ void eSettings::read() {
     fMediumTextures = settings["medium_textures"] == "true";
     fLargeTextures = settings["large_textures"] == "true";
     fFullscreen = settings["fullscreen"] == "true";
+    fBorderless = settings["borderless"] == "true"; // missing in old files: off
     const auto widthStr = settings["width"];
     const auto heightStr = settings["height"];
     if(!widthStr.empty() && !heightStr.empty()) {

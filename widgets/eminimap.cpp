@@ -66,9 +66,8 @@ bool eMiniMap::mouseMoveEvent(const eMouseEvent& e) {
     {
         int cx;
         int cy;
-        SDL_GetMouseState(&cx, &cy);
-        const auto w = window()->window();
-        SDL_WarpMouseInWindow(w, cx - dx, cy - dy);
+        window()->mousePosition(cx, cy);
+        window()->warpMouse(cx - dx, cy - dy);
     }
 
     if(mChangeAction) mChangeAction();

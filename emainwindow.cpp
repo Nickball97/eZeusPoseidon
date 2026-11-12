@@ -69,7 +69,7 @@ bool eMainWindow::initialize(const eSettings& settings) {
     mSdlWindow = window;
     mSdlRenderer = renderer;
     setResolution(res);
-    setFullscreen(settings.fFullscreen);
+    setFullscreen(settings.fFullscreen, settings.fBorderless);
     mSettings = settings;
     SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
@@ -106,13 +106,57 @@ void eMainWindow::setResolution(const eResolution& res) {
     const int w = res.width();
     const int h = res.height();
     SDL_SetWindowSize(mSdlWindow, w, h);
+    updateLogicalSize();
 }
 
 void eMainWindow::setFullscreen(const bool f) {
-    if(mSettings.fFullscreen == f && !mFirstFullscrenSetting) return;
+    setFullscreen(f, mSettings.fBorderless);
+}
+
+void eMainWindow::setFullscreen(const bool f, const bool borderless) {
+    if(mSettings.fFullscreen == f &&
+       mSettings.fBorderless == borderless &&
+       !mFirstFullscrenSetting) return;
     mFirstFullscrenSetting = false;
     mSettings.fFullscreen = f;
-    SDL_SetWindowFullscreen(mSdlWindow, f ? SDL_WINDOW_FULLSCREEN : 0);
+    mSettings.fBorderless = borderless;
+    Uint32 flags = 0;
+    if(f) {
+        flags = borderless ? SDL_WINDOW_FULLSCREEN_DESKTOP :
+                             SDL_WINDOW_FULLSCREEN;
+    }
+    SDL_SetWindowFullscreen(mSdlWindow, flags);
+    updateLogicalSize();
+}
+
+void eMainWindow::updateLogicalSize() {
+    if(!mSdlRenderer) return;
+    if(mSettings.fFullscreen && mSettings.fBorderless) {
+        // the window is the desktop's size; draw at the chosen resolution
+        // and let SDL stretch it (with black bars if the shape differs)
+        const auto& res = mSettings.fRes;
+        SDL_RenderSetLogicalSize(mSdlRenderer, res.width(), res.height());
+    } else {
+        SDL_RenderSetLogicalSize(mSdlRenderer, 0, 0);
+    }
+}
+
+void eMainWindow::mousePosition(int& x, int& y) const {
+    int wx;
+    int wy;
+    SDL_GetMouseState(&wx, &wy);
+    float lx;
+    float ly;
+    SDL_RenderWindowToLogical(mSdlRenderer, wx, wy, &lx, &ly);
+    x = static_cast<int>(lx);
+    y = static_cast<int>(ly);
+}
+
+void eMainWindow::warpMouse(const int x, const int y) {
+    int wx;
+    int wy;
+    SDL_RenderLogicalToWindow(mSdlRenderer, x, y, &wx, &wy);
+    SDL_WarpMouseInWindow(mSdlWindow, wx, wy);
 }
 
 void eMainWindow::toggleFullscreen() {
@@ -460,7 +504,7 @@ void eMainWindow::showSettingsMenu() {
     const auto applyA = [this](const eSettings& settings) {
         const bool loadNeeded = settings.fRes != mSettings.fRes;
         setResolution(settings.fRes);
-        setFullscreen(settings.fFullscreen);
+        setFullscreen(settings.fFullscreen, settings.fBorderless);
         mSettings = settings;
         mSettings.write();
         if(!mSettings.fTinyTextures &&
@@ -473,8 +517,8 @@ void eMainWindow::showSettingsMenu() {
         if(loadNeeded) showMenuLoading();
         else showMainMenu();
     };
-    const auto fullscrennA = [this](const bool f) {
-        setFullscreen(f);
+    const auto fullscrennA = [this](const bool f, const bool b) {
+        setFullscreen(f, b);
     };
     esm->initialize(applyA, fullscrennA);
     setWidget(esm);
@@ -635,7 +679,7 @@ int eMainWindow::exec() {
 
         while(SDL_PollEvent(&e)) {
             int x, y;
-            SDL_GetMouseState(&x, &y);
+            mousePosition(x, y);
             const bool shift = mShiftPressed > 0;
             const bool ctrl = mCtrlPressed > 0;
             if(e.type == SDL_QUIT) {
@@ -737,7 +781,7 @@ int eMainWindow::exec() {
                 const int wtt = tooltip.width();
                 const int htt = tooltip.height();
                 int mx, my;
-                SDL_GetMouseState(&mx, &my);
+                mousePosition(mx, my);
                 int xtt;
                 int ytt;
                 if(mx > width()/2) {
