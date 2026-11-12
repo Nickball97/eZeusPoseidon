@@ -77,6 +77,7 @@ void eMessageBox::initialize(eGameBoard& board,
 
     const auto ww = new eFramedWidget(window());
     ww->setType(eFrameType::inner);
+    ww->setTextColor(eFontColor::panel); // pale text, as in the original's messages
     ww->setSmallPadding();
 
     {
