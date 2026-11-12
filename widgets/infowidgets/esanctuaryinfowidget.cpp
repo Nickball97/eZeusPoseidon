@@ -121,6 +121,7 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
             }
             activeLabel->fitContent();
             cw->addWidget(activeLabel);
+            activeLabel->setY(descLabel->y() + descLabel->height() + p);
         }
 
         const auto buttonReasonW = new eWidget(window());
