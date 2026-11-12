@@ -377,8 +377,13 @@ void eWorldWidget::openGiftDialog() {
 
 void eWorldWidget::setMap(const eWorldMap map) {
     mWMW->setMap(map);
+    // the map fills the screen height beside the panel (Nicolás, 12 Nov
+    // 2026); city positions are fractions of the map, so they follow
+    const int areaW = width() - mWM->width();
+    mWMW->fitTo(areaW, height());
     mWMW->align(eAlignment::center);
-    mWMW->setX((width() - mWM->width() - mWMW->width())/2);
+    mWMW->setX((areaW - mWMW->width())/2);
+    mWMW->updateWidgets();
 }
 
 void eWorldWidget::openDialog(eWidget* const d) {
@@ -405,29 +410,10 @@ void eWorldWidget::openEnlistForcesDialog(
 void eWorldWidget::paintEvent(ePainter& p) {
     // The map pictures are smaller than the screen; fill around them with
     // their sea colour, as the Steam release's padded 1738x1080 copies of
-    // Zeus_MapOfGreece*.JPG and Poseidon_map*.jpg do (35, 88, 120).
-    const int w = mWM ? mWM->x() : width();
-    p.fillRect(SDL_Rect{0, 0, w, height()}, SDL_Color{35, 88, 120, 255});
-    // Below a panel shorter than the screen, the original (Steam, 1080
-    // lines) shows the same cyan as its top bar; tile that texture there.
-    if(mWM) {
-        const int y0 = mWM->y() + mWM->height();
-        if(y0 < height()) {
-            int iRes;
-            int mult;
-            iResAndMult(iRes, mult);
-            const auto& tex = eGameTextures::interface()[iRes].fGameTopBar;
-            const int tw = tex ? tex->width() : 0;
-            const int th = tex ? tex->height() : 0;
-            if(tw > 0 && th > 0) {
-                for(int y = y0; y < height(); y += th) {
-                    for(int x = mWM->x(); x < width(); x += tw) {
-                        p.drawTexture(x, y, tex);
-                    }
-                }
-            }
-        }
-    }
+    // Zeus_MapOfGreece*.JPG and Poseidon_map*.jpg do (35, 88, 120). The
+    // same colour fills below the panel when the panel is shorter than the
+    // screen (Nicolás's choice; the original shows its top bar's cyan).
+    p.fillRect(SDL_Rect{0, 0, width(), height()}, SDL_Color{35, 88, 120, 255});
     eMainWidget::paintEvent(p);
 }
 

@@ -17,6 +17,11 @@
 #include "enumbers.h"
 
 #include <algorithm>
+#include <cmath>
+#include <map>
+
+#include "ebinaryimageloader.h"
+#include "emainwindow.h"
 
 eWorldMapWidget::eWorldMapWidget(eMainWindow* const window) :
     eLabel(window) {}
@@ -172,7 +177,10 @@ std::vector<eMapArmy> getArmies(eGameBoard& board) {
 
 void eWorldMapWidget::paintEvent(ePainter& p) {
     mFrame++;
-    eLabel::paintEvent(p);
+    {
+        const auto tex = mDrawTex ? mDrawTex : texture();
+        if(tex) p.drawTextureCover(rect(), tex);
+    }
     if(!mWorldBoard) return;
 
     const auto& intrfc = eGameTextures::interface();
@@ -728,55 +736,108 @@ void eWorldMapWidget::setMap(const eWorldMap map) {
     switch(map) {
     case eWorldMap::greece1:
         eGameTextures::loadMapOfGreece1();
+        mMapFile = "Zeus_MapOfGreece01.JPG";
         tex = texs.fMapOfGreece1;
         break;
     case eWorldMap::greece2:
         eGameTextures::loadMapOfGreece2();
+        mMapFile = "Zeus_MapOfGreece02.JPG";
         tex = texs.fMapOfGreece2;
         break;
     case eWorldMap::greece3:
         eGameTextures::loadMapOfGreece3();
+        mMapFile = "Zeus_MapOfGreece03.JPG";
         tex = texs.fMapOfGreece3;
         break;
     case eWorldMap::greece4:
         eGameTextures::loadMapOfGreece4();
+        mMapFile = "Zeus_MapOfGreece04.JPG";
         tex = texs.fMapOfGreece4;
         break;
     case eWorldMap::greece5:
         eGameTextures::loadMapOfGreece5();
+        mMapFile = "Zeus_MapOfGreece05.JPG";
         tex = texs.fMapOfGreece5;
         break;
     case eWorldMap::greece6:
         eGameTextures::loadMapOfGreece6();
+        mMapFile = "Zeus_MapOfGreece06.JPG";
         tex = texs.fMapOfGreece6;
         break;
     case eWorldMap::greece7:
         eGameTextures::loadMapOfGreece7();
+        mMapFile = "Zeus_MapOfGreece07.JPG";
         tex = texs.fMapOfGreece7;
         break;
     case eWorldMap::greece8:
         eGameTextures::loadMapOfGreece8();
+        mMapFile = "Zeus_MapOfGreece08.JPG";
         tex = texs.fMapOfGreece8;
         break;
 
     case eWorldMap::poseidon1:
         eGameTextures::loadPoseidonMap1();
+        mMapFile = "Poseidon_map01.jpg";
         tex = texs.fPoseidonMap1;
         break;
     case eWorldMap::poseidon2:
         eGameTextures::loadPoseidonMap2();
+        mMapFile = "Poseidon_map02.jpg";
         tex = texs.fPoseidonMap2;
         break;
     case eWorldMap::poseidon3:
         eGameTextures::loadPoseidonMap3();
+        mMapFile = "Poseidon_map03.jpg";
         tex = texs.fPoseidonMap3;
         break;
     case eWorldMap::poseidon4:
         eGameTextures::loadPoseidonMap4();
+        mMapFile = "Poseidon_map04.jpg";
         tex = texs.fPoseidonMap4;
         break;
     }
 
     setTexture(tex);
+    mDrawTex = nullptr;
     fitContent();
+}
+
+void eWorldMapWidget::fitTo(const int w, const int h) {
+    const auto base = texture();
+    if(!base || w <= 0 || h <= 0) return;
+    const int bw = base->width();
+    const int bh = base->height();
+    if(bw <= 0 || bh <= 0) return;
+    int fw = w;
+    int fh = std::round(static_cast<double>(w)*bh/bw);
+    if(fh > h) {
+        fh = h;
+        fw = std::round(static_cast<double>(h)*bw/bh);
+    }
+
+    // eZeus packs each map at the four tile sizes 15, 30 (the original
+    // picture), 45 and 60; take the smallest one at least fh tall so the
+    // map is only ever shrunk, never blown up
+    const int sizes[] = {15, 30, 45, 60};
+    const int iRes = static_cast<int>(resolution().uiScale());
+    const int curSize = sizes[std::clamp(iRes, 0, 3)];
+    int pick = 60;
+    for(const int s : {30, 45, 60}) {
+        if(static_cast<double>(bh)*s/curSize >= fh) {
+            pick = s;
+            break;
+        }
+    }
+    mDrawTex = base;
+    if(pick != curSize && !mMapFile.empty()) {
+        static std::map<std::string, stdsptr<eTexture>> sCache;
+        const auto path = std::to_string(pick) + "/Zeus_Data_Images/" +
+                          mMapFile;
+        auto& cached = sCache[path];
+        if(!cached && eBinaryImageLoader::has(path)) {
+            cached = eBinaryImageLoader::load(window()->renderer(), path);
+        }
+        if(cached) mDrawTex = cached;
+    }
+    resize(fw, fh);
 }
