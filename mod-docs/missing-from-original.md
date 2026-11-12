@@ -14,7 +14,7 @@ Status on 11 Nov 2026, after Phases 0-7 and the zeus.exe reading (done since 9 N
 | # | Missing | What is known | What wasn't found |
 |---|---|---|---|
 | B3 | Zeus' sanctuary improves your standing abroad | Sanctuary description | His record is only used for god behaviour; no attitude bonus found |
-| B11 | A sanctuary without sacrifices "loses its benefits" (Zeus manual) | The exe never shows its "This Sanctuary is inactive" text and nothing found turns a sanctuary off | Whether the manual describes a cut feature; not applied |
+| B11 | A sanctuary without sacrifices "loses its benefits" (Zeus manual) | The exe never shows its "This Sanctuary is inactive" text and nothing found turns a sanctuary off | Whether the manual describes a cut feature; not applied as an original rule. Nicolás wants it, so it is mod feature 1B in `mod-features.md` (11 Nov 2026) |
 
 ## C. Found in zeus.exe but not yet put into eZeus
 
