@@ -25,6 +25,7 @@ private:
     eLabel* mMsgLabel = nullptr;
     eLabel* mAdditionalInfo = nullptr;
     eBasicButton* mSpeakButton = nullptr;
+    eWidget* mTradeWidget = nullptr; // a caravan's Buys / Sells
 
     eAction mSpeakAction;
 };

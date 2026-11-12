@@ -18,6 +18,8 @@
 #include "widgets/ebuttonbase.h"
 #include "widgets/ebasicbutton.h"
 #include "engine/egameboard.h"
+#include "engine/eworldcity.h"
+#include "engine/eworldboard.h"
 #include "audio/esounds.h"
 #include "audio/esoundvector.h"
 #include "eiteratesquare.h"
@@ -393,6 +395,26 @@ std::string gCharName(const eCharacterType c, const int seedId) {
     }
 }
 
+int gGodTextId(const eGodType god) {
+    switch(god) {
+    case eGodType::zeus: return 0;
+    case eGodType::poseidon: return 1;
+    case eGodType::demeter: return 2;
+    case eGodType::apollo: return 3;
+    case eGodType::artemis: return 4;
+    case eGodType::ares: return 5;
+    case eGodType::aphrodite: return 6;
+    case eGodType::hermes: return 7;
+    case eGodType::athena: return 8;
+    case eGodType::hephaestus: return 9;
+    case eGodType::dionysus: return 10;
+    case eGodType::hades: return 11;
+    case eGodType::hera: return 12;
+    case eGodType::atlas: return 13;
+    }
+    return 0;
+}
+
 std::string gCharOccupation(
     const eCharacter* const c) {
     if(!c) return nullptr;
@@ -414,8 +436,15 @@ std::string gCharOccupation(
     case eCharacterType::hera:
     case eCharacterType::hermes:
     case eCharacterType::poseidon:
-    case eCharacterType::zeus:
-        return eLanguage::zeusText(64, 67);
+    case eCharacterType::zeus: {
+        // as in the original: the god's title ("God of Prophecy and
+        // Healing", 158) and "Friendly God" or "Unfriendly God" (83)
+        const auto gt = eGod::sCharacterToGodType(type);
+        const auto g = static_cast<const eGod*>(c);
+        const bool hostile = g->attitude() == eGodAttitude::hostile;
+        return eLanguage::zeusText(158, gGodTextId(gt)) + "\n" +
+               eLanguage::zeusText(83, hostile ? 1 : 0);
+    }
     case eCharacterType::achilles:
     case eCharacterType::atalanta:
     case eCharacterType::bellerophon:
@@ -1777,6 +1806,62 @@ void eCharacterInfoWidget::fillTexts(eCharacter* const c, const bool sound) {
     y += mNameLabel->height();
     mOccupationLabel->move(0, y);
     y += mOccupationLabel->height() + p;
+
+    // a trade caravan: what its city buys and sells, as goods icons
+    // after "Buys" and "Sells" (47:1, 47:2), as in the original
+    if(mTradeWidget) {
+        mTextWidget->removeWidget(mTradeWidget);
+        mTradeWidget->deleteLater();
+        mTradeWidget = nullptr;
+    }
+    if(c->type() == eCharacterType::trader ||
+       c->type() == eCharacterType::tradeBoat) {
+        const auto& board = c->getBoard();
+        stdsptr<eWorldCity> wc;
+        for(const auto& cc : board.world().cities()) {
+            if(cc && cc->cityId() == c->cityId()) {
+                wc = cc;
+                break;
+            }
+        }
+        if(wc) {
+            mTradeWidget = new eWidget(window());
+            mTradeWidget->setNoPadding();
+            int ty = 0;
+            const auto addRow = [&](const std::string& name,
+                                    const std::vector<eResourceTrade>& ts) {
+                if(ts.empty()) return;
+                const auto l = new eLabel(window());
+                l->setNoPadding();
+                l->setSmallFontSize();
+                l->setText(name);
+                l->fitContent();
+                mTradeWidget->addWidget(l);
+                l->move(0, ty);
+                int x = l->width() + p;
+                int rowH = l->height();
+                for(const auto& t : ts) {
+                    const auto icon = new eLabel(window());
+                    icon->setNoPadding();
+                    icon->setTexture(eResourceTypeHelpers::icon(
+                                         res.uiScale(), t.fType));
+                    icon->fitContent();
+                    mTradeWidget->addWidget(icon);
+                    icon->move(x, ty);
+                    x += icon->width() + p/2;
+                    rowH = std::max(rowH, icon->height());
+                }
+                ty += rowH + p/2;
+            };
+            addRow(eLanguage::zeusText(47, 1), wc->buys());
+            addRow(eLanguage::zeusText(47, 2), wc->sells());
+            mTradeWidget->resize(mTextWidget->width(), ty);
+            mTextWidget->addWidget(mTradeWidget);
+            mTradeWidget->move(0, y);
+            y += ty + p;
+        }
+    }
+
     mMsgLabel->move(0, y);
     y += mMsgLabel->height() + p;
     mSpeakButton->move(mTextWidget->width() - mSpeakButton->width(), y);
