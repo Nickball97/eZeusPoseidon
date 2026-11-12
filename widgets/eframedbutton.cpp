@@ -6,6 +6,10 @@
 
 void eFramedButton::paintEvent(ePainter& p) {
     if(mRenderBg) renderBg(p);
+    if(!mRenderFrame) {
+        eButton::paintEvent(p);
+        return;
+    }
 
     int iRes;
     int mult;

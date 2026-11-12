@@ -4,6 +4,8 @@
 
 #include "widgets/eokbutton.h"
 
+#include <algorithm>
+
 eInfoWidget::eInfoWidget(eMainWindow* const window,
                          eMainWidget* const mw,
                          const bool narrow, const bool shrt) :
@@ -77,6 +79,8 @@ eWidget* eInfoWidget::addRegularWidget(const int height) {
 void eInfoWidget::addText(const std::string& text) {
     const auto wid = new eLabel(window());
     wid->setSmallFontSize();
+    // the original's window texts are left-aligned
+    wid->setTextAlignment(eAlignment::left | eAlignment::top);
     wid->setWrapWidth(widgetWidth());
     wid->setText(text);
     wid->fitContent();
@@ -113,9 +117,27 @@ int eInfoWidget::widgetWidth() const {
 }
 
 void eInfoWidget::fitHeightToContent() {
-    // windows whose content fills a central area keep their size
-    if(mCentralWidget) return;
     const int p = padding();
+    if(mCentralWidget) {
+        // shrink the central area to its content; content placed at its
+        // bottom (e.g. the sanctuary's prayer buttons) keeps it as it is
+        int contentH = 0;
+        for(const auto c : mCentralWidget->children()) {
+            contentH = std::max(contentH, c->y() + c->height());
+        }
+        const int delta = mCentralWidget->height() - contentH;
+        if(delta <= 0) return;
+        mCentralWidget->setHeight(contentH);
+        bool after = false;
+        for(const auto w : mWidgets) {
+            if(after) w->setY(w->y() - delta);
+            if(w == mCentralWidget) after = true;
+        }
+        setHeight(height() - delta);
+        mOk->align(eAlignment::bottom | eAlignment::right);
+        mOk->move(mOk->x() - 2*p, mOk->y() - 2*p);
+        return;
+    }
     int y = mTitleLabel->y() + mTitleLabel->height();
     for(const auto w : mWidgets) {
         y += w->height() + p;

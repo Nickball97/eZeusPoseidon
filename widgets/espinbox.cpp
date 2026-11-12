@@ -29,8 +29,13 @@ void eSpinBox::initialize(const eAction& changed) {
     setValue(0);
 
     addWidget(mValueLabel);
-    addWidget(up);
-    addWidget(down);
+    if(mDownFirst) {
+        addWidget(down);
+        addWidget(up);
+    } else {
+        addWidget(up);
+        addWidget(down);
+    }
     stackHorizontally();
 
     mValueLabel->align(eAlignment::vcenter);
