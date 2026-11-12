@@ -12,6 +12,7 @@ void eEpisodeLostWidget::initialize(const eAction& proceedA) {
     const int iRes = static_cast<int>(res.uiScale());
     const auto& texs = intrfc[iRes];
     setTexture(texs.fDefeatImage);
+    setCoverTexture(true);
 
     const auto defeatLabel = new eFramedLabel(window());
     defeatLabel->setType(eFrameType::message);

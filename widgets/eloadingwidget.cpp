@@ -85,8 +85,15 @@ void eLoadingWidget::setLoadImage(const int id) {
         tex = texs.fLoadImage12;
     }
     mImageLabel->setTexture(tex);
-    mImageLabel->fitContent();
-    mImageLabel->align(eAlignment::center);
+    const bool wide = tex && 3*tex->width() > 4*tex->height();
+    if(wide) { // widescreen picture from the game folder: fill the screen
+        mImageLabel->setCoverTexture(true);
+        mImageLabel->move(0, 0);
+        mImageLabel->resize(width(), height());
+    } else {
+        mImageLabel->fitContent();
+        mImageLabel->align(eAlignment::center);
+    }
 }
 
 void eLoadingWidget::paintEvent(ePainter& p) {

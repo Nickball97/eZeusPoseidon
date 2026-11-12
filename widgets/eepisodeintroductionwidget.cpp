@@ -32,6 +32,7 @@ void eEpisodeIntroductionWidget::initialize(
     if(type == eEpisodeIntroType::intro ||
        type == eEpisodeIntroType::campaingVictory) {
         setTexture(texs.fIntroductionImage);
+        setCoverTexture(true);
     }
 
     const auto frame = new eFramedWidget(window());

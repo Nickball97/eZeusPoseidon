@@ -8,4 +8,5 @@ void eMainMenuBase::initialize() {
     const int iRes = static_cast<int>(res.uiScale());
     const auto& texs = intrfc[iRes];
     setTexture(texs.fMainMenuImage);
+    setCoverTexture(true);
 }

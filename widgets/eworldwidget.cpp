@@ -401,6 +401,15 @@ void eWorldWidget::openEnlistForcesDialog(
     openDialog(d);
 }
 
+void eWorldWidget::paintEvent(ePainter& p) {
+    // The map pictures are smaller than the screen; fill around them with
+    // their sea colour, as the Steam release's padded 1738x1080 copies of
+    // Zeus_MapOfGreece*.JPG and Poseidon_map*.jpg do (35, 88, 120).
+    const int w = mWM ? mWM->x() : width();
+    p.fillRect(SDL_Rect{0, 0, w, height()}, SDL_Color{35, 88, 120, 255});
+    eMainWidget::paintEvent(p);
+}
+
 bool eWorldWidget::keyPressEvent(const eKeyPressEvent& e) {
     const bool edit = mWorldBoard->editorMode();
     if(edit) return true;
