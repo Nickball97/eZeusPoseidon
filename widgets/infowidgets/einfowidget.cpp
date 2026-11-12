@@ -22,7 +22,13 @@ void eInfoWidget::initialize(const std::string& title) {
     resize(ww, hh);
     align(eAlignment::center);
 
-    mTitleLabel = new eLabel(title, window());
+    // the original's windows have a large title, wrapped and centred when
+    // long ("Artemis' Menagerie is under construction.")
+    mTitleLabel = new eLabel(window());
+    mTitleLabel->setHugeFontSize();
+    mTitleLabel->setWrapWidth(ww - 4*padding());
+    mTitleLabel->setWrapAlignment(eAlignment::hcenter);
+    mTitleLabel->setText(title);
     mTitleLabel->fitContent();
     addWidget(mTitleLabel);
     mTitleLabel->align(eAlignment::top | eAlignment::hcenter);
@@ -104,6 +110,22 @@ void eInfoWidget::addInfoWidget(eWidget* const w, const int height) {
 int eInfoWidget::widgetWidth() const {
     const int p = padding();
     return width() - 4*p;
+}
+
+void eInfoWidget::fitHeightToContent() {
+    // windows whose content fills a central area keep their size
+    if(mCentralWidget) return;
+    const int p = padding();
+    int y = mTitleLabel->y() + mTitleLabel->height();
+    for(const auto w : mWidgets) {
+        y += w->height() + p;
+    }
+    // room below the content for the OK button, as in the original
+    const int h = y + mOk->height() + 3*p;
+    if(h >= height()) return;
+    setHeight(h);
+    mOk->align(eAlignment::bottom | eAlignment::right);
+    mOk->move(mOk->x() - 2*p, mOk->y() - 2*p);
 }
 
 void eInfoWidget::setCloseAction(const eAction& closeAction) {

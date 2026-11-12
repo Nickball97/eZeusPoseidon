@@ -163,6 +163,7 @@ eInfoWidget* eGameWidget::openInfoWidget(eBuilding* const b) {
         }
     }
     if(wid) {
+        wid->fitHeightToContent();
         addWidget(wid);
         wid->setX((width() - mGm->width() - wid->width())/2);
         wid->align(eAlignment::vcenter);
