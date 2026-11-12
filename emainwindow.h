@@ -104,6 +104,8 @@ public:
 private:
     void updateLogicalSize();
     void clearWidgets();
+    // Escape on a menu screen: ask "Exit game?" before quitting
+    void askToQuit();
 
     eSettings mSettings;
 

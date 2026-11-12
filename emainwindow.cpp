@@ -32,6 +32,7 @@
 #include "widgets/eepisodeintroductionwidget.h"
 #include "widgets/eepisodelostwidget.h"
 #include "widgets/erosterofleaders.h"
+#include "widgets/equestionwidget.h"
 
 eMainWindow::eMainWindow() {}
 
@@ -613,6 +614,20 @@ void eMainWindow::showWorld() {
     setWidget(mWW);
 }
 
+void eMainWindow::askToQuit() {
+    // only on the menu screens; the city and world map use Escape themselves,
+    // and quitting mid-load could leave work half done
+    if(!mWidget || mWidget == mGW || mWidget == mWW) return;
+    if(dynamic_cast<eMenuLoadingWidget*>(mWidget)) return;
+    if(dynamic_cast<eGameLoadingWidget*>(mWidget)) return;
+    const auto q = new eQuestionWidget(this);
+    // "Exit game", the original's own wording (Zeus_Text group 1)
+    q->initialize(eLanguage::zeusText(1, 5) + "?", "",
+                  [this]() { mQuit = true; }, nullptr);
+    execDialog(q);
+    q->align(eAlignment::center);
+}
+
 void eMainWindow::execDialog(
         eWidget* const d, const bool closable,
         const eAction &closeFunc,
@@ -773,7 +788,10 @@ int eMainWindow::exec() {
                     mCtrlPressed++;
                 }
                 const eKeyPressEvent ke(x, y, shift, ctrl, buttons, k);
-                if(mWidget) mWidget->keyPress(ke);
+                const bool handled = mWidget && mWidget->keyPress(ke);
+                if(!handled && k == SDL_Scancode::SDL_SCANCODE_ESCAPE) {
+                    askToQuit();
+                }
             } else if(e.type == SDL_KEYUP) {
                 const auto k = e.key.keysym.scancode;
                 if(k == SDL_Scancode::SDL_SCANCODE_LSHIFT ||
