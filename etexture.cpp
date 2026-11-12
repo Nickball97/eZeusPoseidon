@@ -249,7 +249,8 @@ bool eTexture::loadText(SDL_Renderer* const r,
         // dark text looks carved in the original: its light edge (col2)
         // sits one pixel down-right, under the letters; for the other
         // colours the dark edge is up-left and the letters on top
-        const bool carved = color == eFontColor::dark;
+        const bool carved = color == eFontColor::dark ||
+                            color == eFontColor::darkOnDark;
         const SDL_Rect dstRect2 = carved ? SDL_Rect{dx, dy, w, h} :
                                            SDL_Rect{0, 0, w, h};
         SDL_RenderCopy(r, tex2, NULL, &dstRect2);

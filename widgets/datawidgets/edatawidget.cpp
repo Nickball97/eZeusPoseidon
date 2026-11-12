@@ -24,6 +24,7 @@ void eDataWidget::initialize() {
 
     const auto frame = new eFramedWidget(window());
     frame->setType(eFrameType::inner);
+    frame->setTextColor(eFontColor::panel); // pale text, as in the original
     frame->setHeight(height() - h + pp);
     frame->setWidth(width());
     frame->setTinyPadding();

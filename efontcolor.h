@@ -5,7 +5,10 @@
 #include <SDL2/SDL.h>
 
 enum class eFontColor {
-    light, dark, yellow, region
+    light, dark, yellow, region,
+    // the original's styles on its darker blue boxes: carved text in the
+    // inner boxes of windows, pale text in the side panel's box
+    darkOnDark, panel
 };
 
 namespace eFontColorHelpers {

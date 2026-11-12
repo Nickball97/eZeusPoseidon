@@ -23,5 +23,17 @@ void eFontColorHelpers::colors(const eFontColor c,
         col1 = SDL_Color{168, 96, 80, 255};
         col2 = SDL_Color{0, 0, 0, 255};
         break;
+    case eFontColor::darkOnDark:
+        // measured in the original's inner boxes (the Estate's occupants
+        // box): deeper navy letters, a mid-blue edge below-right
+        col1 = SDL_Color{0, 16, 82, 255};
+        col2 = SDL_Color{66, 162, 206, 255};
+        break;
+    case eFontColor::panel:
+        // measured in the original's side panel box: pale letters with
+        // a dark navy edge up-left
+        col1 = SDL_Color{189, 211, 222, 255};
+        col2 = SDL_Color{0, 40, 66, 255};
+        break;
     }
 }
