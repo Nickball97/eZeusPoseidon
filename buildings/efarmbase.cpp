@@ -103,3 +103,13 @@ void eFarmBase::write(eWriteStream& dst) const {
     dst << mNextRipe;
     dst << mRipe;
 }
+
+double eFarmBase::growth() const {
+    const double year = 365.*eNumbers::sDayLength;
+    return std::clamp(mNextRipe/year, 0., 1.);
+}
+
+eMonth eFarmBase::harvestMonth() const {
+    return resourceType() == eResourceType::wheat ? eMonth::july :
+                                                    eMonth::april;
+}

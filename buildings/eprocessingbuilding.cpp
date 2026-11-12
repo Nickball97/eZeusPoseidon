@@ -149,3 +149,8 @@ void eProcessingBuilding::write(eWriteStream& dst) const {
     dst << mRawCount;
     dst << mProcessTime;
 }
+
+double eProcessingBuilding::progress() const {
+    if(mProcessWaitTime <= 0) return 0;
+    return std::clamp(mProcessTime/mProcessWaitTime, 0., 1.);
+}

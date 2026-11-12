@@ -79,6 +79,9 @@ eWidget* eInfoWidget::addRegularWidget(const int height) {
 void eInfoWidget::addText(const std::string& text) {
     const auto wid = new eLabel(window());
     wid->setSmallFontSize();
+    // lines sit close together as in the original; addInfoWidget leaves
+    // a small gap between them
+    wid->setNoPadding();
     // the original's window texts are left-aligned
     wid->setTextAlignment(eAlignment::left | eAlignment::top);
     wid->setWrapWidth(widgetWidth());

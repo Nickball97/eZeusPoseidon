@@ -14,6 +14,11 @@
 #include "infowidgets/etriremewharfinfowidget.h"
 
 #include "engine/egameboard.h"
+#include "engine/edate.h"
+#include "buildings/efarmbase.h"
+#include "buildings/eprocessingbuilding.h"
+
+#include <cmath>
 
 eInfoWidget* eGameWidget::openInfoWidget(eBuilding* const b) {
     eInfoWidget* wid = nullptr;
@@ -107,13 +112,51 @@ eInfoWidget* eGameWidget::openInfoWidget(eBuilding* const b) {
             std::string info;
             std::string employmentInfo;
             std::string additionalInfo;
+            int group = 0;
             eBuilding::sInfoText(eb, title, info,
                                  employmentInfo,
-                                 additionalInfo);
+                                 additionalInfo, &group);
+            // As in the original: "Production is 75% complete." and
+            // "Stored olives: 2 Loads" above the staffing line, and a
+            // farm's "The next wheat harvest is in July" below the workers
+            // panel. Texts from the building's own group (2, 3, 12, 14).
+            std::vector<std::string> top;
+            std::string harvest;
+            const auto farm = dynamic_cast<eFarmBase*>(eb);
+            const auto proc = dynamic_cast<eProcessingBuilding*>(eb);
+            const auto prodIs = eLanguage::zeusText(group, 2);
+            if((farm || proc) && prodIs == "Production is") {
+                const double f = farm ? farm->growth() : proc->progress();
+                const int pct = static_cast<int>(std::round(100*f));
+                top.push_back(prodIs + " " + std::to_string(pct) + "% " +
+                              eLanguage::zeusText(group, 3));
+            }
+            if(proc) {
+                const auto stored = eLanguage::zeusText(group, 12);
+                if(stored.rfind("Stored", 0) == 0) {
+                    const int n = proc->rawCount();
+                    top.push_back(stored + " " + std::to_string(n) + " " +
+                                  eLanguage::zeusText(8, n == 1 ? 10 : 11));
+                }
+            }
+            if(farm) {
+                const auto next = eLanguage::zeusText(group, 14);
+                if(!next.empty()) {
+                    harvest = next + " " +
+                              eMonthHelper::name(farm->harvestMonth());
+                }
+            }
+            ebWid->eInfoWidget::initialize(title);
+            for(const auto& t : top) ebWid->addText(t);
+            if(!employmentInfo.empty()) ebWid->addText(employmentInfo);
+            ebWid->addEmploymentWidget(eb);
             // towers show their Atlantean Fire status underneath
             const bool tower = eb->type() == eBuildingType::tower;
-            ebWid->initialize(title, info, employmentInfo, eb,
-                              tower ? additionalInfo : "");
+            if(tower && !additionalInfo.empty()) {
+                ebWid->addText(additionalInfo);
+            }
+            if(!harvest.empty()) ebWid->addText(harvest);
+            if(!info.empty()) ebWid->addText(info);
             wid = ebWid;
         } else if(const auto p = dynamic_cast<ePalace*>(b)) {
             const auto pWid = new eInfoWidget(window(), this, true, true);

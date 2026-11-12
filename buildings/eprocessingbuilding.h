@@ -44,6 +44,8 @@ public:
     void write(eWriteStream& dst) const override;
 
     int rawCount() const { return mRawCount; }
+    // for the info window: progress of the current batch (0-1)
+    double progress() const;
     // raw material it accepts (original exe 0x0048A880)
     void setMaxRaw(const int m) { mMaxRaw = m; }
 private:

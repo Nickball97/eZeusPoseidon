@@ -847,7 +847,8 @@ void eBuilding::sInfoText(eBuilding* const b,
                           std::string& title,
                           std::string& info,
                           std::string& employmentInfo,
-                          std::string& additionalInfo) {
+                          std::string& additionalInfo,
+                          int* const textGroup) {
     if(!b) return;
     auto& board = b->getBoard();
     const auto cid = b->cityId();
@@ -2326,6 +2327,7 @@ void eBuilding::sInfoText(eBuilding* const b,
     const int g = employmentInfoGroup == -1 ? group : employmentInfoGroup;
     employmentInfo = eLanguage::zeusText(g, employmentInfoString);
     additionalInfo = eLanguage::zeusText(group, additionalInfoString);
+    if(textGroup) *textGroup = group;
 }
 
 eTile* eBuilding::tileNeighbour(const eMoveDirection o,

@@ -307,7 +307,8 @@ public:
                           std::string& title,
                           std::string& info,
                           std::string& employmentInfo,
-                          std::string& additionalInfo);
+                          std::string& additionalInfo,
+                          int* const textGroup = nullptr);
 
     using eTileValidator = std::function<bool(eTile*)>;
     eTile* tileNeighbour(const eMoveDirection o,
