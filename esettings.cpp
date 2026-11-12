@@ -1,5 +1,7 @@
 #include "esettings.h"
 
+#include <algorithm>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 
@@ -39,6 +41,8 @@ void eSettings::write() const {
             (fFullscreen ? "\"true\"" : "\"false\"") << "\n";
     file << "borderless" << " " <<
             (fBorderless ? "\"true\"" : "\"false\"") << "\n";
+    file << "interface_size" << " " << "\"" <<
+            std::to_string(fInterfaceSize) << "\"" << "\n";
     const auto wStr = std::to_string(fRes.width());
     file << "width" << " " << "\"" << wStr << "\"" << "\n";
     const auto hStr = std::to_string(fRes.height());
@@ -64,5 +68,24 @@ void eSettings::read() {
         const int height = std::stoi(heightStr);
         fRes = eResolution(width, height);
     }
+    const auto sizeStr = settings["interface_size"]; // missing: automatic
+    if(!sizeStr.empty()) {
+        fInterfaceSize = std::clamp(std::atoi(sizeStr.c_str()), 0, 3);
+    }
+    applyInterfaceSize();
+}
+
+void eSettings::applyInterfaceSize() {
+    const int h = fRes.height();
+    auto s = eResolution::sAutoUIScale(h);
+    eUIScale chosen = s;
+    switch(fInterfaceSize) {
+    case 1: chosen = eUIScale::small; break;
+    case 2: chosen = eUIScale::medium; break;
+    case 3: chosen = eUIScale::large; break;
+    default: break;
+    }
+    if(eResolution::sUIScaleFits(chosen, h)) s = chosen;
+    fRes.setUIScale(s);
 }
 

@@ -5,6 +5,7 @@
 #include "eframedwidget.h"
 #include "eframedbutton.h"
 #include "eokbutton.h"
+#include "eswitchbutton.h"
 
 #include "elanguage.h"
 #include "egamedir.h"
@@ -135,6 +136,7 @@ void eSettingsMenu::initialize(const eApplyAction& settingsA,
                 *currentButton = b;
                 b->setYellowFontColor();
                 mSettings.fRes = r;
+                mSettings.applyInterfaceSize();
             });
             y += b->height() + p;
             if(col->height() - y < b->height()) {
@@ -176,6 +178,26 @@ void eSettingsMenu::initialize(const eApplyAction& settingsA,
         const auto w = createCheckBoxRow(window(), mSettings.fBorderless,
                                          checkA, text, p, false);
         col1->addWidget(w);
+    }
+
+    {
+        // eZeus addition: interface size, independent of the resolution;
+        // a size too big for the screen height falls back to automatic
+        const auto sb = new eSwitchButton(window());
+        sb->setUnderline(false);
+        const auto name = eLanguage::text("interface_size") + ": ";
+        sb->addValue(name + eLanguage::text("interface_size_auto"));
+        sb->addValue(name + "1x");
+        sb->addValue(name + "1.5x");
+        sb->addValue(name + "2x");
+        sb->setValue(mSettings.fInterfaceSize);
+        sb->fitValidContent();
+        sb->setSwitchAction([this](const int v) {
+            mSettings.fInterfaceSize = v;
+            mSettings.applyInterfaceSize();
+        });
+        col1->addWidget(sb);
+        sb->align(eAlignment::hcenter);
     }
 
     {

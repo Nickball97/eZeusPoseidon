@@ -42,6 +42,13 @@ public:
 
     const std::string& name() const { return mName; }
     eUIScale uiScale() const { return mUIScale; }
+    // the interface size can be chosen in the settings (eSettings)
+    void setUIScale(const eUIScale s) { mUIScale = s; }
+
+    // the size picked from the screen height alone
+    static eUIScale sAutoUIScale(const int height);
+    // whether the menus (540 px tall at 1x) fit this screen height
+    static bool sUIScaleFits(const eUIScale s, const int height);
 
     bool operator==(const eResolution other) const {
         return mWidth == other.mWidth &&

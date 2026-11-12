@@ -502,7 +502,9 @@ void eMainWindow::showSettingsMenu() {
     esm->resize(width(), height());
 
     const auto applyA = [this](const eSettings& settings) {
-        const bool loadNeeded = settings.fRes != mSettings.fRes;
+        const bool loadNeeded = settings.fRes != mSettings.fRes ||
+                                settings.fRes.uiScale() !=
+                                mSettings.fRes.uiScale();
         setResolution(settings.fRes);
         setFullscreen(settings.fFullscreen, settings.fBorderless);
         mSettings = settings;

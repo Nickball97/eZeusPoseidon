@@ -22,14 +22,24 @@ std::vector<eResolution> eResolution::sResolutions{
 
 eResolution::eResolution(const int width, const int height) :
     mWidth(width), mHeight(height) {
-    if(height <= 800) {
-        mUIScale = eUIScale::small;
-    } else if(height <= 1200) {
-        mUIScale = eUIScale::medium;
-    } else {
-        mUIScale = eUIScale::large;
-    }
+    mUIScale = sAutoUIScale(height);
     mName = std::to_string(mWidth) + "x" + std::to_string(mHeight);
+}
+
+eUIScale eResolution::sAutoUIScale(const int height) {
+    if(height <= 800) {
+        return eUIScale::small;
+    } else if(height <= 1200) {
+        return eUIScale::medium;
+    } else {
+        return eUIScale::large;
+    }
+}
+
+bool eResolution::sUIScaleFits(const eUIScale s, const int height) {
+    eResolution r(0, height);
+    r.setUIScale(s);
+    return r.centralWidgetLargeHeight() <= height;
 }
 
 int eResolution::hugePadding() const {

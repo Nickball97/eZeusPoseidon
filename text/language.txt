@@ -117,6 +117,8 @@ resume_game "Resume adventure"
 
 resolution "Resolution"
 borderless_fullscreen "Borderless full screen"
+interface_size "Interface size"
+interface_size_auto "Auto"
 
 tiny_textures "Tiny textures"
 small_textures "Small textures"
