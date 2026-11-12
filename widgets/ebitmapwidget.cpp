@@ -15,6 +15,11 @@ void eBitmapWidget::paintEvent(ePainter& p) {
     const auto res = resolution();
     const double mult = res.multiplier();
     const auto tex = texture();
+    if(!tex) return;
+    if(mFill) {
+        p.drawTextureCover(rect(), tex);
+        return;
+    }
     const int th = tex->height();
     // a widescreen picture from the game folder: show its 4:3 middle
     const int tw = std::min(tex->width(), 4*th/3);

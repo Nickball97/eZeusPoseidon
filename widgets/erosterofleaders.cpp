@@ -60,6 +60,7 @@ void eRosterOfLeaders::initialize() {
     const auto title = new eLabel(window());
     title->setHugeFontSize();
     title->setText(eLanguage::zeusText(292, 3)); // roster of leaders
+    title->setLightFontColor(); // white titles on the home page
     title->fitContent();
     inner->addWidget(title);
     title->align(eAlignment::hcenter);

@@ -165,6 +165,7 @@ void eChooseGameEditMenu::initialize(const bool editor, const bool custom) {
     title->setText(editor ? eLanguage::zeusText(287, 3) :
                    custom ? eLanguage::zeusText(293, 5) :
                             eLanguage::zeusText(293, 9));
+    if(!editor) title->setLightFontColor(); // white titles on the home page
     title->fitContent();
     iw->addWidget(title);
     title->align(eAlignment::hcenter);
@@ -173,6 +174,7 @@ void eChooseGameEditMenu::initialize(const bool editor, const bool custom) {
         sub->setTinyFontSize();
         sub->setNoPadding();
         sub->setText(eLanguage::zeusText(287, 5));
+        sub->setLightFontColor();
         sub->fitContent();
         iw->addWidget(sub);
     }
@@ -326,6 +328,7 @@ void eChooseGameEditMenu::initialize(const bool editor, const bool custom) {
     proceedLabel->setSmallPadding();
     proceedLabel->setText(editor ? eLanguage::zeusText(287, 2) :
                                    eLanguage::zeusText(287, 6));
+    if(!editor) proceedLabel->setLightFontColor();
     proceedLabel->fitContent();
     proceedW->addWidget(proceedLabel);
 
@@ -437,14 +440,13 @@ void eChooseGameEditMenu::initialize(const bool editor, const bool custom) {
         chooseW->move(picX(880) - chooseW->width() - gapX,
                       picY(540) - chooseW->height()/2);
 
-        const double s = picScale();
         bitmapWW->removeWidget(mBitmap);
         addWidget(mBitmap);
-        // as large as fits the red frame, on its left like the original
-        const double bmpH = 300*s;
-        mBitmap->setScaling(bmpH/(300*resolution().multiplier()));
-        mBitmap->fitContent();
-        mBitmap->move(picX(934), picY(142 + (443 - 300)/2.));
+        // the adventure's picture fills the red area inside the frame
+        // (x 910-1658, y 154-573, almost exactly 16:9 like the pictures)
+        mBitmap->setFill(true);
+        mBitmap->resize(picX(1658) - picX(910), picY(573) - picY(154));
+        mBitmap->move(picX(910), picY(154));
 
         descW->removeWidget(descIW);
         addWidget(descIW);

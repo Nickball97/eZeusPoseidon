@@ -60,6 +60,7 @@ void eMainMenu::initialize(const eAction& resumeA,
         const auto name = new eLabel(w);
         name->setNoPadding();
         name->setHugeFontSize();
+        name->setLightFontColor(); // white, as Nicolas wants for titles
         name->setText(w->leader());
         name->fitContent();
         addWidget(name);
