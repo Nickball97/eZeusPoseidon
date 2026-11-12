@@ -53,6 +53,8 @@ public:
 
     void setSpawnPatrolers(const bool s);
     bool spawnPatrolers() const { return mSpawnPatrolers; }
+    // the walker it has out, if any (for the info window)
+    eCharacter* patroler() const { return mChar.get(); }
 
     int maxDistance() const { return mMaxDistance; }
 

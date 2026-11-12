@@ -7,6 +7,8 @@
 #include "buildings/evendor.h"
 
 #include "engine/egameboard.h"
+#include "characters/echaracter.h"
+#include "characters/actions/epatrolaction.h"
 
 #include "elanguage.h"
 
@@ -21,7 +23,7 @@ public:
                           const eResourceType res) {
         const int c = a->agoraCount(res);
         std::string text;
-        bool dark = true;
+        bool distributing = false;
         if(const auto v = a->vendor(res)) {
             if(!v->vendorEnabled()) {
                 text = eLanguage::zeusText(97, 11); // not buying
@@ -29,12 +31,13 @@ public:
                 text = eLanguage::zeusText(97, 12); // no goods
             } else {
                 text = eLanguage::zeusText(97, 17); // distributing
-                dark = false;
+                distributing = true;
             }
         } else {
             text = eLanguage::zeusText(97, 10); // no vendor
         }
-        if(dark) mStateLabel->setDarkFontColor();
+        // as in the original: "Distributing" in yellow, the rest plain
+        if(distributing) mStateLabel->setYellowFontColor();
         else mStateLabel->setLightFontColor();
         mStateLabel->setText(text);
         mStateLabel->fitContent();
@@ -105,7 +108,20 @@ eAgoraInfoWidget::eAgoraInfoWidget(
 void eAgoraInfoWidget::initialize(eAgoraBase* const a) {
     const auto title = eBuilding::sNameForBuilding(a);
 
-    eEmployingBuildingInfoWidget::initialize(title, a);
+    // what the peddler is doing, in the workers panel (97:20-22)
+    std::string activity;
+    if(a->employed() > 0) {
+        int string = 20; // waiting here for new supplies
+        if(const auto c = a->patroler()) {
+            const auto pa = dynamic_cast<ePatrolAction*>(c->action());
+            string = pa && pa->returning() ? 22 : 21;
+        }
+        activity = eLanguage::zeusText(97, string);
+    }
+
+    eInfoWidget::initialize(title);
+    addCentralWidget();
+    addEmploymentWidget(a, activity);
 
     const auto cw = centralWidget();
 

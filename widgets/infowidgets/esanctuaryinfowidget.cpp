@@ -180,13 +180,7 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
                 buttonReasonW->fitHeight();
                 buttonReasonW->align(eAlignment::bottom);
             });
-            const auto bar = new eProgressBar(window());
-            bar->setRange(0, 100);
-            const double frac = s->helpTimeFraction();
-            bar->setValue(std::clamp(int(std::floor(100*frac)), 5, 100));
-            bw->addWidget(bar);
-            const int w = pb->width();
-            bar->resize(w, p);
+            // no timer bar under the button: the original has none
 
             bw->stackVertically(p);
             bw->fitContent();
@@ -216,13 +210,7 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
                 buttonReasonW->fitHeight();
                 buttonReasonW->align(eAlignment::bottom);
             });
-            const auto bar = new eProgressBar(window());
-            bar->setRange(0, 100);
-            const double frac = s->oracleTimeFraction();
-            bar->setValue(std::clamp(int(std::floor(100*frac)), 5, 100));
-            bw->addWidget(bar);
-            const int w = pb->width();
-            bar->resize(w, p);
+            // no timer bar under the button: the original has none
 
             bw->stackVertically(p);
             bw->fitContent();
@@ -297,13 +285,7 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
                     mw->openDialog(choose);
                 }
             });
-            const auto bar = new eProgressBar(window());
-            bar->setRange(0, 100);
-            const double frac = s->helpAttackTimeFraction();
-            bar->setValue(std::clamp(int(std::floor(100*frac)), 5, 100));
-            bw->addWidget(bar);
-            const int w = pb->width();
-            bar->resize(w, p);
+            // no timer bar under the button: the original has none
 
             bw->stackVertically(p);
             bw->fitContent();
