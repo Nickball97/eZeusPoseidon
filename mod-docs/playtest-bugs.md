@@ -6,7 +6,6 @@ Bugs found while playing eZeus-dev, newest first within each section. Move an en
 
 | # | Found | Bug | What we know |
 |---|---|---|---|
-| P2 | 12 Nov 2026 | Decoration switches are ignored: every decoration can be built in a campaign that should forbid some | `eAvailableBuildings::available` (`buildings/eavailablebuildings.cpp`) covers farms, industry, sanctuaries, hero halls and commemorative monuments, but every decoration (parks, statues, gardens...) falls through to `default: return true`. Still to find: where the original's adventure files keep the decoration switches and whether eZeus reads them. |
 
 ## UI to redo
 
@@ -29,5 +28,6 @@ eZeus today: one menu on the Acropolis painting (New Adventure, Load Adventure, 
 
 | # | Found | Bug | Fix |
 |---|---|---|---|
+| P2 | 12 Nov 2026 | Decoration switches seemed ignored | Already fixed on 11 Nov 2026 (commit 53e242fb, all 57 allowed-structures switches, decorations included). Checked 12 Nov 2026 by starting Athens through the Ages mission 1 fresh: the decorations menu offers only the Gazebo, as its switches say (bench, flower garden, hedge maze and fish pond off). Saves and custom adventures made before 11 Nov allow everything, which is likely what was seen. |
 | P1 | 12 Nov 2026 | Event history stays empty (upstream #51) | Every message is now kept in the city's history (saved with the city; older saves start empty). The side panel box shows the latest one's short text, its arrows step through older ones and a click opens the full message. The Messages button opens the list (newest first, 10 rows with arrows): left-click reads, right-click deletes, "Delete opened messages" clears the read ones. Rules from zeus.exe, see original-exe-findings.md (12 Nov 2026). |
 | P3 | 12 Nov 2026 | Message text should be pale, as in the original | The original writes the text inside a message's dark box in the same pale style as the side panel; eZeus used the dark carved style there. The message box's inner box now uses the pale style (12 Nov 2026). |
