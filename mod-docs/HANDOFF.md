@@ -78,6 +78,10 @@ they aren't versioned. The first cleanup step below moves them in.
 
 ## Priority 1: the safety net (do this before touching any code)
 
+**Done on 13 Nov 2026** (branch `cleanup/safety-net`). How to run it, what it
+covers and what building it turned up are in `mod-docs/safety-net.md`. The
+notes below are the original brief.
+
 eZeus has no automated tests. Nothing in a refactor can be called safe until
 this exists.
 

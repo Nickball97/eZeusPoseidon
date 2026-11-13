@@ -19,6 +19,7 @@
 
 #ifdef EZEUS_DEV_CHEATS
 void eInstallDevCrashHandler(); // edevcrash.cpp
+#include "eheadlesscheck.h"
 #endif
 
 bool init() {
@@ -113,7 +114,17 @@ bool getDisplayResolutions(std::vector<SDL_DisplayMode>& resolutions) {
     return true;
 }
 
-int main() {
+int main(int argc, char** argv) {
+#ifdef EZEUS_DEV_CHEATS
+    // the safety net: run a city with no window (mod-docs/safety-net.md)
+    if(eHeadlessCheckRequested(argc, argv)) {
+        eInstallDevCrashHandler();
+        return eHeadlessCheckRun(argc, argv);
+    }
+#else
+    (void)argc;
+    (void)argv;
+#endif
     if(!init()) {
         printf("Failed to initialize!\n");
         close();

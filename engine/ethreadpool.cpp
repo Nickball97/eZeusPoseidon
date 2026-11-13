@@ -6,6 +6,8 @@
 #include "evectorhelpers.h"
 #include "engine/egameboard.h"
 
+bool eThreadPool::sSynchronous = false;
+
 eThreadPool::eThreadPool(eGameBoard& board) :
     mBoard(board) {}
 
@@ -23,6 +25,12 @@ eThreadPool::~eThreadPool() {
 }
 
 void eThreadPool::initialize(const int w, const int h) {
+    if(sSynchronous) {
+        // one copy of the board, no worker threads (see queueTask)
+        if(mThreadData.empty()) mThreadData.push_back(new eThreadData);
+        mThreadData[0]->initialize(w, h);
+        return;
+    }
     if(mThreads.empty()) {
         const int hc = std::thread::hardware_concurrency();
         const int threads = std::clamp(hc, 2, 4);
@@ -115,6 +123,16 @@ void eThreadPool::threadEntry(eThreadData* data) {
 void eThreadPool::queueTask(eTask* const task) {
     task->setExpectedState(mBoard.state());
     const auto cid = task->cid();
+    if(sSynchronous) {
+        // run it now, on the board as it is at this moment; its result is
+        // still delivered by the next handleFinished(), as with threads
+        const auto d = mThreadData[0];
+        d->update(mBoard, cid, task->relevance());
+        d->updateBoard(cid);
+        task->run(d->board(cid));
+        mFinishedTasks.push_back(task);
+        return;
+    }
 //    if(cid == eCityId::neutralAggresive ||
 //       cid == eCityId::neutralFriendly) {
 //        printf("Wrong city id\n");

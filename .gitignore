@@ -73,3 +73,6 @@ CMakeLists.txt.user*
 *.dll
 *.exe
 
+
+# results of the last safety-net run (tools/check/check.ps1)
+/tools/check/out/

@@ -27,6 +27,12 @@ public:
 
     bool finished();
     void waitFinished();
+
+    // Headless check only: run every task at once on the calling thread
+    // instead of handing it to a worker thread, so that what a task sees
+    // never depends on timing. Set before any board is created. The game
+    // itself leaves it off.
+    static bool sSynchronous;
 private:
     void threadEntry(eThreadData* data);
 

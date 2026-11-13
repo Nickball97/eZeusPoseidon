@@ -1,0 +1,12 @@
+; Adventures the safety net runs (tools/check/check.ps1), one per line.
+; A name is a folder in eZeus's own Adventures folder, or the name of a
+; .pak file in the original game's Adventures folder (without ".pak").
+; The maps are read from the game folder; none of them is in this repo.
+; Lines that start with a semicolon are notes.
+The Founding of Athens
+The Sands of Betrayal
+#Zeus and Europa
+@Athens through the Ages
+]Hercules Labors
+{The Trojan War
+#The Birth of Atlantis

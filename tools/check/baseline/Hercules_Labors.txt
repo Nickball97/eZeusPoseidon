@@ -1,0 +1,348 @@
+[run]
+adventure: ]Hercules Labors
+years: 10
+seed: 1
+threads: no
+save format version: 33
+numbers.txt fingerprint: eaeed2c124d7b865
+test city: at 75,-15, streets 4, built 82 of 82, farms 3 (road tiles to them: 37), sheep 6, goats 6, lost and built again 63
+
+[year by year, on 1 January]
+year -499: people 682, workers 286, jobs 174, food 2, buildings 402, walkers 54, drachmas 997368
+year -498: people 1021, workers 428, jobs 255, food 0, buildings 399, walkers 68, drachmas 995775
+year -497: people 744, workers 312, jobs 255, food 0, buildings 399, walkers 69, drachmas 994675
+year -496: people 752, workers 315, jobs 255, food 0, buildings 399, walkers 72, drachmas 993682
+year -495: people 928, workers 389, jobs 255, food 0, buildings 399, walkers 80, drachmas 992547
+year -494: people 652, workers 273, jobs 255, food 0, buildings 399, walkers 90, drachmas 991453
+year -493: people 648, workers 272, jobs 255, food 0, buildings 399, walkers 66, drachmas 990328
+year -492: people 704, workers 295, jobs 255, food 2, buildings 399, walkers 70, drachmas 989335
+year -491: people 797, workers 334, jobs 255, food 1, buildings 399, walkers 87, drachmas 988100
+year -490: people 648, workers 272, jobs 255, food 0, buildings 399, walkers 67, drachmas 986730
+
+===== after 10 year(s) =====
+date: 1/1/-490
+total ticks: 1277500
+episode lost: no
+drachmas: 986730
+
+[city 0 (the player's)]
+population: 648
+popularity: 83
+hygiene: 100
+unrest: 0
+mood: 83
+maintenance: 95
+taxes paid this year: 0
+taxes paid last year: 0
+culture coverage: 63 42 86 63
+workers: 272, jobs: 255, unemployed: 17
+buildings:
+  1 Road: 302
+  2 Common Housing: 55
+  4 Gymnasium: 1
+  5 College: 1
+  6 Drama School: 1
+  7 Podium: 1
+  8 Theater: 1
+  16 Fountain: 2
+  17 Infirmary: 1
+  18 Goat: 6
+  19 Sheep: 6
+  24 Wheat Farm: 1
+  25 Carrot Farm: 1
+  26 Onion Farm: 1
+  27 Hunting Lodge: 1
+  30 Carding Shed: 1
+  31 Dairy: 1
+  35 Granary: 1
+  36 Storehouse: 2
+  39 Common Agora: 1
+  42 Food Vendor: 1
+  43 Fleece Vendor: 1
+  44 Oil Vendor: 1
+  49 Timber Mill: 1
+  50 Masonry Shop: 1
+  51 Mint: 1
+  65 Maintenance Office: 3
+  66 Tax Office: 1
+  67 Watchpost: 2
+stored goods:
+  Wood: 61
+
+[walkers by type number]
+  2: 2
+  3: 9
+  6: 1
+  7: 1
+  8: 6
+  9: 6
+  17: 1
+  18: 1
+  19: 1
+  20: 1
+  21: 2
+  23: 3
+  27: 3
+  29: 1
+  31: 1
+  37: 1
+  38: 2
+  39: 2
+  40: 3
+  75: 1
+  76: 18
+  77: 1
+walkers in all: 67
+
+[events by event number]
+  0: 6
+  1: 63
+  254: 2
+  317: 2
+  324: 2
+  325: 2
+  330: 1
+  331: 1
+events in all: 79
+other messages: 33
+times all goals were met: 0
+[events as they happened]
+  2/2/-500: event 254
+  30/4/-500: event 1 at 89,-6 (Granary)
+  2/5/-500: event 324
+  10/7/-500: event 1 at 131,7 (Carrot Farm)
+  10/7/-500: event 1 at 131,10 (Onion Farm)
+  2/10/-500: event 325
+  20/10/-500: event 0 at 79,-13 (Road)
+  26/12/-500: event 1 at 79,-13 (Road)
+  16/1/-499: event 1 at 131,4 (Wheat Farm)
+  16/1/-499: event 1 at 131,7 (Carrot Farm)
+  16/1/-499: event 1 at 131,10 (Onion Farm)
+  2/5/-499: event 317
+  25/7/-499: event 1 at 131,7 (Carrot Farm)
+  25/7/-499: event 1 at 131,10 (Onion Farm)
+  31/1/-498: event 1 at 131,4 (Wheat Farm)
+  31/1/-498: event 1 at 131,7 (Carrot Farm)
+  31/1/-498: event 1 at 131,10 (Onion Farm)
+  2/3/-498: event 331
+  6/6/-498: event 0 at 79,-13 (Road)
+  9/8/-498: event 1 at 131,7 (Carrot Farm)
+  9/8/-498: event 1 at 131,10 (Onion Farm)
+  13/8/-498: event 1 at 79,-13 (Road)
+  15/2/-497: event 1 at 131,4 (Wheat Farm)
+  15/2/-497: event 1 at 131,7 (Carrot Farm)
+  15/2/-497: event 1 at 131,10 (Onion Farm)
+  2/7/-497: event 317
+  24/8/-497: event 1 at 131,7 (Carrot Farm)
+  24/8/-497: event 1 at 131,10 (Onion Farm)
+  12/1/-496: event 0 at 79,-13 (Road)
+  2/3/-496: event 1 at 131,4 (Wheat Farm)
+  2/3/-496: event 1 at 131,7 (Carrot Farm)
+  2/3/-496: event 1 at 131,10 (Onion Farm)
+  2/3/-496: event 254
+  28/6/-496: event 1 at 79,-13 (Road)
+  2/8/-496: event 324
+  8/9/-496: event 1 at 131,7 (Carrot Farm)
+  8/9/-496: event 1 at 131,10 (Onion Farm)
+  5/10/-496: event 1 at 82,-6 (Drama School)
+  2/11/-496: event 325
+  17/3/-495: event 1 at 131,4 (Wheat Farm)
+  17/3/-495: event 1 at 131,7 (Carrot Farm)
+  17/3/-495: event 1 at 131,10 (Onion Farm)
+  19/8/-495: event 0 at 79,-13 (Road)
+  25/8/-495: event 1 at 79,-13 (Road)
+  23/9/-495: event 1 at 131,7 (Carrot Farm)
+  23/9/-495: event 1 at 131,10 (Onion Farm)
+  1/4/-494: event 1 at 131,4 (Wheat Farm)
+  1/4/-494: event 1 at 131,7 (Carrot Farm)
+  1/4/-494: event 1 at 131,10 (Onion Farm)
+  15/5/-494: event 1 at 89,-6 (Granary)
+  25/5/-494: event 1 at 82,-6 (Drama School)
+  8/10/-494: event 1 at 131,7 (Carrot Farm)
+  8/10/-494: event 1 at 131,10 (Onion Farm)
+  31/12/-494: event 0 at 79,-13 (Road)
+  16/4/-493: event 1 at 131,4 (Wheat Farm)
+  16/4/-493: event 1 at 131,7 (Carrot Farm)
+  16/4/-493: event 1 at 131,10 (Onion Farm)
+  23/10/-493: event 1 at 131,7 (Carrot Farm)
+  23/10/-493: event 1 at 131,10 (Onion Farm)
+  7/2/-492: event 1 at 79,-13 (Road)
+  1/5/-492: event 1 at 131,4 (Wheat Farm)
+  1/5/-492: event 1 at 131,7 (Carrot Farm)
+  1/5/-492: event 1 at 131,10 (Onion Farm)
+  25/6/-492: event 1 at 89,-6 (Granary)
+  5/7/-492: event 1 at 82,-6 (Drama School)
+  2/8/-492: event 330
+  7/11/-492: event 1 at 131,7 (Carrot Farm)
+  7/11/-492: event 1 at 131,10 (Onion Farm)
+  7/1/-491: event 1 at 89,-6 (Granary)
+  19/1/-491: event 1 at 82,-6 (Drama School)
+  16/5/-491: event 1 at 131,4 (Wheat Farm)
+  16/5/-491: event 1 at 131,7 (Carrot Farm)
+  16/5/-491: event 1 at 131,10 (Onion Farm)
+  3/6/-491: event 0 at 79,-13 (Road)
+  24/7/-491: event 1 at 89,-6 (Granary)
+  3/8/-491: event 1 at 82,-6 (Drama School)
+  10/9/-491: event 1 at 79,-13 (Road)
+  22/11/-491: event 1 at 131,7 (Carrot Farm)
+  22/11/-491: event 1 at 131,10 (Onion Farm)
+
+===== save and reload =====
+save fingerprint: ee8ba9d77156d492 (1345478 bytes)
+city after reload: DIFFERENT from before saving
+date: 1/1/-490
+total ticks: 1277500
+episode lost: no
+drachmas: 986730
+
+[city 0 (the player's)]
+population: 648
+popularity: 83
+hygiene: 100
+unrest: 0
+mood: 83
+maintenance: 0
+taxes paid this year: 0
+taxes paid last year: 0
+culture coverage: 63 42 86 63
+workers: 272, jobs: 255, unemployed: 17
+buildings:
+  1 Road: 302
+  2 Common Housing: 55
+  4 Gymnasium: 1
+  5 College: 1
+  6 Drama School: 1
+  7 Podium: 1
+  8 Theater: 1
+  16 Fountain: 2
+  17 Infirmary: 1
+  18 Goat: 6
+  19 Sheep: 6
+  24 Wheat Farm: 1
+  25 Carrot Farm: 1
+  26 Onion Farm: 1
+  27 Hunting Lodge: 1
+  30 Carding Shed: 1
+  31 Dairy: 1
+  35 Granary: 1
+  36 Storehouse: 2
+  39 Common Agora: 1
+  42 Food Vendor: 1
+  43 Fleece Vendor: 1
+  44 Oil Vendor: 1
+  49 Timber Mill: 1
+  50 Masonry Shop: 1
+  51 Mint: 1
+  65 Maintenance Office: 3
+  66 Tax Office: 1
+  67 Watchpost: 2
+stored goods:
+  Wood: 61
+
+[walkers by type number]
+  2: 2
+  3: 9
+  6: 1
+  7: 1
+  8: 6
+  9: 6
+  17: 1
+  18: 1
+  19: 1
+  20: 1
+  21: 2
+  23: 3
+  27: 3
+  29: 1
+  31: 1
+  37: 1
+  38: 2
+  39: 2
+  40: 3
+  75: 1
+  76: 18
+  77: 1
+walkers in all: 67
+saved again right away: DIFFERENT file (0c541b98e8d0bb4c, 1501654 bytes)
+
+===== reloaded city, 60 days later =====
+date: 2/3/-490
+total ticks: 1298500
+episode lost: no
+drachmas: 986602
+
+[city 0 (the player's)]
+population: 648
+popularity: 83
+hygiene: 100
+unrest: 0
+mood: 83
+maintenance: 91
+taxes paid this year: 0
+taxes paid last year: 0
+culture coverage: 62 93 86 80
+workers: 272, jobs: 255, unemployed: 17
+buildings:
+  1 Road: 302
+  2 Common Housing: 55
+  4 Gymnasium: 1
+  5 College: 1
+  6 Drama School: 1
+  7 Podium: 1
+  8 Theater: 1
+  16 Fountain: 2
+  17 Infirmary: 1
+  18 Goat: 6
+  19 Sheep: 6
+  24 Wheat Farm: 1
+  25 Carrot Farm: 1
+  26 Onion Farm: 1
+  27 Hunting Lodge: 1
+  30 Carding Shed: 1
+  31 Dairy: 1
+  35 Granary: 1
+  36 Storehouse: 2
+  39 Common Agora: 1
+  42 Food Vendor: 1
+  43 Fleece Vendor: 1
+  44 Oil Vendor: 1
+  49 Timber Mill: 1
+  50 Masonry Shop: 1
+  51 Mint: 1
+  65 Maintenance Office: 3
+  66 Tax Office: 1
+  67 Watchpost: 2
+stored goods:
+  Wood: 62
+
+[walkers by type number]
+  1: 12
+  3: 10
+  6: 1
+  7: 1
+  8: 6
+  9: 6
+  17: 1
+  18: 1
+  19: 1
+  20: 1
+  21: 3
+  23: 3
+  27: 3
+  29: 1
+  31: 1
+  37: 1
+  38: 2
+  39: 2
+  40: 3
+  75: 1
+  76: 18
+walkers in all: 78
+
+[events by event number]
+  330: 1
+events in all: 1
+other messages: 0
+times all goals were met: 0
+[events as they happened]
+  2/1/-490: event 330
