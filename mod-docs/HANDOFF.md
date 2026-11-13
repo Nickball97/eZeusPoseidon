@@ -212,6 +212,25 @@ These are where most bugs hide:
 
 ### Suggested order
 
+**Status on 13 Nov 2026.** Steps 1 to 3 are done, each checked against the
+safety net (same result on all seven adventures):
+- Step 1 (branch `cleanup/housekeeping`): scripts in `tools/`, warnings on and
+  at zero. About 400 number-conversion warnings are switched off, not reviewed.
+- Step 2 (branch `cleanup/sim-step`): `eGameBoard::step`, `beginStep`, `endStep`.
+- Step 3 (branch `cleanup/split-board`): `egameboard.cpp` and `eboardcity.cpp`
+  each split into seven files by subject (`egameboardbuild.cpp`,
+  `...disasters`, `...events`, `...military`, `...registry`, `...undo`;
+  `eboardcitydistricts.cpp`, `...employment`, `...military`, `...people`,
+  `...registry`, `...resources`). Functions were moved whole; each new file
+  carries a copy of the old include list, which could be trimmed.
+  Per-city data still on the board: `mLastEmploymentState` (not saved, so the
+  workers-needed message can repeat after a load), `mUpdateAppeal`,
+  `mDefeatedBy`.
+- Each branch builds on the one before: `ccr-3448c71b-u8j6yh` ->
+  `cleanup/safety-net` -> `save-load` -> `findings` -> `housekeeping` ->
+  `sim-step` -> `split-board`. `main` is untouched (Nicolás, 13 Nov).
+- Next: step 4 (numbers into `enumbers.cpp`).
+
 Put the parts mods will touch first.
 
 1. **Housekeeping.**
