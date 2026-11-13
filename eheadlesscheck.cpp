@@ -28,6 +28,7 @@
 #include "audio/esounds.h"
 
 #include "buildings/ebuilding.h"
+#include "buildings/ebuildingregistry.h"
 #include "buildings/estoragebuilding.h"
 #include "buildings/sanctuaries/esanctuaryblueprint.h"
 #include "characters/echaracter.h"
@@ -95,6 +96,7 @@ struct eArgs {
     std::string fRandDiffB;
     std::vector<long long> fSaveWho; // bytes of the first save to explain
     std::vector<long long> fSave2Who; // and of the save made after reloading
+    bool fBuildingTable = false; // only check the table of building kinds
 };
 
 bool parseArgs(const int argc, char** const argv, eArgs& args) {
@@ -118,6 +120,8 @@ bool parseArgs(const int argc, char** const argv, eArgs& args) {
             args.fSaveWho.push_back(std::stoll(next()));
         } else if(a == "--save2-who") {
             args.fSave2Who.push_back(std::stoll(next()));
+        } else if(a == "--building-table") {
+            args.fBuildingTable = true;
         } else if(a == "--rand-log") {
             args.fRandLog = next();
         } else if(a == "--rand-diff") {
@@ -834,6 +838,45 @@ stdsptr<eCampaign> openAdventure(const std::string& name) {
     return nullptr;
 }
 
+// --building-table: makes one building of every kind in the table of
+// building kinds (buildings/ebuildingregistry.cpp) and checks that the
+// table says the truth about it: its type and its footprint. Prints the
+// table as it should read. Returns 0 when every line is right.
+int checkBuildingTable(eGameBoard& board) {
+    const auto mine = board.personPlayerCitiesOnBoard();
+    if(mine.empty()) {
+        std::printf("No city of the player on this map.\n");
+        return 1;
+    }
+    const auto cid = mine[0];
+    int wrong = 0;
+    for(const auto& k : eBuildingRegistry::sAll()) {
+        const auto b = k.fCreate(board, cid);
+        if(!b) {
+            std::printf("kind %d: nothing was made\n",
+                        static_cast<int>(k.fType));
+            wrong++;
+            continue;
+        }
+        const bool ok = b->type() == k.fType &&
+                        b->spanW() == k.fW && b->spanH() == k.fH;
+        if(!ok) wrong++;
+        std::printf("kind %d %s: table says type %d, %d x %d; "
+                    "the building is type %d, %d x %d%s\n",
+                    static_cast<int>(k.fType),
+                    eBuilding::sNameForBuilding(k.fType).c_str(),
+                    static_cast<int>(k.fType), k.fW, k.fH,
+                    static_cast<int>(b->type()), b->spanW(), b->spanH(),
+                    ok ? "" : "   <-- WRONG");
+        b->erase();
+    }
+    board.emptyRubbish();
+    std::printf("%d of %d lines are wrong.\n", wrong,
+                static_cast<int>(eBuildingRegistry::sAll().size()));
+    std::fflush(stdout);
+    return wrong == 0 ? 0 : 1;
+}
+
 } // namespace
 
 bool eHeadlessCheckRequested(const int argc, char** const argv) {
@@ -902,6 +945,8 @@ int eHeadlessCheckRun(const int argc, char** const argv) {
     }
     board->updateAppealMapIfNeeded();
     board->waitUntilFinished();
+
+    if(args.fBuildingTable) return checkBuildingTable(*board);
 
     eCounters counters;
     connect(*board, counters);

@@ -106,6 +106,8 @@ add_executable(eZeus
     buildings/eblackmarbleworkshop.cpp
     buildings/eblackmarbleworkshop.h
     buildings/ebuilding.cpp
+    buildings/ebuildingregistry.cpp
+    buildings/ebuildingregistry.h
     buildings/ebuilding.h
     buildings/ebuildingrenderer.cpp
     buildings/ebuildingrenderer.h

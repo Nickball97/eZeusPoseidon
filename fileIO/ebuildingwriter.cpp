@@ -21,8 +21,6 @@ void eBuildingWriter::sWrite(const eBuilding* const b,
     dst << cid;
     const auto type = b->type();
     switch(type) {
-    case eBuildingType::road:
-        break;
     case eBuildingType::commonAgora: {
         const auto ca = static_cast<const eCommonAgora*>(b);
         dst << ca->orientation();
@@ -33,23 +31,6 @@ void eBuildingWriter::sWrite(const eBuilding* const b,
     } break;
     case eBuildingType::agoraSpace:
         return;
-    case eBuildingType::commonHouse:
-    case eBuildingType::gymnasium:
-    case eBuildingType::podium:
-    case eBuildingType::fountain:
-    case eBuildingType::watchPost:
-    case eBuildingType::maintenanceOffice:
-    case eBuildingType::college:
-    case eBuildingType::dramaSchool:
-    case eBuildingType::theater:
-    case eBuildingType::hospital:
-    case eBuildingType::bibliotheke:
-    case eBuildingType::observatory:
-    case eBuildingType::university:
-    case eBuildingType::laboratory:
-    case eBuildingType::inventorsWorkshop:
-    case eBuildingType::museum:
-        break;
     case eBuildingType::stadium: {
         const auto s = static_cast<const eStadium*>(b);
         dst << s->rotated();
@@ -63,21 +44,6 @@ void eBuildingWriter::sWrite(const eBuilding* const b,
         dst << p->other();
         dst.writeBuilding(p->palace());
     } break;
-    case eBuildingType::eliteHousing:
-    case eBuildingType::taxOffice:
-    case eBuildingType::mint:
-    case eBuildingType::foundry:
-    case eBuildingType::timberMill:
-    case eBuildingType::refinery:
-    case eBuildingType::blackMarbleWorkshop:
-    case eBuildingType::masonryShop:
-    case eBuildingType::oliveTree:
-    case eBuildingType::vine:
-    case eBuildingType::orangeTree:
-    case eBuildingType::huntingLodge:
-    case eBuildingType::corral:
-    case eBuildingType::chariotFactory:
-        break;
     case eBuildingType::urchinQuay: {
         const auto p = static_cast<const eUrchinQuay*>(b);
         dst << p->orientation();
@@ -109,27 +75,10 @@ void eBuildingWriter::sWrite(const eBuilding* const b,
             dst.writeBuilding(ub);
         }
     } break;
-    case eBuildingType::dairy:
-    case eBuildingType::cardingShed:
-    case eBuildingType::sheep:
-    case eBuildingType::goat:
-    case eBuildingType::cattle:
-    case eBuildingType::wheatFarm:
-    case eBuildingType::onionsFarm:
-    case eBuildingType::carrotsFarm:
-    case eBuildingType::growersLodge:
-    case eBuildingType::orangeTendersLodge:
-    case eBuildingType::granary:
-    case eBuildingType::warehouse:
-    case eBuildingType::wall:
-    case eBuildingType::tower:
-        break;
     case eBuildingType::gatehouse: {
         const auto p = static_cast<const eGatehouse*>(b);
         dst << p->rotated();
     } break;
-    case eBuildingType::armory:
-        break;
 
     case eBuildingType::horseRanch: {
         const auto hr = static_cast<const eHorseRanch*>(b);
@@ -141,12 +90,6 @@ void eBuildingWriter::sWrite(const eBuilding* const b,
         const auto hr = hre->ranch();
         dst.writeBuilding(hr);
     } break;
-
-    case eBuildingType::olivePress:
-    case eBuildingType::winery:
-    case eBuildingType::sculptureStudio:
-    case eBuildingType::artisansGuild:
-        break;
 
     case eBuildingType::foodVendor:
     case eBuildingType::fleeceVendor:
@@ -161,14 +104,6 @@ void eBuildingWriter::sWrite(const eBuilding* const b,
         const int sid = v->agoraSpaceId();
         dst << sid;
     } break;
-
-    case eBuildingType::park:
-    case eBuildingType::doricColumn:
-    case eBuildingType::ionicColumn:
-    case eBuildingType::corinthianColumn:
-    case eBuildingType::avenue:
-    case eBuildingType::boulevard:
-        break;
 
     case eBuildingType::commemorative: {
         const auto p = static_cast<const eCommemorative*>(b);
@@ -185,30 +120,10 @@ void eBuildingWriter::sWrite(const eBuilding* const b,
         dst.writeBuilding(gmt->monument());
     } break;
 
-    case eBuildingType::bench:
-    case eBuildingType::flowerGarden:
-    case eBuildingType::gazebo:
-    case eBuildingType::hedgeMaze:
-    case eBuildingType::fishPond:
-    case eBuildingType::orrery:
-        break;
-
     case eBuildingType::waterPark: {
         const auto p = static_cast<const eWaterPark*>(b);
         dst << p->id();
     } break;
-
-    case eBuildingType::birdBath:
-    case eBuildingType::shortObelisk:
-    case eBuildingType::tallObelisk:
-    case eBuildingType::shellGarden:
-    case eBuildingType::sundial:
-    case eBuildingType::dolphinSculpture:
-    case eBuildingType::spring:
-    case eBuildingType::topiary:
-    case eBuildingType::baths:
-    case eBuildingType::stoneCircle:
-        break;
 
     case eBuildingType::templeAphrodite:
     case eBuildingType::templeApollo:
@@ -324,12 +239,6 @@ void eBuildingWriter::sWrite(const eBuilding* const b,
     case eBuildingType::majorShrinePoseidon:
     case eBuildingType::majorShrineZeus:
 
-    case eBuildingType::pyramidOfThePantheon:
-    case eBuildingType::altarOfOlympus:
-    case eBuildingType::templeOfOlympus:
-    case eBuildingType::observatoryKosmika:
-    case eBuildingType::museumAtlantika:
-        break;
     case eBuildingType::pyramidWall: {
         const auto s = static_cast<const ePyramidWall*>(b);
         dst << s->orientation();
@@ -408,28 +317,15 @@ void eBuildingWriter::sWrite(const eBuilding* const b,
         dst.writeBuilding(sanct);
     } break;
 
-    case eBuildingType::ruins:
-    case eBuildingType::placeholder:
-        break;
-
-    case eBuildingType::achillesHall:
-    case eBuildingType::atalantaHall:
-    case eBuildingType::bellerophonHall:
-    case eBuildingType::herculesHall:
-    case eBuildingType::jasonHall:
-    case eBuildingType::odysseusHall:
-    case eBuildingType::perseusHall:
-    case eBuildingType::theseusHall:
-        break;
-
-    case eBuildingType::hippodromePiece:
-        break;
-
     case eBuildingType::none:
     case eBuildingType::erase:
     case eBuildingType::bridge:
     case eBuildingType::crosswalk:
         return;
+    default:
+        // a plain building (buildings/ebuildingregistry.cpp) needs
+        // nothing written ahead of its own data
+        break;
     }
     b->write(dst);
 }

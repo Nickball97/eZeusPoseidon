@@ -52,6 +52,7 @@ SOURCES += \
         buildings/ebibliotheke.cpp \
         buildings/eblackmarbleworkshop.cpp \
         buildings/ebuilding.cpp \
+        buildings/ebuildingregistry.cpp \
         buildings/ebuildingrenderer.cpp \
         buildings/ebuildingwithresource.cpp \
         buildings/ecardingshed.cpp \
@@ -780,6 +781,7 @@ HEADERS += \
     buildings/ebibliotheke.h \
     buildings/eblackmarbleworkshop.h \
     buildings/ebuilding.h \
+    buildings/ebuildingregistry.h \
     buildings/ebuildingrenderer.h \
     buildings/ebuildingwithresource.h \
     buildings/ecardingshed.h \

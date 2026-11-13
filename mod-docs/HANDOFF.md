@@ -254,6 +254,14 @@ safety net (same result on all seven adventures):
     a one-line job; worth doing before mods add buildings (cistern).
   - temple and pyramid monuments, soldier banner and trireme, Ares warrior
     and chariot: small, drawing or selection code.
+- The table of building kinds (branch `cleanup/building-table`, asked for by
+  Nicolás on 13 Nov: he wants changes that improve modularity and prepare
+  for future additions put first). `buildings/ebuildingregistry.cpp` has one
+  line per plain building; the save reader, the save writer and the AI
+  builder work from it (about 730 lines of per-building cases removed). Net
+  the same; the table has its own check in `check.ps1`. What a new building
+  still needs by hand, and the next steps of this idea, are in
+  `mod-docs/adding-a-building.md`.
 
 Put the parts mods will touch first.
 

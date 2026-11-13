@@ -1,5 +1,8 @@
 #include "eaidistrict.h"
 
+#include "buildings/ebuildingregistry.h"
+#include "buildings/epatrolbuildingbase.h"
+
 #include "engine/egameboard.h"
 
 #include "buildings/eroad.h"
@@ -129,162 +132,13 @@ bool gBuild(const eAIBuilding& b,
         return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay,
                                false, false, 1);
     } break;
-    case eBuildingType::avenue: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eAvenue>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
 
-    case eBuildingType::commonHouse: {
-        const auto bc = [boardPtr, cid]() {
-            return e::make_shared<eSmallHouse>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::eliteHousing: {
-        const auto bc = [boardPtr, cid]() {
-            return e::make_shared<eEliteHousing>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-
-    case eBuildingType::maintenanceOffice: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eMaintenanceOffice>(*boardPtr, cid);
-            bb->setPatrolGuides(b.fGuides);
-            bb->setBothDirections(b.fGuidesBothDirections);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::taxOffice: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eTaxOffice>(*boardPtr, cid);
-            bb->setPatrolGuides(b.fGuides);
-            bb->setBothDirections(b.fGuidesBothDirections);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::fountain: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eFountain>(*boardPtr, cid);
-            bb->setPatrolGuides(b.fGuides);
-            bb->setBothDirections(b.fGuidesBothDirections);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::watchPost: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eWatchpost>(*boardPtr, cid);
-            bb->setPatrolGuides(b.fGuides);
-            bb->setBothDirections(b.fGuidesBothDirections);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::hospital: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eHospital>(*boardPtr, cid);
-            bb->setPatrolGuides(b.fGuides);
-            bb->setBothDirections(b.fGuidesBothDirections);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-
-    case eBuildingType::podium: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<ePodium>(*boardPtr, cid);
-            bb->setPatrolGuides(b.fGuides);
-            bb->setBothDirections(b.fGuidesBothDirections);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::college: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eCollege>(*boardPtr, cid);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::gymnasium: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eGymnasium>(*boardPtr, cid);
-            bb->setPatrolGuides(b.fGuides);
-            bb->setBothDirections(b.fGuidesBothDirections);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::theater: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eTheater>(*boardPtr, cid);
-            bb->setPatrolGuides(b.fGuides);
-            bb->setBothDirections(b.fGuidesBothDirections);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::dramaSchool: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eDramaSchool>(*boardPtr, cid);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
     case eBuildingType::stadium: {
         const bool rotated = rect.w == 5;
         const auto bc = [boardPtr, cid, b, rotated]() {
             const auto bb = e::make_shared<eStadium>(*boardPtr, rotated, cid);
             bb->setPatrolGuides(b.fGuides);
             bb->setBothDirections(b.fGuidesBothDirections);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-
-    case eBuildingType::bibliotheke: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eBibliotheke>(*boardPtr, cid);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::observatory: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eObservatory>(*boardPtr, cid);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::university: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eUniversity>(*boardPtr, cid);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::laboratory: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eLaboratory>(*boardPtr, cid);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::inventorsWorkshop: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eInventorsWorkshop>(*boardPtr, cid);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::museum: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eMuseum>(*boardPtr, cid);
             return bb;
         };
         return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
@@ -312,13 +166,6 @@ bool gBuild(const eAIBuilding& b,
         };
         return board.buildBase(oR.x, oR.y, oR.x + oR.w - 1, oR.y + oR.h - 1,
                                bcp, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::chariotFactory: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto bb = e::make_shared<eChariotFactory>(*boardPtr, cid);
-            return bb;
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
     } break;
 
     case eBuildingType::palace: {
@@ -379,68 +226,6 @@ bool gBuild(const eAIBuilding& b,
         return r;
     } break;
 
-    case eBuildingType::onionsFarm: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eOnionFarm>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::carrotsFarm: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eCarrotFarm>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::wheatFarm: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eWheatFarm>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-
-    case eBuildingType::oliveTree: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto type = eResourceBuildingType::oliveTree;
-            return e::make_shared<eResourceBuilding>(*boardPtr, type, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::vine: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto type = eResourceBuildingType::vine;
-            return e::make_shared<eResourceBuilding>(*boardPtr, type, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::orangeTree: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto type = eResourceBuildingType::orangeTree;
-            return e::make_shared<eResourceBuilding>(*boardPtr, type, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-
-    case eBuildingType::growersLodge: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto type = eGrowerType::grapesAndOlives;
-            return e::make_shared<eGrowersLodge>(*boardPtr, type, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::orangeTendersLodge: {
-        const auto bc = [boardPtr, cid, b]() {
-            const auto type = eGrowerType::oranges;
-            return e::make_shared<eGrowersLodge>(*boardPtr, type, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-
-    case eBuildingType::huntingLodge: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eHuntingLodge>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
     case eBuildingType::fishery: {
         const auto bc = [boardPtr, cid, b]() {
             return e::make_shared<eFishery>(*boardPtr, b.fO, cid);
@@ -454,25 +239,6 @@ bool gBuild(const eAIBuilding& b,
         };
         return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay,
                                false, false, 2);
-    } break;
-
-    case eBuildingType::cardingShed: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eCardingShed>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::dairy: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eDairy>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::corral: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eCorral>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
     } break;
 
     case eBuildingType::sheep: {
@@ -495,37 +261,6 @@ bool gBuild(const eAIBuilding& b,
                           [](eGameBoard& board) {
             return e::make_shared<eCattle>(board, eCharacterType::cattle2);
         }, cid, pid, editorDisplay);
-    } break;
-
-    case eBuildingType::armory: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eArmory>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::sculptureStudio: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eSculptureStudio>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::olivePress: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eOlivePress>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::winery: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eWinery>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::artisansGuild: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eArtisansGuild>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
     } break;
 
     case eBuildingType::commonAgora: {
@@ -625,43 +360,6 @@ bool gBuild(const eAIBuilding& b,
         return true;
     } break;
 
-    case eBuildingType::mint: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eMint>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::foundry: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eFoundry>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::masonryShop: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eMasonryShop>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::refinery: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eRefinery>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::blackMarbleWorkshop: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eBlackMarbleWorkshop>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::timberMill: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eTimberMill>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-
     case eBuildingType::granary: {
         const auto bc = [boardPtr, cid, b]() {
             const auto g = e::make_shared<eGranary>(*boardPtr, cid);
@@ -719,31 +417,6 @@ bool gBuild(const eAIBuilding& b,
     } break;
 
 
-    case eBuildingType::park: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<ePark>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::doricColumn: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eDoricColumn>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::ionicColumn: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eIonicColumn>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::corinthianColumn: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eCorinthianColumn>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-
     case eBuildingType::commemorative: {
         const auto bc = [boardPtr, cid, b]() {
             return e::make_shared<eCommemorative>(0, *boardPtr, cid);
@@ -751,105 +424,9 @@ bool gBuild(const eAIBuilding& b,
         return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
     } break;
 
-    case eBuildingType::bench: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eBench>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::flowerGarden: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eFlowerGarden>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::gazebo: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eGazebo>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::hedgeMaze: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eHedgeMaze>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::fishPond: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eFishPond>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
     case eBuildingType::waterPark: {
         const auto bc = [boardPtr, cid, b]() {
             return e::make_shared<eWaterPark>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::birdBath: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eBirdBath>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::shortObelisk: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eShortObelisk>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::tallObelisk: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eTallObelisk>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::shellGarden: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eShellGarden>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::sundial: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eSundial>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::dolphinSculpture: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eDolphinSculpture>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::orrery: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eOrrery>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::spring: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eSpring>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::topiary: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eTopiary>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::baths: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eBaths>(*boardPtr, cid);
-        };
-        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
-    } break;
-    case eBuildingType::stoneCircle: {
-        const auto bc = [boardPtr, cid, b]() {
-            return e::make_shared<eStoneCircle>(*boardPtr, cid);
         };
         return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
     } break;
@@ -873,8 +450,34 @@ bool gBuild(const eAIBuilding& b,
         return board.buildSanctuary(minX, maxX, minY, maxY, b.fType,
                                     rotate, cid, pid, editorDisplay);
     } break;
-    default:
-        break;
+
+    // plain buildings a city plan has never been able to place
+    case eBuildingType::hippodromePiece:
+    case eBuildingType::placeholder:
+    case eBuildingType::ruins:
+    case eBuildingType::tower:
+    case eBuildingType::wall:
+        return false;
+
+    default: {
+        // every other plain kind of building comes from the table of
+        // building kinds (buildings/ebuildingregistry.cpp)
+        const auto kind = eBuildingRegistry::sFind(b.fType);
+        if(!kind) return false;
+        const auto bc = [boardPtr, cid, b, kind]() {
+            const auto bb = kind->fCreate(*boardPtr, cid);
+            if(kind->fPlanRoutes) {
+                // its walkers follow the routes the plan lays down
+                const auto pb = dynamic_cast<ePatrolBuildingBase*>(bb.get());
+                if(pb) {
+                    pb->setPatrolGuides(b.fGuides);
+                    pb->setBothDirections(b.fGuidesBothDirections);
+                }
+            }
+            return bb;
+        };
+        return board.buildBase(minX, minY, maxX, maxY, bc, pid, cid, editorDisplay);
+    } break;
     }
     return false;
 }

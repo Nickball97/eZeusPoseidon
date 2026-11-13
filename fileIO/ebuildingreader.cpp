@@ -3,6 +3,7 @@
 #include "buildings/sanctuaries/etemplegrandstatuebuilding.h"
 
 #include "buildings/allbuildings.h"
+#include "buildings/ebuildingregistry.h"
 #include "engine/egameboard.h"
 
 template <typename T>
@@ -53,9 +54,6 @@ stdsptr<eBuilding> eBuildingReader::sRead(
     src >> cid;
     stdsptr<eBuilding> b;
     switch(type) {
-    case eBuildingType::road: {
-        b = e::make_shared<eRoad>(board, cid);
-    } break;
     case eBuildingType::commonAgora: {
         eAgoraOrientation o;
         src >> o;
@@ -68,58 +66,10 @@ stdsptr<eBuilding> eBuildingReader::sRead(
     } break;
     case eBuildingType::agoraSpace:
         return nullptr;
-    case eBuildingType::commonHouse: {
-        b = e::make_shared<eSmallHouse>(board, cid);
-    } break;
-    case eBuildingType::gymnasium: {
-        b = e::make_shared<eGymnasium>(board, cid);
-    } break;
-    case eBuildingType::podium: {
-        b = e::make_shared<ePodium>(board, cid);
-    } break;
-    case eBuildingType::fountain: {
-        b = e::make_shared<eFountain>(board, cid);
-    } break;
-    case eBuildingType::watchPost: {
-        b = e::make_shared<eWatchpost>(board, cid);
-    } break;
-    case eBuildingType::maintenanceOffice: {
-        b = e::make_shared<eMaintenanceOffice>(board, cid);
-    } break;
-    case eBuildingType::college: {
-        b = e::make_shared<eCollege>(board, cid);
-    } break;
-    case eBuildingType::dramaSchool: {
-        b = e::make_shared<eDramaSchool>(board, cid);
-    } break;
-    case eBuildingType::theater: {
-        b = e::make_shared<eTheater>(board, cid);
-    } break;
-    case eBuildingType::hospital: {
-        b = e::make_shared<eHospital>(board, cid);
-    } break;
     case eBuildingType::stadium: {
         bool rotated;
         src >> rotated;
         b = e::make_shared<eStadium>(board, rotated, cid);
-    } break;
-    case eBuildingType::bibliotheke: {
-        b = e::make_shared<eBibliotheke>(board, cid);
-    } break;
-    case eBuildingType::observatory: {
-        b = e::make_shared<eObservatory>(board, cid);
-    } break;
-    case eBuildingType::university: {
-        b = e::make_shared<eUniversity>(board, cid);
-    } break;
-    case eBuildingType::laboratory: {
-        b = e::make_shared<eLaboratory>(board, cid);
-    } break;
-    case eBuildingType::inventorsWorkshop: {
-        b = e::make_shared<eInventorsWorkshop>(board, cid);
-    } break;
-    case eBuildingType::museum: {
-        b = e::make_shared<eMuseum>(board, cid);
     } break;
     case eBuildingType::palace: {
         bool rotated;
@@ -134,50 +84,6 @@ stdsptr<eBuilding> eBuildingReader::sRead(
         src.readBuilding(&board, [pt](eBuilding* const bb) {
              pt->setPalace(static_cast<ePalace*>(bb));
         });
-    } break;
-    case eBuildingType::eliteHousing: {
-        b = e::make_shared<eEliteHousing>(board, cid);
-    } break;
-    case eBuildingType::taxOffice: {
-        b = e::make_shared<eTaxOffice>(board, cid);
-    } break;
-    case eBuildingType::mint: {
-        b = e::make_shared<eMint>(board, cid);
-    } break;
-    case eBuildingType::foundry: {
-        b = e::make_shared<eFoundry>(board, cid);
-    } break;
-    case eBuildingType::refinery: {
-        b = e::make_shared<eRefinery>(board, cid);
-    } break;
-    case eBuildingType::blackMarbleWorkshop: {
-        b = e::make_shared<eBlackMarbleWorkshop>(board, cid);
-    } break;
-    case eBuildingType::timberMill: {
-        b = e::make_shared<eTimberMill>(board, cid);
-    } break;
-    case eBuildingType::masonryShop: {
-        b = e::make_shared<eMasonryShop>(board, cid);
-    } break;
-
-    case eBuildingType::oliveTree: {
-        b = e::make_shared<eResourceBuilding>(
-                board, eResourceBuildingType::oliveTree, cid);
-    } break;
-    case eBuildingType::vine: {
-        b = e::make_shared<eResourceBuilding>(
-                board, eResourceBuildingType::vine, cid);
-    } break;
-    case eBuildingType::orangeTree: {
-        b = e::make_shared<eResourceBuilding>(
-                board, eResourceBuildingType::orangeTree, cid);
-    } break;
-
-    case eBuildingType::huntingLodge: {
-        b = e::make_shared<eHuntingLodge>(board, cid);
-    } break;
-    case eBuildingType::corral: {
-        b = e::make_shared<eCorral>(board, cid);
     } break;
 
     case eBuildingType::urchinQuay: {
@@ -227,12 +133,6 @@ stdsptr<eBuilding> eBuildingReader::sRead(
         }
     } break;
 
-    case eBuildingType::dairy: {
-        b = e::make_shared<eDairy>(board, cid);
-    } break;
-    case eBuildingType::cardingShed: {
-        b = e::make_shared<eCardingShed>(board, cid);
-    } break;
     case eBuildingType::sheep: {
         b = e::make_shared<eAnimalBuilding>(
                 board, nullptr, eBuildingType::sheep, cid);
@@ -245,44 +145,11 @@ stdsptr<eBuilding> eBuildingReader::sRead(
         b = e::make_shared<eAnimalBuilding>(
                 board, nullptr, eBuildingType::cattle, cid);
     } break;
-    case eBuildingType::wheatFarm: {
-        b = e::make_shared<eWheatFarm>(board, cid);
-    } break;
-    case eBuildingType::onionsFarm: {
-        b = e::make_shared<eOnionFarm>(board, cid);
-    } break;
-    case eBuildingType::carrotsFarm: {
-        b = e::make_shared<eCarrotFarm>(board, cid);
-    } break;
-    case eBuildingType::growersLodge: {
-        b = e::make_shared<eGrowersLodge>(
-                board, eGrowerType::grapesAndOlives, cid);
-    } break;
-    case eBuildingType::orangeTendersLodge: {
-        b = e::make_shared<eGrowersLodge>(
-                board, eGrowerType::oranges, cid);
-    } break;
-    case eBuildingType::granary: {
-        b = e::make_shared<eGranary>(board, cid);
-    } break;
-    case eBuildingType::warehouse: {
-        b = e::make_shared<eWarehouse>(board, cid);
-    } break;
-    case eBuildingType::wall: {
-        b = e::make_shared<eWall>(board, cid);
-    } break;
-    case eBuildingType::tower: {
-        b = e::make_shared<eTower>(board, cid);
-    } break;
 
     case eBuildingType::gatehouse: {
         bool rotated;
         src >> rotated;
         b = e::make_shared<eGatehouse>(board, rotated, cid);
-    } break;
-
-    case eBuildingType::armory: {
-        b = e::make_shared<eArmory>(board, cid);
     } break;
 
     case eBuildingType::horseRanch: {
@@ -299,19 +166,6 @@ stdsptr<eBuilding> eBuildingReader::sRead(
         src.readBuilding(&board, [hre](eBuilding* const bb) {
             hre->setRanch(static_cast<eHorseRanch*>(bb));
         });
-    } break;
-
-    case eBuildingType::olivePress: {
-        b = e::make_shared<eOlivePress>(board, cid);
-    } break;
-    case eBuildingType::winery: {
-        b = e::make_shared<eWinery>(board, cid);
-    } break;
-    case eBuildingType::sculptureStudio: {
-        b = e::make_shared<eSculptureStudio>(board, cid);
-    } break;
-    case eBuildingType::artisansGuild: {
-        b = e::make_shared<eArtisansGuild>(board, cid);
     } break;
 
     case eBuildingType::foodVendor: {
@@ -336,25 +190,6 @@ stdsptr<eBuilding> eBuildingReader::sRead(
         b = createVendor<eChariotVendor>(board, src, cid);
     } break;
 
-    case eBuildingType::chariotFactory: {
-        b = e::make_shared<eChariotFactory>(board, cid);
-    } break;
-
-    case eBuildingType::park: {
-        b = e::make_shared<ePark>(board, cid);
-    } break;
-    case eBuildingType::doricColumn: {
-        b = e::make_shared<eDoricColumn>(board, cid);
-    } break;
-    case eBuildingType::ionicColumn: {
-        b = e::make_shared<eIonicColumn>(board, cid);
-    } break;
-    case eBuildingType::corinthianColumn: {
-        b = e::make_shared<eCorinthianColumn>(board, cid);
-    } break;
-    case eBuildingType::avenue: {
-        b = e::make_shared<eAvenue>(board, cid);
-    } break;
     case eBuildingType::boulevard: {
         b = e::make_shared<eAvenue>(board, cid, eBuildingType::boulevard);
     } break;
@@ -380,62 +215,12 @@ stdsptr<eBuilding> eBuildingReader::sRead(
         });
     } break;
 
-    case eBuildingType::bench: {
-        b = e::make_shared<eBench>(board, cid);
-    } break;
-    case eBuildingType::flowerGarden: {
-        b = e::make_shared<eFlowerGarden>(board, cid);
-    } break;
-    case eBuildingType::gazebo: {
-        b = e::make_shared<eGazebo>(board, cid);
-    } break;
-    case eBuildingType::hedgeMaze: {
-        b = e::make_shared<eHedgeMaze>(board, cid);
-    } break;
-    case eBuildingType::fishPond: {
-        b = e::make_shared<eFishPond>(board, cid);
-    } break;
-
     case eBuildingType::waterPark: {
         int id;
         src >> id;
         const auto wp = e::make_shared<eWaterPark>(board, cid);
         b = wp;
         wp->setId(id);
-    } break;
-
-    case eBuildingType::birdBath: {
-        b = e::make_shared<eBirdBath>(board, cid);
-    } break;
-    case eBuildingType::shortObelisk: {
-        b = e::make_shared<eShortObelisk>(board, cid);
-    } break;
-    case eBuildingType::tallObelisk: {
-        b = e::make_shared<eTallObelisk>(board, cid);
-    } break;
-    case eBuildingType::shellGarden: {
-        b = e::make_shared<eShellGarden>(board, cid);
-    } break;
-    case eBuildingType::sundial: {
-        b = e::make_shared<eSundial>(board, cid);
-    } break;
-    case eBuildingType::dolphinSculpture: {
-        b = e::make_shared<eDolphinSculpture>(board, cid);
-    } break;
-    case eBuildingType::spring: {
-        b = e::make_shared<eSpring>(board, cid);
-    } break;
-    case eBuildingType::orrery: {
-        b = e::make_shared<eOrrery>(board, cid);
-    } break;
-    case eBuildingType::topiary: {
-        b = e::make_shared<eTopiary>(board, cid);
-    } break;
-    case eBuildingType::baths: {
-        b = e::make_shared<eBaths>(board, cid);
-    } break;
-    case eBuildingType::stoneCircle: {
-        b = e::make_shared<eStoneCircle>(board, cid);
     } break;
 
     case eBuildingType::templeAphrodite:
@@ -688,22 +473,16 @@ stdsptr<eBuilding> eBuildingReader::sRead(
         b = e::make_shared<eHerosHall>(hero, board, cid);
     } break;
 
-    case eBuildingType::ruins: {
-        b = e::make_shared<eRuins>(board, cid);
-    } break;
-    case eBuildingType::placeholder: {
-        b = e::make_shared<ePlaceholder>(board, cid);
-    } break;
-
-    case eBuildingType::hippodromePiece: {
-        b = e::make_shared<eHippodromePiece>(board, cid);
-    } break;
-
     case eBuildingType::none:
     case eBuildingType::erase:
     case eBuildingType::bridge:
     case eBuildingType::crosswalk:
         return nullptr;
+    default:
+        // every plain kind of building comes from the table of building
+        // kinds (buildings/ebuildingregistry.cpp)
+        b = eBuildingRegistry::sCreate(type, board, cid);
+        break;
     }
     if(b) b->read(src);
     return b;

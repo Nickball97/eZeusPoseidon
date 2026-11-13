@@ -62,6 +62,19 @@ $maps = Get-Content (Join-Path $here "maps.txt") |
         Where-Object { $_ -and -not $_.StartsWith(";") }
 
 $bad = 0
+
+# The table of building kinds (buildings/ebuildingregistry.cpp) must say the
+# truth about every building in it: its type and its footprint.
+$tableLog = Join-Path $out "building-table.log"
+$tp = Start-Process -FilePath $exe -ArgumentList "--headless-check `"$($maps[0])`" 0 --building-table" `
+        -WorkingDirectory (Split-Path $exe) -NoNewWindow -Wait -PassThru `
+        -RedirectStandardOutput $tableLog -RedirectStandardError "$tableLog.err"
+if ($tp.ExitCode -eq 0) {
+    Write-Host "TABLE OK the table of building kinds"
+} else {
+    Write-Host "TABLE WRONG  the table of building kinds (see $tableLog)"
+    $bad++
+}
 foreach ($map in $maps) {
     $name = ($map -replace '[^A-Za-z0-9]+', '_').Trim('_')
     $file = Join-Path $out "$name.txt"
@@ -106,7 +119,7 @@ foreach ($map in $maps) {
 
 if ($bad -gt 0) {
     Write-Host ""
-    Write-Host "$bad of $($maps.Count) adventures did not match the baseline."
+    Write-Host "$bad check(s) failed."
     exit 1
 }
 Write-Host ""
