@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "elimits.h"
+#include "emessagehistory.h"
 #include "etile.h"
 
 #include "boardData/epopulationdata.h"
@@ -93,6 +94,9 @@ class eGameBoard : public eStdSelfRef {
 public:
     eGameBoard(eWorldBoard& world);
     ~eGameBoard();
+
+    // messages the player received (Messages window, side panel box)
+    eMessageHistory& messageHistory() { return mMessageHistory; }
 
     void initialize(const int w, const int h);
     void resize(const int w, const int h);
@@ -609,6 +613,8 @@ public:
 
     void setEpisodeLost() const;
     bool episodeLost() const { return mEpisodeLost; }
+    // cheat "Ambrosia" (original Ctrl+Alt+C box): win when the next month starts
+    void cheatVictory() { mCheatVictory = true; }
     int tradingPartners() const;
 
     void earthquake(eTile* const startTile, const int size);
@@ -685,6 +691,25 @@ public:
     bool canBuildAvenue(eTile* const t, const eCityId cid,
                         const ePlayerId pid,
                         const bool forestAllowed) const;
+
+    // Avenues and Boulevards are laid along a road, as in the original
+    // game: one piece per road tile, with trees on one side (Avenue) or
+    // on both sides (Boulevard). See avenuePieces in egameboard.cpp.
+    struct eAvenuePiece {
+        eTile* fRoad = nullptr;
+        std::vector<eTile*> fTrees;
+    };
+    // the pieces a drag from (sx, sy) to (ex, ey) would build; startOnly:
+    // just the piece at the start tile, for the cursor preview
+    std::vector<eAvenuePiece> avenuePieces(
+            const int sx, const int sy, const int ex, const int ey,
+            const eBuildingType type, const eCityId cid,
+            const ePlayerId pid, const bool forestAllowed,
+            const bool startOnly = false) const;
+    // builds one piece, charged once
+    bool buildAvenuePiece(const eAvenuePiece& p, const eBuildingType type,
+                          const eCityId cid, const ePlayerId pid,
+                          const bool editorDisplay);
     bool canBuildBase(const int minX, const int maxX,
                       const int minY, const int maxY,
                       const bool forestAllowed,
@@ -692,7 +717,8 @@ public:
                       const ePlayerId pid,
                       const bool fertile = false,
                       const bool flat = false,
-                      const int allowedWater = 0) const;
+                      const int allowedWater = 0,
+                      const bool animalsMove = false) const;
     bool canBuild(const int tx, const int ty,
                   const int sw, const int sh,
                   const bool forestAllowed,
@@ -700,6 +726,13 @@ public:
                   const ePlayerId pid,
                   const bool fertile = false,
                   const bool flat = false) const;
+    // A tower (2x2) can only be placed on top of 4 wall tiles of this city.
+    bool canBuildTowerOnWalls(const int tx, const int ty,
+                              const eCityId cid,
+                              const ePlayerId pid) const;
+    // Removes the 4 walls a tower is placed on; call after
+    // canBuildTowerOnWalls() returned true.
+    void eraseWallsUnderTower(const int tx, const int ty);
 
     using eBuildingCreator = std::function<stdsptr<eBuilding>()>;
     bool buildBase(const int minX, const int minY,
@@ -711,6 +744,12 @@ public:
                    const bool fertile = false,
                    const bool flat = false,
                    const int allowWater = 0);
+    // sheep and goats standing where something is built wander off to
+    // the nearest free meadow instead of blocking it (eZeus issue 4)
+    void rebuildAnimalNear(const eBuildingType type,
+                           const int x, const int y,
+                           const ePlayerId pid, const eCityId cid,
+                           const bool editorDisplay);
     bool build(const int tx, const int ty,
                const int sw, const int sh,
                const eCityId cid,
@@ -838,6 +877,7 @@ private:
     std::vector<eTrireme*> mSelectedTriremes;
 
     std::vector<ePlannedAction*> mPlannedActions;
+    eMessageHistory mMessageHistory;
 
     struct eMarbleTiles {
         bool contains(eTile* const tile) const;
@@ -863,6 +903,7 @@ private:
     int mGoalsCheckTime = 0;
     std::vector<stdsptr<eEpisodeGoal>> mGoals;
     bool mGoalsFulfilled = false;
+    bool mCheatVictory = false; // not saved
 
     struct eEarthquake {
         eTile* fStartTile = nullptr;

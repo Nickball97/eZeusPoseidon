@@ -21,7 +21,7 @@ enum class eHeroRequirementType {
     // wine, // 32
 
     // jason
-    // triremes, // 3
+    triremes, // 3 (Atlantean: frigates; eZeus has only triremes so far)
     horsemen, // 2
     horses, // 8
     food, // 64
@@ -137,6 +137,7 @@ private:
     int mPhilosophers = 0;
     int mActors = 0;
     int mAthletes = 0;
+    int mCompetitors = 0; // competitors (Greek) or curators (Atlantean)
 
     eHeroSummoningStage mStage = eHeroSummoningStage::none;
     int mArrivalCountdown = 15000;

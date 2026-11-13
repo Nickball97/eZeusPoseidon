@@ -9,6 +9,7 @@ public:
     eBuildingType type() const { return mType; }
 
     int houseVacancies() const { return mVacancies; }
+    int houseLevel() const { return mLevel; }
 
     bool resourcesAvailable() const { return mResourcesAvailable; }
     bool workedOn() const { return mWorkedOn; }
@@ -34,6 +35,7 @@ private:
     eBuildingType mType{eBuildingType::none};
 
     int mVacancies{0};
+    int mLevel{0}; // elite house level, for its appeal
 
     bool mResourcesAvailable = false; // for sanctuary buildings
     bool mWorkedOn = false; // also has animal for eAnimalBuildings

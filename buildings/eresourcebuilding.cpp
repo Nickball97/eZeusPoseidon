@@ -3,6 +3,7 @@
 #include "textures/egametextures.h"
 #include "textures/ebuildingtextures.h"
 #include "enumbers.h"
+#include "engine/egameboard.h"
 
 #include <algorithm>
 
@@ -99,7 +100,48 @@ void eResourceBuilding::setSanctuary(const bool s) {
     mSanctuary = s;
 }
 
+bool eResourceBuilding::sHarvestSeason(const eBuildingType type,
+                                       const int month) {
+    if(type == eBuildingType::vine) return month >= 9; // Oct-Dec
+    if(type == eBuildingType::oliveTree) return month <= 2; // Jan-Mar
+    return true;
+}
+
 void eResourceBuilding::timeChanged(const int by) {
+    const auto bt = eBuilding::type();
+    if(bt == eBuildingType::vine || bt == eBuildingType::oliveTree) {
+        // ripe fruit waits for its harvest season and is lost if the
+        // season ends before it is picked; then the tree grows again
+        const int m = static_cast<int>(getBoard().date().month());
+        const bool season = sHarvestSeason(bt, m);
+        const bool seasonEnded = mWasInSeason && !season;
+        mWasInSeason = season;
+        if(mRipe >= 5) {
+            if(seasonEnded) {
+                mRipe = 0;
+                mResource = 0;
+                mNextRipe = 0;
+                centerTile()->scheduleTerrainUpdate();
+            } else {
+                mResource = season ? 1 : 0;
+            }
+            return;
+        }
+        mNextRipe += by;
+        int wait = mRipePeriod;
+        if(mSanctuary || blessed()) {
+            wait *= eNumbers::sTreeVineBlessedRipePeriodMultiplier;
+        } else if(cursed()) {
+            wait *= eNumbers::sTreeVineCursedRipePeriodMultiplier;
+        }
+        if(mWorkedOn && mNextRipe > wait) {
+            mNextRipe -= wait;
+            mWorkedOn = false;
+            ++mRipe;
+            centerTile()->scheduleTerrainUpdate();
+        }
+        return;
+    }
     mNextRipe += by;
     const double mult = eNumbers::sTreeVineFullyRipePeriodMultiplier;
     int wait = mRipe >= 5 ? mult*mRipePeriod : mRipePeriod;

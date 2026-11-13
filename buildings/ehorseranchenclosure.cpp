@@ -6,6 +6,7 @@
 #include "characters/actions/eanimalaction.h"
 
 #include "ehorseranch.h"
+#include "engine/egameboard.h"
 
 #include <algorithm>
 
@@ -45,15 +46,35 @@ std::vector<eOverlay> eHorseRanchEnclosure::getOverlays(
     if(!ct) return {};
     const int ctx = ct->x();
     const int cty = ct->y();
+    // Horses are drawn as part of the pen. Their place is taken relative
+    // to the pen's middle and turned with the view, like the hippodrome's
+    // horses; before, it was right only with north up, so after rotating
+    // the city the horses were drawn outside the pen (upstream #64).
+    const auto& rr = tileRect();
+    const double mx = rr.x + rr.w/2.0;
+    const double my = rr.y + rr.h/2.0;
+    // the offset that places them right with north up
+    const double kx = mx - ctx - 0.5;
+    const double ky = my - cty - 3.5;
+    const auto dir = getBoard().direction();
     std::vector<eOverlay> os;
     for(const auto& h : mHorses) {
+        const auto t = h->tile();
+        if(!t) continue;
         auto& o = os.emplace_back();
         o.fTex = h->getNotRotatedTexture(size);
-        const auto t = h->tile();
-        const int tx = t->x();
-        const int ty = t->y();
-        o.fX = tx + h->x() - ctx - 0.5;
-        o.fY = ty + h->y() - cty - 3.5;
+        const double rx = t->x() + h->x() - mx;
+        const double ry = t->y() + h->y() - my;
+        double vx = rx;
+        double vy = ry;
+        switch(dir) {
+        case eWorldDirection::N: break;
+        case eWorldDirection::E: vx = ry; vy = -rx; break;
+        case eWorldDirection::S: vx = -rx; vy = -ry; break;
+        case eWorldDirection::W: vx = -ry; vy = rx; break;
+        }
+        o.fX = vx + kx;
+        o.fY = vy + ky;
     }
     return os;
 }

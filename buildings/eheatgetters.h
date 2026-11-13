@@ -5,6 +5,7 @@
 #include "engine/boardData/eheatmap.h"
 
 enum class eGodType;
+enum class eMonsterTarget;
 
 namespace eHeatGetters {
     using eHeatGetter = std::function<eHeat(eBuildingType)>;
@@ -17,6 +18,11 @@ namespace eHeatGetters {
     eHeat storage(const eBuildingType type);
 
     eHeatGetter godLeaning(const eGodType gt);
+
+    // buildings a monster aimed at target t goes for (reading of the
+    // original target names; the manuals don't describe them)
+    bool isMonsterTarget(const eMonsterTarget t, const eBuildingType bt);
+    eHeatGetter monsterTarget(const eMonsterTarget t);
 
     eHeat empty(const eBuildingType type);
     eHeat any(const eBuildingType type);

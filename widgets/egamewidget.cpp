@@ -1,6 +1,14 @@
 #include "egamewidget.h"
+#include "egameoptions.h"
+#include "emessageswidget.h"
+#include "buildings/eelitehousing.h"
+#include "echeatwidget.h"
 
 #include "engine/egameboard.h"
+#ifdef EZEUS_DEV_CHEATS
+#include "buildings/pyramids/epyramid.h"
+#include "gameEvents/egodattackevent.h"
+#endif
 
 #include "engine/eknownendpathfinder.h"
 #include "eterraineditmenu.h"
@@ -127,9 +135,10 @@ void eGameWidget::setBoard(eGameBoard* const board) {
         e->resize(width(), height());
         const auto ee = c->currentEpisode();
 
+        // the original plays the victory music under the narrator
+        eMusic::playMissionVictoryMusic();
         const auto path = c->currentEpisodeAudioFilePath(false);
-        const bool played = eMusic::playCampaignVoice(path);
-        if(!played) eMusic::playMissionVictoryMusic();
+        eMusic::playCampaignVoice(path);
 
         e->initialize(c,
                       eLanguage::zeusText(62, 0),
@@ -177,8 +186,6 @@ void eGameWidget::setBoard(eGameBoard* const board) {
 eGameWidgetSettings eGameWidget::settings() const {
     eGameWidgetSettings r;
     r.fPaused = mPaused;
-    r.fSpeedId = mSpeedId;
-    r.fSpeed = mSpeed;
     r.fTileSize = mTileSize;
     r.fDX = mDX;
     r.fDY = mDY;
@@ -189,8 +196,6 @@ eGameWidgetSettings eGameWidget::settings() const {
 
 void eGameWidget::setSettings(const eGameWidgetSettings& s) {
     if(mPaused != s.fPaused) switchPause();
-    mSpeedId = s.fSpeedId;
-    mSpeed = s.fSpeed;
     setTileSize(s.fTileSize);
     if(mBoard) mBoard->setWorldDirection(s.fDir);
     setDX(s.fDX);
@@ -249,6 +254,7 @@ void eGameWidget::initialize() {
 
     mGm->setModeChangedAction([this]() {
         setPatrolBuilding(nullptr);
+        mFreezeFootprint = false;
     });
 
     const auto mm = mGm->miniMap();
@@ -1099,7 +1105,7 @@ void eGameWidget::updateHippodromeIds() {
 void eGameWidget::showMessage(eEventData& ed,
                               const eMessageType& msg,
                               const bool prepend) {
-    showMessage(ed, msg.fFull, prepend);
+    showMessage(ed, msg.fFull, prepend, &msg.fCondensed);
 }
 
 void eGameWidget::showMessage(eEventData& ed,
@@ -1111,7 +1117,39 @@ void eGameWidget::showMessage(eEventData& ed,
         reason = msg.fNoReason;
     }
     eStringHelpers::replace(m.fFull.fText, "[reason_phrase]", reason);
-    showMessage(ed, m.fFull, prepend);
+    eStringHelpers::replace(m.fCondensed.fText, "[reason_phrase]", reason);
+    showMessage(ed, m.fFull, prepend, &m.fCondensed);
+}
+
+void eGameWidget::showMessagesWindow() {
+    if(mMsgBox) return;
+    const auto w = new eMessagesWidget(window());
+    w->initialize(mBoard, [this](const int i) {
+        showMessageRecord(i);
+    });
+    window()->execDialog(w, true, nullptr, this);
+    w->align(eAlignment::center);
+    // over the map, not the side panel
+    w->setX((width() - mGm->width() - w->width())/2);
+}
+
+void eGameWidget::showMessageRecord(const int index) {
+    auto& h = mBoard->messageHistory();
+    if(index < 0 || index >= h.count()) return;
+    if(mMsgBox) return;
+    h.setRead(index);
+    const auto msgb = new eMessageBox(window());
+    mMsgBox = msgb;
+    msgb->setHeight(height()/3);
+    msgb->setWidth(width() - mGm->width() - 2*padding());
+    const auto close = [this]() {
+        mMsgBox = nullptr;
+    };
+    msgb->initializeRecord(h.at(index), window()->leader(), close);
+    window()->execDialog(msgb, true, close, this);
+    msgb->align(eAlignment::bottom | eAlignment::hcenter);
+    msgb->setY(msgb->y() - mGm->width()/10);
+    msgb->setX(msgb->x() - mGm->width()/2);
 }
 
 void eGameWidget::showTip(const ePlayerCityTarget& target,
@@ -1202,7 +1240,8 @@ void eGameWidget::updateTipPositions() {
 
 void eGameWidget::showMessage(eEventData& ed,
                               const eMessage& msg,
-                              const bool prepend) {
+                              const bool prepend,
+                              const eMessage* const condensed) {
     const auto& target = ed.fTarget;
     const auto ppid = mBoard->personPlayer();
     if(target.isPlayerTarget()) {
@@ -1213,17 +1252,49 @@ void eGameWidget::showMessage(eEventData& ed,
         const auto pid = mBoard->cityIdToPlayerId(cid);
         if(pid != ppid) return;
     }
+    // keep it in the city's message history, as the original does when a
+    // message arrives (zeus.exe 0x00521A70)
+    eMessageRecord r;
+    {
+        auto red = ed;
+        red.fDate = mBoard->date();
+        red.fPlayerName = window()->leader();
+        const auto full = eMessageBox::sFillIn(red, msg);
+        r.fDate = red.fDate;
+        r.fTitle = full.fTitle;
+        r.fText = full.fText;
+        if(condensed) {
+            const auto c = eMessageBox::sFillIn(red, *condensed);
+            r.fCondensed = c.fText.empty() ? c.fTitle : c.fText;
+        }
+        if(r.fCondensed.empty()) r.fCondensed = r.fTitle;
+        if(target.isCityTarget()) {
+            r.fCityName = mBoard->cityName(target.cityTarget());
+        }
+    }
+    const int recordId = mBoard->messageHistory().add(r);
+    displayMessage(ed, msg, recordId, prepend);
+}
+
+void eGameWidget::displayMessage(eEventData& ed,
+                                 const eMessage& msg,
+                                 const int recordId,
+                                 const bool prepend) {
     if(mMsgBox) {
         auto& smsg = prepend ? mSavedMsgs.emplace_front() :
                                mSavedMsgs.emplace_back();
         smsg.fEd = ed;
         smsg.fMsg = msg;
+        smsg.fRecordId = recordId;
         return;
     }
+    // shown in full: it counts as read
+    if(recordId >= 0) mBoard->messageHistory().markRead(recordId);
     const auto msgb = new eMessageBox(window());
     mMsgBox = msgb;
     msgb->setHeight(height()/3);
-    msgb->setWidth(width()/2);
+    // as wide as the map, as in the original (the panel stays uncovered)
+    msgb->setWidth(width() - mGm->width() - 2*padding());
     eAction a;
     if(ed.fChar) {
         const auto ch = ed.fChar;
@@ -1248,9 +1319,9 @@ void eGameWidget::showMessage(eEventData& ed,
     const auto close = [this]() {
         mMsgBox = nullptr;
         if(mSavedMsgs.empty()) return;
-        auto& msg = mSavedMsgs.front();
-        showMessage(msg.fEd, msg.fMsg);
+        auto smsg = mSavedMsgs.front();
         mSavedMsgs.pop_front();
+        displayMessage(smsg.fEd, smsg.fMsg, smsg.fRecordId);
     };
 
     msgb->initialize(*mBoard, ed, a, close, msg);
@@ -1270,7 +1341,9 @@ bool eGameWidget::roadPath(std::vector<eOrientation>& path) {
         if(!tr) return false;
         const auto bt = t->underBuildingType();
         const bool r = bt == eBuildingType::road ||
-                       bt == eBuildingType::none;
+                       bt == eBuildingType::none ||
+                       bt == eBuildingType::sheep ||
+                       bt == eBuildingType::goat;
         if(!r) return false;
         if(!t->walkableElev() && t->isElevationTile()) return false;
         return true;
@@ -1315,6 +1388,18 @@ bool eGameWidget::bridgeTiles(eTile* const t, const eTerrain terr,
     tiles.clear();
     rotated = false;
     if(!t) return false;
+    // Zeus manual (Water Crossing): two crossings can't be built directly
+    // next to each other, their supports block the way under the water
+    const auto noCrossingNextTo = [&tiles]() {
+        for(const auto tt : tiles) {
+            eTile* const ns[4] = {tt->topLeft<eTile>(), tt->topRight<eTile>(),
+                                  tt->bottomLeft<eTile>(), tt->bottomRight<eTile>()};
+            for(const auto n : ns) {
+                if(n && n->hasBridge()) return false;
+            }
+        }
+        return true;
+    };
     if(!t->isShoreTile(terr)) return false;
     if(t->underBuilding()) return false;
     const auto tl = t->topLeft<eTile>();
@@ -1365,7 +1450,8 @@ bool eGameWidget::bridgeTiles(eTile* const t, const eTerrain terr,
             const auto tt_tl = tt->topLeft<eTile>();
             if(tt_tl->hasTerrain(terr)) return false;
         }
-        return !tr->underBuilding() && !bl->underBuilding();
+        return !tr->underBuilding() && !bl->underBuilding() &&
+               noCrossingNextTo();
     } else if(tl->isShoreTile(terr) && br->isShoreTile(terr)) {
         rotated = true;
         if(bl->hasTerrain(terr)) {
@@ -1406,7 +1492,8 @@ bool eGameWidget::bridgeTiles(eTile* const t, const eTerrain terr,
             const auto tt_tr = tt->topRight<eTile>();
             if(tt_tr->hasTerrain(terr)) return false;
         }
-        return !tl->underBuilding() && !br->underBuilding();
+        return !tl->underBuilding() && !br->underBuilding() &&
+               noCrossingNextTo();
     }
 
     return false;
@@ -1467,7 +1554,8 @@ void eGameWidget::updatePatrolPath() {
                     const auto type = t->underBuildingType();
                     const bool hr = type == eBuildingType::road;
                     if(hr) return true;
-                    const bool a = type == eBuildingType::avenue;
+                    const bool a = type == eBuildingType::avenue ||
+                                   type == eBuildingType::boulevard;
                     if(a) return true;
                     const auto tt = static_cast<eTile*>(t);
                     return tt->underBuilding() == mPatrolBuilding;
@@ -1749,6 +1837,13 @@ bool eGameWidget::inPatrolBuildingHover(eBuilding* const b) {
     return false;
 }
 
+bool eGameWidget::footprintFrozen() const {
+    // only while a building tool is picked; eZeus also uses the hovered
+    // tile for other things (placing companies)
+    return mFreezeFootprint && mGm->mode() != eBuildingMode::none &&
+           mHoverTX >= 0 && mHoverTY >= 0;
+}
+
 void eGameWidget::switchPause() {
     mPaused = !mPaused;
     if(mPaused && !mPausedLabel) {
@@ -1775,14 +1870,101 @@ void eGameWidget::switchPause() {
 bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
     if(mLocked) return true;
     const auto k = e.key();
+    const bool alt = (SDL_GetModState() & KMOD_ALT) != 0;
+    // the original's hotkeys (Citadel of Poseidon, hotkeys.html)
+    if(k == SDL_Scancode::SDL_SCANCODE_C && e.ctrlPressed() && alt &&
+       !mBoard->editorMode()) {
+        // Ctrl+Alt+C: the cheat box
+        const auto cw = new eCheatWidget(window());
+        cw->initialize([this](const std::string& code) {
+            return applyCheat(code);
+        });
+        addWidget(cw);
+        cw->align(eAlignment::center);
+        window()->execDialog(cw);
+        return true;
+    }
+    if(e.ctrlPressed() != alt && !mBoard->editorMode()) {
+        // Ctrl+1-5 stores the selected companies, Alt+1-5 selects them again
+        // (zeus.exe window procedure 0x005C4A90; the Citadel's hotkey page
+        // says Shift and plain 1-4, but the game reads Ctrl and Alt)
+        int slot = -1;
+        switch(k) {
+        case SDL_Scancode::SDL_SCANCODE_1: slot = 0; break;
+        case SDL_Scancode::SDL_SCANCODE_2: slot = 1; break;
+        case SDL_Scancode::SDL_SCANCODE_3: slot = 2; break;
+        case SDL_Scancode::SDL_SCANCODE_4: slot = 3; break;
+        case SDL_Scancode::SDL_SCANCODE_5: slot = 4; break;
+        default: break;
+        }
+        if(slot != -1) {
+            if(alt) selectCompanyBookmark(slot);
+            else setCompanyBookmark(slot);
+            return true;
+        }
+    }
+    if(!e.ctrlPressed() && !e.shiftPressed() && !alt) {
+        // 1-9, 0 and -: side panel tabs (7 is Culture, or Science in an
+        // Atlantean city)
+        int tab = -1;
+        switch(k) {
+        case SDL_Scancode::SDL_SCANCODE_1: tab = 0; break;
+        case SDL_Scancode::SDL_SCANCODE_2: tab = 1; break;
+        case SDL_Scancode::SDL_SCANCODE_3: tab = 2; break;
+        case SDL_Scancode::SDL_SCANCODE_4: tab = 3; break;
+        case SDL_Scancode::SDL_SCANCODE_5: tab = 4; break;
+        case SDL_Scancode::SDL_SCANCODE_6: tab = 5; break;
+        case SDL_Scancode::SDL_SCANCODE_7: tab = 6; break;
+        case SDL_Scancode::SDL_SCANCODE_8: tab = 7; break;
+        case SDL_Scancode::SDL_SCANCODE_9: tab = 8; break;
+        case SDL_Scancode::SDL_SCANCODE_0: tab = 9; break;
+        case SDL_Scancode::SDL_SCANCODE_MINUS: tab = 10; break;
+        default: break;
+        }
+        if(tab != -1) {
+            const bool r = mGm->selectTab(tab);
+            if(!r && tab == 6) mGm->selectTab(11);
+            return true;
+        }
+        if(k == SDL_Scancode::SDL_SCANCODE_TAB && !mBoard->editorMode()) {
+            // Tab: the side panel shows only the minimap, Tab again goes
+            // back (zeus.exe 0x00516D30 sets DAT_00fa0000, which hides the
+            // tab contents and build buttons and draws the minimap higher
+            // up). eZeus switches to its overview tab (the minimap) instead.
+            mGm->toggleOverviewTab(10);
+            return true;
+        }
+        // Home: due north; PgUp: counter-clockwise; PgDn: clockwise
+        if(k == SDL_Scancode::SDL_SCANCODE_HOME ||
+           k == SDL_Scancode::SDL_SCANCODE_PAGEUP ||
+           k == SDL_Scancode::SDL_SCANCODE_PAGEDOWN) {
+            const auto dir = mBoard->direction();
+            // eWorldDirection runs N, W, S, E: +1 is counter-clockwise
+            int i = static_cast<int>(dir);
+            if(k == SDL_Scancode::SDL_SCANCODE_HOME) i = 0;
+            else if(k == SDL_Scancode::SDL_SCANCODE_PAGEUP) i = (i + 1) % 4;
+            else i = (i + 3) % 4;
+            const auto nd = static_cast<eWorldDirection>(i);
+            if(nd != dir) setWorldDirection(nd);
+            return true;
+        }
+        // Space: switch between the normal view and the last special view
+        if(k == SDL_Scancode::SDL_SCANCODE_SPACE) {
+            if(mViewMode != eViewMode::defaultView) {
+                mLastSpecialView = mViewMode;
+                setViewMode(eViewMode::defaultView);
+            } else if(mLastSpecialView != eViewMode::defaultView) {
+                setViewMode(mLastSpecialView);
+            }
+            return true;
+        }
+    }
     if(k == SDL_Scancode::SDL_SCANCODE_KP_PLUS ||
        k == SDL_Scancode::SDL_SCANCODE_RIGHTBRACKET) {
-        mSpeedId = std::clamp(mSpeedId + 1, 0, sMaxSpeedId);
-        mSpeed = sSpeeds[mSpeedId];
+        changeGameSpeed(10);
     } else if(k == SDL_Scancode::SDL_SCANCODE_KP_MINUS ||
               k == SDL_Scancode::SDL_SCANCODE_LEFTBRACKET) {
-        mSpeedId = std::clamp(mSpeedId - 1, 0, sMaxSpeedId);
-        mSpeed = sSpeeds[mSpeedId];
+        changeGameSpeed(-10);
     } else if(k == SDL_Scancode::SDL_SCANCODE_R) {
         mRotate = !mRotate;
         mRotateFrame = (mRotateFrame/gRotateFrames + 1)*gRotateFrames;
@@ -1790,6 +1972,104 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
         if(mRotateId > 3) mRotateId = 0;
     } else if(k == SDL_Scancode::SDL_SCANCODE_P) {
         switchPause();
+    } else if(k == SDL_Scancode::SDL_SCANCODE_M && !e.ctrlPressed() &&
+              !e.shiftPressed() && !alt && !mBoard->editorMode()) {
+        // M freezes the build preview on its tile (zeus.exe window procedure
+        // 0x005C4A90 toggles DAT_00665e3e; 0x004059C0 then stops moving the
+        // hovered build tile, a click builds there, and choosing another
+        // tool clears it). The Citadel calls it "freeze footprint".
+        mFreezeFootprint = !mFreezeFootprint;
+#ifdef EZEUS_DEV_CHEATS
+    } else if(k == SDL_Scancode::SDL_SCANCODE_M &&
+              e.ctrlPressed() && e.shiftPressed()) {
+        // Developer test build only: +10000 drachmas.
+        const auto pid = mBoard->personPlayer();
+        mBoard->setDrachmas(pid, mBoard->drachmas(pid) + 10000);
+    } else if(k == SDL_Scancode::SDL_SCANCODE_Y &&
+              e.ctrlPressed() && e.shiftPressed()) {
+        // Developer test build only: unlock every Atlantean monument in the
+        // viewed city, levels alternating white/black marble.
+        const auto c = mBoard->boardCityWithId(mViewedCityId);
+        if(c) {
+            const eBuildingType types[] = {
+                eBuildingType::modestPyramid, eBuildingType::pyramid,
+                eBuildingType::greatPyramid, eBuildingType::majesticPyramid,
+                eBuildingType::smallMonumentToTheSky,
+                eBuildingType::monumentToTheSky,
+                eBuildingType::grandMonumentToTheSky,
+                eBuildingType::minorShrineZeus, eBuildingType::shrineZeus,
+                eBuildingType::majorShrineZeus,
+                eBuildingType::pyramidOfThePantheon,
+                eBuildingType::altarOfOlympus,
+                eBuildingType::templeOfOlympus,
+                eBuildingType::observatoryKosmika,
+                eBuildingType::museumAtlantika};
+            for(const auto t : types) {
+                std::vector<bool> levels;
+                const int n = ePyramid::sLevels(t);
+                for(int i = 0; i < n; i++) levels.push_back(i % 2 == 1);
+                c->allowPyramid(t, levels);
+            }
+        }
+    } else if(k == SDL_Scancode::SDL_SCANCODE_W &&
+              e.ctrlPressed() && e.shiftPressed()) {
+        // Developer test build only (W for wares): fills the viewed city's storehouses
+        // with building and military goods (as much as fits).
+        const eResourceType types[] = {
+            eResourceType::marble, eResourceType::wood,
+            eResourceType::sculpture, eResourceType::orichalc,
+            eResourceType::blackMarble, eResourceType::armor,
+            eResourceType::bronze};
+        for(const auto t : types) {
+            const int added = mBoard->addResource(mViewedCityId, t, 32);
+            printf("Dev: +%i %s\n", added,
+                   eResourceTypeHelpers::typeName(t).c_str());
+        }
+    } else if(k == SDL_Scancode::SDL_SCANCODE_F &&
+              e.ctrlPressed() && e.shiftPressed()) {
+        // Developer test build only: every sanctuary becomes available in
+        // the viewed city, and every sanctuary and monument under
+        // construction there is finished at once.
+        const auto c = mBoard->boardCityWithId(mViewedCityId);
+        if(c) {
+            const int first = static_cast<int>(eBuildingType::templeAphrodite);
+            const int last = static_cast<int>(eBuildingType::templeZeus);
+            for(int t = first; t <= last; t++) {
+                c->allow(static_cast<eBuildingType>(t));
+            }
+            c->setMaxSanctuaries(16); // lift the scenario's sanctuary limit
+            std::vector<eMonument*> ms = c->monuments();
+            for(const auto s : c->sanctuaries()) {
+                if(std::find(ms.begin(), ms.end(), s) == ms.end()) {
+                    ms.push_back(s);
+                }
+            }
+            for(const auto m : ms) {
+                if(m) m->devFinishConstruction();
+            }
+            printf("Dev: sanctuaries allowed, %i monuments finished\n",
+                   static_cast<int>(ms.size()));
+        }
+    } else if(k == SDL_Scancode::SDL_SCANCODE_G &&
+              e.ctrlPressed() && e.shiftPressed()) {
+        // Developer test build only: an angry god attacks the viewed city,
+        // a different god on each press (Ares and Artemis first).
+        static int sNext = 0;
+        const eGodType gods[] = {
+            eGodType::ares, eGodType::artemis, eGodType::zeus,
+            eGodType::poseidon, eGodType::hades, eGodType::demeter,
+            eGodType::athena, eGodType::apollo, eGodType::hephaestus,
+            eGodType::aphrodite, eGodType::hermes, eGodType::dionysus,
+            eGodType::hera, eGodType::atlas};
+        const int n = sizeof(gods)/sizeof(gods[0]);
+        const auto god = gods[sNext++ % n];
+        const auto ev = e::make_shared<eGodAttackEvent>(
+                            mViewedCityId, eGameEventBranch::root, *mBoard);
+        ev->setTypes({god});
+        ev->initializeDate(mBoard->date());
+        mBoard->addRootGameEvent(ev);
+        printf("Dev: angry %s sent\n", eGod::sGodName(god).c_str());
+#endif
     } else if(k == SDL_Scancode::SDL_SCANCODE_LEFT) {
         setDX(mDX + 35);
     } else if(k == SDL_Scancode::SDL_SCANCODE_RIGHT) {
@@ -1822,7 +2102,18 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
         } else {
             viewBookmark(4);
         }
-    } else if(k == SDL_Scancode::SDL_SCANCODE_ESCAPE) {
+    } else if(k == SDL_Scancode::SDL_SCANCODE_F5) {
+        // F5 switches between full screen and a window, F8 centres the
+        // window (zeus.exe window procedure 0x005C4A90). The original's F6
+        // and F7 pick a screen size (800x600 and, in the Steam exe,
+        // 1920x1080, 0x0050BCC0); eZeus changes size only from the settings
+        // menu, since the art has to be loaded again.
+        window()->toggleFullscreen();
+    } else if(k == SDL_Scancode::SDL_SCANCODE_F8) {
+        window()->centerWindow();
+    } else if(k == SDL_Scancode::SDL_SCANCODE_ESCAPE ||
+              (k == SDL_Scancode::SDL_SCANCODE_X && alt)) {
+        // Esc or Alt+X: the game menu (exit)
         if(!mMsgBox && !mBoard->editorMode()) {
             mBoard->waitUntilFinished();
             const auto menu = new eGameMainMenu(window());
@@ -1866,7 +2157,14 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
             const auto exitAct = [w]() {
                 w->closeGame();
             };
-            menu->initialize(resumeAct, saveAct, loadAct, exitAct);
+            const auto optionsAct = [this, w, menu]() {
+                const auto om = new eGameOptionsMenu(w);
+                om->initialize(this);
+                w->execDialog(om, true, nullptr, this);
+                om->align(eAlignment::center);
+                menu->deleteLater();
+            };
+            menu->initialize(resumeAct, saveAct, loadAct, optionsAct, exitAct);
             addWidget(menu);
             menu->align(eAlignment::center);
             w->execDialog(menu);
@@ -1895,6 +2193,24 @@ bool eGameWidget::mousePressEvent(const eMouseEvent& e) {
         int tx;
         int ty;
         pixToId(e.x(), e.y(), tx, ty);
+        if(footprintFrozen()) {
+            // a frozen preview builds on its own tile (zeus.exe 0x00404CD0
+            // takes the start from the frozen build tile)
+            tx = mHoverTX;
+            ty = mHoverTY;
+        }
+        if(mCheatFireball) {
+            mCheatFireball = false;
+            mLeftPressed = false;
+            if(const auto t = mBoard->tile(tx, ty)) {
+                if(const auto b = t->underBuilding()) b->collapse();
+                const auto cs = t->characters();
+                for(const auto& c : cs) {
+                    if(c && !c->dead()) c->killWithCorpse();
+                }
+            }
+            return true;
+        }
         mPressedTX = tx;
         mPressedTY = ty;
         mPressedX = e.x();
@@ -2032,7 +2348,10 @@ bool eGameWidget::mouseMoveEvent(const eMouseEvent& e) {
     } else {
         mHoverX = e.x();
         mHoverY = e.y();
-        pixToId(e.x(), e.y(), mHoverTX, mHoverTY);
+        if(!footprintFrozen()) {
+            pixToId(e.x(), e.y(), mHoverTX, mHoverTY);
+        }
+        updateSecurityTooltip();
 
         const bool left = static_cast<bool>(e.buttons() & eMouseButton::left);
         if(left && mTem->visible()) {
@@ -2273,6 +2592,39 @@ void eGameWidget::viewBookmark(const int id) {
     viewTile(tile);
 }
 
+void eGameWidget::setCompanyBookmark(const int id) {
+    if(!mBoard || id < 0 || id >= 5) return;
+    const auto& banners = mBoard->selectedSoldiers();
+    const auto& triremes = mBoard->selectedTriremes();
+    // the original does nothing while no company is selected
+    if(banners.empty() && triremes.empty()) return;
+    auto& b = mCompanyBookmarks[id];
+    b.fBanners.clear();
+    b.fTriremes.clear();
+    for(const auto s : banners) b.fBanners.push_back(s);
+    for(const auto t : triremes) b.fTriremes.push_back(t);
+}
+
+void eGameWidget::selectCompanyBookmark(const int id) {
+    if(!mBoard || id < 0 || id >= 5) return;
+    auto& b = mCompanyBookmarks[id];
+    // companies that no longer exist are dropped
+    std::vector<eSoldierBanner*> banners;
+    for(const auto& s : b.fBanners) {
+        if(s) banners.push_back(s.get());
+    }
+    std::vector<eTrireme*> triremes;
+    for(const auto& t : b.fTriremes) {
+        if(t && t->selectable()) triremes.push_back(t.get());
+    }
+    // an empty bookmark keeps the current selection, as in the original
+    if(banners.empty() && triremes.empty()) return;
+    mBoard->clearBannerSelection();
+    mBoard->clearTriremeSelection();
+    for(const auto s : banners) mBoard->selectBanner(s);
+    for(const auto t : triremes) mBoard->selectTrireme(t);
+}
+
 void eGameWidget::updateTopBottomAltitude() {
     if(!mBoard) return;
     const auto dir = mBoard->direction();
@@ -2395,4 +2747,81 @@ void eGameWidget::openDialog(eWidget* const d) {
 
 void eGameWidget::updateRequestButtons() {
     mGm->updateRequestButtons();
+}
+
+// Cheat codes of the original (Citadel of Poseidon, cheats.html). The
+// cosmetic ones (Bowvine and Arrow, Cheese Puff, Mammaldrome) are not in.
+bool eGameWidget::applyCheat(const std::string& code) {
+    const auto pid = mBoard->personPlayer();
+    if(code == "Ambrosia") {
+        // victory: next month you go to the next episode
+        mBoard->cheatVictory();
+        return true;
+    } else if(code == "Delian Treasury") {
+        // 1000 drachmas more, up to 15,000
+        const int d = mBoard->drachmas(pid);
+        if(d < 15000) mBoard->setDrachmas(pid, std::min(15000, d + 1000));
+        return true;
+    } else if(code == "Fireballs from Heaven") {
+        // the next click destroys everything on that tile
+        mCheatFireball = true;
+        return true;
+    }
+    return false;
+}
+
+void eGameWidget::changeGameSpeed(const int by) {
+    // [ ] and keypad +/- change it by 10, from 10 to 100 (zeus.exe 0x00402430)
+    auto s = window()->settings();
+    s.fGameSpeed = std::clamp(s.fGameSpeed + by, 10, 100);
+    window()->saveOptions(s);
+}
+
+int eGameWidget::gameSpeedTicks() {
+    // The original runs one game tick at most every delay + 2 ms, the delay
+    // taken from table 0x0063DA1C by (100 - speed)/10 (zeus.exe 0x005168A0):
+    // 100%: 0, 90%: 20, 80%: 35, 70%: 55, 60%: 80, 50%: 110, 40%: 160,
+    // 30%: 240, 20%: 350, 10%: 500. Its month is 816 ticks, eZeus's
+    // 365*350/12, and eZeus draws 20 frames a second (eMainWindow::exec).
+    static const int sDelays[10] = {0, 20, 35, 55, 80, 110, 160, 240, 350, 500};
+    const int speed = std::clamp(window()->settings().fGameSpeed, 10, 100);
+    const int delay = sDelays[(100 - speed)/10] + 2;
+    const double eTicksPerOriginal = 365.*350./(12.*816.);
+    const double frameMs = 1000./20.;
+    mSpeedCarry += eTicksPerOriginal*frameMs/delay;
+    const int ticks = static_cast<int>(mSpeedCarry);
+    mSpeedCarry -= ticks;
+    return ticks;
+}
+
+void eGameWidget::updateSecurityTooltip() {
+    // See Security: over an elite house, "4 horsemen live here." from the
+    // original's own pieces (text group 66: 88-91 and 94-95 the soldiers,
+    // 98 "live here.", 99 "lives here.")
+    std::string tip;
+    if(mViewMode == eViewMode::security && mBoard) {
+        const auto t = mBoard->tile(mHoverTX, mHoverTY);
+        const auto b = t ? t->underBuilding() : nullptr;
+        if(b && b->type() == eBuildingType::eliteHousing) {
+            const auto eh = static_cast<eEliteHousing*>(b);
+            int hoplites;
+            int horsemen;
+            eh->soldiers(hoplites, horsemen);
+            const bool atl = eh->atlantean();
+            const auto line = [](const int n, const int one, const int many) {
+                const auto who = eLanguage::zeusText(66, n == 1 ? one : many);
+                const auto verb = eLanguage::zeusText(66, n == 1 ? 99 : 98);
+                return std::to_string(n) + who + verb;
+            };
+            if(horsemen > 0) {
+                // Atlantean houses send chariots
+                tip = atl ? line(horsemen, 94, 95) : line(horsemen, 89, 88);
+            }
+            if(hoplites > 0) {
+                if(!tip.empty()) tip += " ";
+                tip += line(hoplites, 90, 91);
+            }
+        }
+    }
+    setTooltip(tip);
 }

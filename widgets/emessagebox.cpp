@@ -31,92 +31,28 @@ std::string string_format(const std::string& format, Args... args) {
     return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 }
 
-void eMessageBox::initialize(eGameBoard& board,
-                             const eEventData& ed,
-                             const eAction& viewTile,
-                             const eAction& closeFunc,
-                             eMessage msg) {
-    mCloseFunc = closeFunc;
-    setType(eFrameType::message);
-
-    const int p = padding();
-
-    const auto w0 = new eWidget(window());
+eMessage eMessageBox::sFillIn(const eEventData& ed, eMessage msg) {
+    if(const auto& c = ed.fCity) {
+        eStringHelpers::replaceAll(msg.fTitle, "[city_name]",
+                                   c->name());
+    }
+    if(const auto& c = ed.fRivalCity) {
+        eStringHelpers::replaceAll(msg.fTitle, "[rival_city_name]",
+                                   c->name());
+    }
     {
-        w0->setNoPadding();
-        if(const auto& c = ed.fCity) {
-            eStringHelpers::replaceAll(msg.fTitle, "[city_name]",
-                                       c->name());
-        }
-        if(const auto& c = ed.fRivalCity) {
-            eStringHelpers::replaceAll(msg.fTitle, "[rival_city_name]",
-                                       c->name());
-        }
-        {
-            const auto type = ed.fResourceType;
-            const auto nameShort = eResourceTypeHelpers::typeName(type);
-            eStringHelpers::replaceAll(msg.fTitle, "[itemshort]",
-                                       nameShort);
-        }
-
-        eStringHelpers::replaceAll(msg.fTitle, "[god]",
-                                   eGod::sGodName(ed.fGod));
-
-        eStringHelpers::replaceAll(msg.fTitle, "[monster]",
-                                   eMonster::sMonsterName(ed.fMonster));
-
-        const auto title = new eLabel(msg.fTitle, window());
-        title->setHugeFontSize();
-        title->fitContent();
-        w0->addWidget(title);
-        w0->fitContent();
-        w0->setWidth(width() - 2*p);
-        title->align(eAlignment::hcenter);
-        addWidget(w0);
+        const auto type = ed.fResourceType;
+        const auto nameShort = eResourceTypeHelpers::typeName(type);
+        eStringHelpers::replaceAll(msg.fTitle, "[itemshort]",
+                                   nameShort);
     }
 
-    const auto ww = new eFramedWidget(window());
-    ww->setType(eFrameType::inner);
-    ww->setSmallPadding();
+    eStringHelpers::replaceAll(msg.fTitle, "[god]",
+                               eGod::sGodName(ed.fGod));
 
-    {
-        const auto to = eLanguage::zeusText(63, 5); // to
-        const auto dateStr = ed.fDate.shortString();
-        auto str = dateStr + "     " + to + " " + ed.fPlayerName;
-        const auto& target = ed.fTarget;
-        if(target.isCityTarget()) {
-            const auto cid = target.cityTarget();
-            const auto cName = board.cityName(cid);
-            str += ",     " + cName;
-        }
-        const auto d = new eLabel(str, window());
-        d->setSmallFontSize();
-        d->fitContent();
-        ww->addWidget(d);
-        d->setX(p);
-    }
+    eStringHelpers::replaceAll(msg.fTitle, "[monster]",
+                               eMonster::sMonsterName(ed.fMonster));
 
-    if(viewTile) {
-        const auto www = new eWidget(window());
-        www->setNoPadding();
-        const auto butt = new eExclamationButton(window());
-        butt->setPressAction(viewTile);
-        www->addWidget(butt);
-        const auto go = eLanguage::zeusText(12, 1); // got to site of event
-        const auto l = new eLabel(go, window());
-        l->setSmallFontSize();
-        l->fitContent();
-        www->addWidget(l);
-        www->stackHorizontally();
-        www->fitContent();
-        butt->align(eAlignment::vcenter);
-        ww->addWidget(www);
-        www->setX(3*p);
-    }
-
-    const auto text = new eLabel(window());
-    text->setSmallFontSize();
-    text->setWrapWidth(width() - 8*p);
     eStringHelpers::replaceAll(msg.fText, "[greeting]",
                                eLanguage::text("greetings"));
     eStringHelpers::replaceAll(msg.fText, "[player_name]",
@@ -167,6 +103,13 @@ void eMessageBox::initialize(eGameBoard& board,
             eStringHelpers::replaceAll(msg.fText, "[time_until_attack]",
                                       std::to_string(ed.fTime));
         }
+        if(ed.fType == eMessageEventType::generalRequestGranted) {
+            eStringHelpers::replaceAll(msg.fText, "[time_allotted]",
+                                       std::to_string(ed.fTime));
+        } else if(ed.fType == eMessageEventType::troopsRequest) {
+            eStringHelpers::replaceAll(msg.fText, "[travel_time]",
+                                       std::to_string(ed.fTime));
+        }
     }
     const auto c = ed.fRivalCity ? ed.fRivalCity : ed.fCity;
     if(c) {
@@ -177,6 +120,80 @@ void eMessageBox::initialize(eGameBoard& board,
         eStringHelpers::replaceAll(msg.fText, "[rival_city_name]",
                                    c->name());
     }
+    return msg;
+}
+
+void eMessageBox::initialize(eGameBoard& board,
+                             const eEventData& ed,
+                             const eAction& viewTile,
+                             const eAction& closeFunc,
+                             eMessage msg) {
+    mCloseFunc = closeFunc;
+    setType(eFrameType::message);
+
+    const int p = padding();
+
+    msg = sFillIn(ed, msg);
+
+    const auto w0 = new eWidget(window());
+    {
+        w0->setNoPadding();
+        const auto title = new eLabel(msg.fTitle, window());
+        title->setHugeFontSize();
+        title->fitContent();
+        w0->addWidget(title);
+        w0->fitContent();
+        w0->setWidth(width() - 2*p);
+        title->align(eAlignment::hcenter);
+        addWidget(w0);
+    }
+
+    const auto ww = new eFramedWidget(window());
+    ww->setType(eFrameType::inner);
+    ww->setTextColor(eFontColor::panel); // pale text, as in the original's messages
+    ww->setSmallPadding();
+
+    {
+        const auto to = eLanguage::zeusText(63, 5); // to
+        const auto dateStr = ed.fDate.shortString();
+        auto str = dateStr + "     " + to + " " + ed.fPlayerName;
+        const auto& target = ed.fTarget;
+        if(target.isCityTarget()) {
+            const auto cid = target.cityTarget();
+            const auto cName = board.cityName(cid);
+            str += ",     " + cName;
+        }
+        const auto d = new eLabel(str, window());
+        d->setSmallFontSize();
+        d->fitContent();
+        ww->addWidget(d);
+        d->setX(p);
+    }
+
+    if(viewTile) {
+        const auto www = new eWidget(window());
+        www->setNoPadding();
+        const auto butt = new eExclamationButton(window());
+        butt->setPressAction(viewTile);
+        www->addWidget(butt);
+        const auto go = eLanguage::zeusText(12, 1); // got to site of event
+        const auto l = new eLabel(go, window());
+        l->setSmallFontSize();
+        l->fitContent();
+        www->addWidget(l);
+        www->stackHorizontally();
+        www->fitContent();
+        butt->align(eAlignment::vcenter);
+        ww->addWidget(www);
+        www->setX(3*p);
+    }
+
+    const auto text = new eLabel(window());
+    text->setSmallFontSize();
+    text->setWrapWidth(width() - 8*p);
+
+    const auto type = ed.fResourceType;
+    const int count = ed.fResourceCount;
 
     ww->addWidget(text);
     addWidget(ww);
@@ -356,11 +373,7 @@ void eMessageBox::initialize(eGameBoard& board,
         const auto c = ed.fCity;
         if(!c) return;
         const int time = ed.fTime;
-        const auto timeStr = std::to_string(time);
         const auto tributeWid = createTributeWidget(type, count, 0, time);
-
-        eStringHelpers::replaceAll(msg.fText, "[time_allotted]",
-                                   timeStr);
 
         ww->addWidget(tributeWid);
         tributeWid->setX(p);
@@ -451,11 +464,6 @@ void eMessageBox::initialize(eGameBoard& board,
     } else if(ed.fType == eMessageEventType::troopsRequest) {
         const auto c = ed.fCity;
         if(!c) return;
-        const int time = ed.fTime;
-        const auto timeStr = std::to_string(time);
-
-        eStringHelpers::replaceAll(msg.fText, "[travel_time]",
-                                   timeStr);
 
         wid = new eWidget(window());
         wid->setNoPadding();
@@ -520,6 +528,9 @@ void eMessageBox::initialize(eGameBoard& board,
 
     ww->stackVertically();
     ww->fitContent();
+    // the inner box fills the message box from side to side, as in the
+    // original, instead of shrinking to the text in the middle
+    ww->setWidth(width() - 2*p);
 
     stackVertically();
     fitContent();
@@ -544,6 +555,68 @@ void eMessageBox::initialize(eGameBoard& board,
         wid->align(eAlignment::hcenter);
         wid->setY(wid->y() + p/2);
     }
+    w0->align(eAlignment::hcenter);
+    ww->align(eAlignment::hcenter);
+}
+
+void eMessageBox::initializeRecord(const eMessageRecord& r,
+                                   const std::string& playerName,
+                                   const eAction& closeFunc) {
+    // a message read again from the history: its text as it arrived, with
+    // an OK button (choices it once offered were made back then)
+    mCloseFunc = closeFunc;
+    setType(eFrameType::message);
+    const int p = padding();
+
+    const auto w0 = new eWidget(window());
+    w0->setNoPadding();
+    const auto title = new eLabel(r.fTitle, window());
+    title->setHugeFontSize();
+    title->fitContent();
+    w0->addWidget(title);
+    w0->fitContent();
+    w0->setWidth(width() - 2*p);
+    title->align(eAlignment::hcenter);
+    addWidget(w0);
+
+    const auto ww = new eFramedWidget(window());
+    ww->setType(eFrameType::inner);
+    ww->setTextColor(eFontColor::panel);
+    ww->setSmallPadding();
+
+    const auto to = eLanguage::zeusText(63, 5); // to
+    auto str = r.fDate.shortString() + "     " + to + " " + playerName;
+    if(!r.fCityName.empty()) str += ",     " + r.fCityName;
+    const auto d = new eLabel(str, window());
+    d->setSmallFontSize();
+    d->fitContent();
+    ww->addWidget(d);
+    d->setX(p);
+
+    const auto text = new eLabel(window());
+    text->setSmallFontSize();
+    text->setWrapWidth(width() - 8*p);
+    text->setText(r.fText);
+    text->fitContent();
+    ww->addWidget(text);
+    text->setX(p);
+    addWidget(ww);
+
+    const auto ok = new eOkButton(window());
+    ok->setPressAction([this]() { close(); });
+    addWidget(ok);
+
+    ww->stackVertically();
+    ww->fitContent();
+    ww->setWidth(width() - 2*p);
+
+    stackVertically();
+    fitContent();
+
+    mClosable = true;
+    ok->align(eAlignment::right | eAlignment::bottom);
+    ok->setX(ok->x() - 1.5*p);
+    ok->setY(ok->y() - 1.5*p);
     w0->align(eAlignment::hcenter);
     ww->align(eAlignment::hcenter);
 }

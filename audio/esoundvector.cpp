@@ -1,6 +1,7 @@
 #include "esoundvector.h"
 
 #include "erand.h"
+#include "eaudiosettings.h"
 #include <filesystem>
 
 Mix_Chunk* loadSound(const std::string& path) {
@@ -34,7 +35,12 @@ void eSoundVector::play(const int id, const int chn) {
     if(id < 0 || id >= idMax) return;
     auto& p = mPaths[id];
     if(!p.first) p.first = loadSound(p.second);
-    if(p.first) Mix_PlayChannel(chn, p.first, 0);
+    if(!p.first) return;
+    // the sound options: off, or played at its kind's volume
+    const auto kind = eAudioSettings::sKindForPath(p.second);
+    if(!eAudioSettings::sOn(kind)) return;
+    Mix_VolumeChunk(p.first, eAudioSettings::sMixVolume(kind));
+    Mix_PlayChannel(chn, p.first, 0);
 }
 
 void eSoundVector::playRandomSound() {

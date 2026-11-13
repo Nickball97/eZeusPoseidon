@@ -32,6 +32,10 @@ public:
     eMainWidget* mainWidget() const { return mMW; }
 
     int remainingHeight() const;
+
+    // shrinks the window to its contents (the original sizes each window
+    // to what it shows); a central area shrinks to what is inside it
+    void fitHeightToContent();
 protected:
     bool mousePressEvent(const eMouseEvent& e);
 private:

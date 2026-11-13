@@ -1,4 +1,6 @@
 #include "ebuildingwriter.h"
+#include "buildings/sanctuaries/etempleobeliskbuilding.h"
+#include "buildings/sanctuaries/etemplegrandstatuebuilding.h"
 
 #include "buildings/allbuildings.h"
 #include "engine/egameboard.h"
@@ -165,6 +167,7 @@ void eBuildingWriter::sWrite(const eBuilding* const b,
     case eBuildingType::ionicColumn:
     case eBuildingType::corinthianColumn:
     case eBuildingType::avenue:
+    case eBuildingType::boulevard:
         break;
 
     case eBuildingType::commemorative: {
@@ -241,6 +244,17 @@ void eBuildingWriter::sWrite(const eBuilding* const b,
     } break;
     case eBuildingType::templeAltar: {
         const auto s = static_cast<const eTempleAltarBuilding*>(b);
+        const auto sanct = s->monument();
+        dst.writeBuilding(sanct);
+    } break;
+    case eBuildingType::templeGrandStatue: {
+        const auto s = static_cast<const eTempleGrandStatueBuilding*>(b);
+        const auto sanct = s->monument();
+        dst.writeBuilding(sanct);
+    } break;
+    case eBuildingType::templeObelisk: {
+        const auto s = static_cast<const eTempleObeliskBuilding*>(b);
+        dst << s->id();
         const auto sanct = s->monument();
         dst.writeBuilding(sanct);
     } break;

@@ -1,6 +1,7 @@
 #ifndef EBOARDCITY_H
 #define EBOARDCITY_H
 
+#include <algorithm>
 #include "ecityid.h"
 #include "ewagerate.h"
 #include "etaxrate.h"
@@ -104,6 +105,8 @@ public:
     int taxesPaidLastYear() const { return mTaxesPaidLastYear; }
     int peoplePaidTaxesThisYear() const { return mPeoplePaidTaxesThisYear; }
     int peoplePaidTaxesLastYear() const { return mPeoplePaidTaxesLastYear; }
+    // share of people living in houses that paid taxes last month
+    double taxCoverage() const;
 
     void saveEditorCityPlan();
     void editorClearBuildings();
@@ -137,6 +140,9 @@ public:
                const int id = -1);
     void disallow(const eBuildingType type,
                   const int id = -1);
+    // levels: one entry per pyramid level, true = black marble
+    void allowPyramid(const eBuildingType type,
+                      const std::vector<bool>& levels);
 
     bool manTowers() const { return mManTowers; }
     void setManTowers(const bool m);
@@ -180,14 +186,25 @@ public:
     int taxesCoverage() const { return mTaxesCoverage; }
     int unrest() const { return mUnrest; }
     int popularity() const { return mPopularity; }
+    // City mood (the original's sentiment), 0-100, starts at 60
+    int mood() const { return mMood; }
+    // Apollo's blessing raises city health by 50 (exe 0x004C5690)
+    void incCityHealth(const int by)
+    { mCityHealth = std::clamp(mCityHealth + by, 0, 100); }
     int health() const { return mHealth; }
     int maintanance() const { return mMaintanance; }
 
     int wonGames() const { return mWonGames; }
     void incWonGames() { mWonGames++; }
 
-    double coverageMultiplier() const;
-    double winningChance(const eGames game) const;
+    // Pan-Hellenic games as zeus.exe runs them (0x00565A80, 0x00565D40,
+    // 0x00565E30): whether the city can take part, and its score; a roll
+    // of 0-99 below the score wins
+    bool canTakePartInGames(const eGames game) const;
+    // roll = true adds the Hercules' Hall boost used for the roll only
+    int gamesScore(const eGames game, const bool roll = false) const;
+    // culture advisor text (Zeus_Text group 58) for the score (0x00519BD0)
+    static int sGamesScoreText(const int score);
 
     void updateResources();
     using eResources = std::vector<std::pair<eResourceType, int>>;
@@ -254,6 +271,8 @@ public:
 
     void registerStorBuilding(eStorageBuilding* const b);
     bool unregisterStorBuilding(eStorageBuilding* const b);
+    const std::vector<eStorageBuilding*>& storBuildings() const
+    { return mStorBuildings; }
 
     void registerSanctuary(eSanctuary* const b);
     bool unregisterSanctuary(eSanctuary* const b);
@@ -281,6 +300,8 @@ public:
     int population() const { return mPopData.population(); }
 
     int eliteHouses() const;
+    // nearest elite house with residents, for thieves and vandals
+    eBuilding* nearestEliteHouse(const int tx, const int ty) const;
     eSanctuary* sanctuary(const eGodType god) const;
     eHerosHall* heroHall(const eHeroType hero) const;
     int countBanners(const eBannerType bt) const;
@@ -395,6 +416,7 @@ public:
     { return mBuildingsWithResource; }
     const std::vector<eHouseBase*>& houses() const
     { return mHouses; }
+    const eGameEvents& cityEvents() const { return mCityEvents; }
     const std::vector<eBuilding*>& treesAndVines() const
     { return mTreesAndVines; }
     const std::vector<eTile*>& resourceTiles();
@@ -415,6 +437,10 @@ public:
     bool handleEpisodeCompleteEvents();
 
     void updateHippodromes();
+    // January and July: a working hippodrome raises other cities' standing
+    void hippodromeStanding();
+    // an angry Apollo's curse starts a plague outbreak (zeus.exe 0x004481B0)
+    void godPlagueOutbreak() { plagueOutbreak(); }
     void clearHippodromes();
 
     void addReinforcements(const eCityId fromCid,
@@ -533,6 +559,8 @@ private:
     std::vector<eBuilding*> mAllBuildings;
     std::vector<eBuilding*> mBuildingsWithResource;
     std::vector<eHouseBase*> mHouses;
+    mutable double mTaxCoverage = 0;
+    mutable int mTaxCoverageMonth = -1; // year*12 + month, -1 = not yet
     std::vector<eBuilding*> m3x3AestheticBuildings;
     std::vector<eBuilding*> mCommemorativeBuildings;
     std::vector<eBuilding*> mTreesAndVines;
@@ -582,6 +610,27 @@ private:
     int mTaxesCoverage = 0;
     int mUnrest = 0; // percent
     int mPopularity = 0;
+    int mMood = 60;
+    // months in a row with no enemies in the city (original exe 0x00483C10)
+    int mPeaceMonths = 0;
+    int mMoodTimer = 0;
+    bool mMoodActive = false; // the city has reached 350 people
+    void updateMood();
+    // City health and plague outbreaks (original exe; see
+    // mod-docs/original-exe-findings.md)
+    int mCityHealth = 80;
+    int mHealthTarget = 80;
+    int mHealthCycle = 0;
+    int mOutbreaksThisYear = 0;
+    bool mOutbreakThisMonth = false;
+    void updateHealthTarget();
+    void healthCycle();
+    void plagueOutbreak();
+    // yearly births and deaths by health (original exe 0x00566D40)
+    void yearlyBirthsDeaths();
+    // people leaving when the mood is low (original exe 0x00567450)
+    void emigrationCycle();
+    int mEmigrantsPending = 0; // not saved; under 4 people
     int mHealth = 0;
     int mMaintanance = 0;
     int mExcessiveMilitaryServiceCount = 0;

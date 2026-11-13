@@ -8,6 +8,9 @@
 #include "characters/actions/etraderaction.h"
 #include "characters/etradeboat.h"
 #include "enumbers.h"
+#include "buildings/sanctuaries/esanctuary.h"
+
+#include <algorithm>
 
 eTradePost::eTradePost(eGameBoard& board, eWorldCity& city,
                        const eCityId cid,
@@ -102,11 +105,43 @@ std::vector<eOverlay> eTradePost::getOverlays(const eTileSize size) const {
     return os;
 }
 
+// Original (exe 0x005B9EE0, every cycle): while a route has a free trader
+// slot, a caravan leaves every 4 cycles and a trade ship every 30 cycles
+// (Hermes' finished sanctuary: x0.66). A route allows 1-3 traders at
+// once: each traded good counts 1, 2 or 3 by its yearly amount (under 13,
+// under 25, more), averaged and rounded up.
+int eTradePost::maxTraders() const {
+    int n = 0;
+    int sum = 0;
+    const auto add = [&](const std::vector<eResourceTrade>& v) {
+        for(const auto& t : v) {
+            if(t.fMax <= 0) continue;
+            n++;
+            sum += t.fMax < 13 ? 1 : t.fMax < 25 ? 2 : 3;
+        }
+    };
+    add(mCity.buys());
+    add(mCity.sells());
+    if(n == 0) return 1;
+    return std::clamp((sum + n - 1)/n, 1, 3);
+}
+
 void eTradePost::timeChanged(const int by) {
-    mRouteTimer += by;
-    if(mRouteTimer > eNumbers::sTraderSpawnPeriod) {
-        mRouteTimer = 0;
-        if(trades()) spawnTrader();
+    mTraders.erase(std::remove_if(mTraders.begin(), mTraders.end(),
+                                  [](const stdptr<eCharacter>& c) {
+        return !c || c->dead();
+    }), mTraders.end());
+    if(trades() && static_cast<int>(mTraders.size()) < maxTraders()) {
+        const int cycle = (365*eNumbers::sDayLength)/(12*16);
+        int wait = (mType == eTradePostType::pier ? 30 : 4)*cycle;
+        auto& board = getBoard();
+        const auto s = board.sanctuary(cityId(), eGodType::hermes);
+        if(s && s->finished()) wait = wait*66/100;
+        mRouteTimer += by;
+        if(mRouteTimer > wait) {
+            mRouteTimer = 0;
+            spawnTrader();
+        }
     }
     eWarehouseBase::timeChanged(by);
 }
@@ -150,6 +185,7 @@ void eTradePost::spawnTrader() {
     auto& board = getBoard();
 
     const auto r = mCharGen(entryPoint, board);
+    mTraders.push_back(r.get());
     r->setOnCityId(cityId());
     r->setCityId(mCity.cityId());
 

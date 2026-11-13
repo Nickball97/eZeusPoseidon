@@ -1,6 +1,7 @@
 #include "eworldwidget.h"
 
 #include "eworldmenu.h"
+#include "textures/egametextures.h"
 #include "eworldmapwidget.h"
 #include "erequestdialog.h"
 #include "egiftdialog.h"
@@ -376,8 +377,13 @@ void eWorldWidget::openGiftDialog() {
 
 void eWorldWidget::setMap(const eWorldMap map) {
     mWMW->setMap(map);
+    // the map fills the screen height beside the panel (Nicolás, 12 Nov
+    // 2026); city positions are fractions of the map, so they follow
+    const int areaW = width() - mWM->width();
+    mWMW->fitTo(areaW, height());
     mWMW->align(eAlignment::center);
-    mWMW->setX((width() - mWM->width() - mWMW->width())/2);
+    mWMW->setX((areaW - mWMW->width())/2);
+    mWMW->updateWidgets();
 }
 
 void eWorldWidget::openDialog(eWidget* const d) {
@@ -399,6 +405,16 @@ void eWorldWidget::openEnlistForcesDialog(
                   heroesAbroad, action,
                   plunderResources);
     openDialog(d);
+}
+
+void eWorldWidget::paintEvent(ePainter& p) {
+    // The map pictures are smaller than the screen; fill around them with
+    // their sea colour, as the Steam release's padded 1738x1080 copies of
+    // Zeus_MapOfGreece*.JPG and Poseidon_map*.jpg do (35, 88, 120). The
+    // same colour fills below the panel when the panel is shorter than the
+    // screen (Nicolás's choice; the original shows its top bar's cyan).
+    p.fillRect(SDL_Rect{0, 0, width(), height()}, SDL_Color{35, 88, 120, 255});
+    eMainWidget::paintEvent(p);
 }
 
 bool eWorldWidget::keyPressEvent(const eKeyPressEvent& e) {

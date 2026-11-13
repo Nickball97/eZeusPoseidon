@@ -10,7 +10,9 @@ class eBitmapWidget;
 class eChooseGameEditMenu : public eMainMenuBase {
 public:
     using eMainMenuBase::eMainMenuBase;
-    void initialize(const bool editor);
+    // custom: the Custom Adventures list (eZeus's own adventures) rather
+    // than the original game's adventures; ignored in the editor
+    void initialize(const bool editor, const bool custom = false);
 
     void setGlossary(const eCampaignGlossary& g);
 private:

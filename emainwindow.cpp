@@ -1,6 +1,7 @@
 #include "emainwindow.h"
 
 #include "widgets/emainmenu.h"
+#include "widgets/egamechooser.h"
 #include "widgets/esettingsmenu.h"
 #include "widgets/egamewidget.h"
 #include "widgets/egameloadingwidget.h"
@@ -31,6 +32,8 @@
 #include "widgets/eepisodeintroductionwidget.h"
 #include "widgets/eepisodelostwidget.h"
 #include "widgets/erosterofleaders.h"
+#include "widgets/equestionwidget.h"
+#include "widgets/ecursors.h"
 
 eMainWindow::eMainWindow() {}
 
@@ -69,7 +72,7 @@ bool eMainWindow::initialize(const eSettings& settings) {
     mSdlWindow = window;
     mSdlRenderer = renderer;
     setResolution(res);
-    setFullscreen(settings.fFullscreen);
+    setFullscreen(settings.fFullscreen, settings.fBorderless);
     mSettings = settings;
     SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
@@ -81,6 +84,7 @@ bool eMainWindow::initialize(const eSettings& settings) {
 }
 
 void eMainWindow::setWidget(eWidget* const w) {
+    eCursors::set(eCursors::eCursor::arrow); // a new screen: the normal pointer
     if(mWidget) {
         if(mWidget != mGW && mWidget != mWW) {
             mWidget->deleteLater();
@@ -106,13 +110,68 @@ void eMainWindow::setResolution(const eResolution& res) {
     const int w = res.width();
     const int h = res.height();
     SDL_SetWindowSize(mSdlWindow, w, h);
+    updateLogicalSize();
 }
 
 void eMainWindow::setFullscreen(const bool f) {
-    if(mSettings.fFullscreen == f && !mFirstFullscrenSetting) return;
+    setFullscreen(f, mSettings.fBorderless);
+}
+
+void eMainWindow::setFullscreen(const bool f, const bool borderless) {
+    if(mSettings.fFullscreen == f &&
+       mSettings.fBorderless == borderless &&
+       !mFirstFullscrenSetting) return;
     mFirstFullscrenSetting = false;
     mSettings.fFullscreen = f;
-    SDL_SetWindowFullscreen(mSdlWindow, f ? SDL_WINDOW_FULLSCREEN : 0);
+    mSettings.fBorderless = borderless;
+    Uint32 flags = 0;
+    if(f) {
+        flags = borderless ? SDL_WINDOW_FULLSCREEN_DESKTOP :
+                             SDL_WINDOW_FULLSCREEN;
+    }
+    SDL_SetWindowFullscreen(mSdlWindow, flags);
+    updateLogicalSize();
+}
+
+void eMainWindow::updateLogicalSize() {
+    if(!mSdlRenderer) return;
+    if(mSettings.fFullscreen && mSettings.fBorderless) {
+        // the window is the desktop's size; draw at the chosen resolution
+        // and let SDL stretch it (with black bars if the shape differs)
+        const auto& res = mSettings.fRes;
+        SDL_RenderSetLogicalSize(mSdlRenderer, res.width(), res.height());
+    } else {
+        SDL_RenderSetLogicalSize(mSdlRenderer, 0, 0);
+    }
+}
+
+void eMainWindow::mousePosition(int& x, int& y) const {
+    int wx;
+    int wy;
+    SDL_GetMouseState(&wx, &wy);
+    float lx;
+    float ly;
+    SDL_RenderWindowToLogical(mSdlRenderer, wx, wy, &lx, &ly);
+    x = static_cast<int>(lx);
+    y = static_cast<int>(ly);
+}
+
+void eMainWindow::warpMouse(const int x, const int y) {
+    int wx;
+    int wy;
+    SDL_RenderLogicalToWindow(mSdlRenderer, x, y, &wx, &wy);
+    SDL_WarpMouseInWindow(mSdlWindow, wx, wy);
+}
+
+void eMainWindow::toggleFullscreen() {
+    setFullscreen(!mSettings.fFullscreen);
+    mSettings.write();
+}
+
+void eMainWindow::centerWindow() {
+    if(mSettings.fFullscreen) return;
+    SDL_SetWindowPosition(mSdlWindow, SDL_WINDOWPOS_CENTERED,
+                          SDL_WINDOWPOS_CENTERED);
 }
 
 void eMainWindow::startGameAction(eGameBoard* const board,
@@ -158,9 +217,10 @@ void eMainWindow::showEpisodeIntroduction(
     e->resize(width(), height());
     const auto ee = mCampaign->currentEpisode();
 
+    // the original plays the intro music under the narrator
+    eMusic::playMissionIntroMusic();
     const auto path = mCampaign->currentEpisodeAudioFilePath(true);
-    const bool played = eMusic::playCampaignVoice(path);
-    if(!played) eMusic::playMissionIntroMusic();
+    eMusic::playCampaignVoice(path);
 
     e->initialize(mCampaign,
                   mCampaign->titleText(),
@@ -224,9 +284,10 @@ void eMainWindow::adventureComplete() {
     };
     e->resize(width(), height());
 
+    // the original plays the victory music under the narrator
+    eMusic::playCampaignVictoryMusic();
     const auto path = mCampaign->adventureVictoryAudioFilePath();
-    const bool played = eMusic::playCampaignVoice(path);
-    if(!played) eMusic::playCampaignVictoryMusic();
+    eMusic::playCampaignVoice(path);
 
     e->initialize(mCampaign,
                   eLanguage::zeusText(62, 0),
@@ -249,30 +310,79 @@ void eMainWindow::episodeLost() {
 }
 
 bool eMainWindow::saveGame(const std::string& path) {
-    const auto fsp = std::filesystem::path(path);
+    namespace fs = std::filesystem;
+    if(!mCampaign) return false;
+    // Make sure no board task is still running while the state is written.
+    mCampaign->waitUntilFinished();
+
+    std::error_code ec;
+    const auto fsp = fs::u8path(path);
     const auto fspd = fsp.parent_path();
-    std::filesystem::create_directories(fspd);
-    std::ofstream file(path, std::ios::out | std::ios::binary |
-                       std::ios::trunc);
-    if(!file) return false;
-    eWriteTarget target(&file);
-    eWriteStream dst(target);
-    dst.writeFormat("eZeus.ez");
-    if(mGW) {
-        const auto s = mGW->settings();
-        s.write(dst);
-    } else {
-        eGameWidgetSettings s;
-        s.fPaused = true;
-        s.write(dst);
+    if(!fspd.empty()) {
+        fs::create_directories(fspd, ec);
+        if(ec) {
+            printf("Could not create save directory '%s': %s\n",
+                   fspd.u8string().c_str(), ec.message().c_str());
+            return false;
+        }
     }
-    mCampaign->write(dst);
-    file.close();
+
+    // Write to a temporary file first so that a failed save never
+    // destroys an existing save with the same name.
+    auto tmp = fsp;
+    tmp += ".tmp";
+    {
+        std::ofstream file(tmp, std::ios::out | std::ios::binary |
+                           std::ios::trunc);
+        if(!file) {
+            printf("Could not open '%s' for writing.\n",
+                   tmp.u8string().c_str());
+            return false;
+        }
+        eWriteTarget target(&file);
+        eWriteStream dst(target);
+        dst.writeFormat("eZeus.ez");
+        if(mGW) {
+            const auto s = mGW->settings();
+            s.write(dst);
+        } else {
+            eGameWidgetSettings s;
+            s.fPaused = true;
+            s.write(dst);
+        }
+        mCampaign->write(dst);
+        file.flush();
+        const bool ok = static_cast<bool>(file);
+        file.close();
+        if(!ok || file.fail()) {
+            printf("Failed writing '%s'.\n", tmp.u8string().c_str());
+            fs::remove(tmp, ec);
+            return false;
+        }
+    }
+
+    fs::rename(tmp, fsp, ec);
+    if(ec) {
+        // Some platforms refuse to replace an existing file on rename.
+        std::error_code rec;
+        fs::remove(fsp, rec);
+        ec.clear();
+        fs::rename(tmp, fsp, ec);
+    }
+    if(ec) {
+        printf("Could not move '%s' to '%s': %s\n",
+               tmp.u8string().c_str(), fsp.u8string().c_str(),
+               ec.message().c_str());
+        std::error_code rec;
+        fs::remove(tmp, rec);
+        return false;
+    }
     return true;
 }
 
 bool eMainWindow::loadGame(const std::string& path) {
-    std::ifstream file(path, std::ios::in | std::ios::binary);
+    std::ifstream file(std::filesystem::u8path(path),
+                       std::ios::in | std::ios::binary);
     if(!file) return false;
     eReadSource source(&file);
     eReadStream src(source);
@@ -329,15 +439,31 @@ void eMainWindow::showMenuLoading() {
     mlw->setDoneAction([this]() {
         const auto ls = eRosterOfLeaders::sLeaders();
         if(ls.size() == 1) setLeader(ls[0]);
-        if(mLeader.empty()) {
-            showRosterOfLeaders();
-        } else {
-            showMainMenu();
-        }
+        showGameChooser();
     });
     mlw->initialize();
     mlw->resize(width(), height());
     setWidget(mlw);
+}
+
+void eMainWindow::showGameChooser() {
+    mCampaign = nullptr;
+    clearWidgets();
+    eMusic::playMenuMusic();
+
+    const auto gc = new eGameChooser(this);
+    gc->resize(width(), height());
+    setWidget(gc);
+
+    const auto play = [this](const bool poseidon) {
+        setPoseidon(poseidon);
+        showRosterOfLeaders();
+    };
+    gc->initialize([play]() { play(false); },
+                   [play]() { play(true); },
+                   [this]() { showChooseGameEditMenu(); },
+                   [this]() { showSettingsMenu(); },
+                   [this]() { mQuit = true; });
 }
 
 void eMainWindow::showMainMenu() {
@@ -349,9 +475,28 @@ void eMainWindow::showMainMenu() {
     mm->resize(width(), height());
     setWidget(mm);
 
-    const auto newGameAction = [this]() {
-        showChooseGameMenu();
-    };
+    // Resume Adventure loads the leader's most recent save, if any
+    std::string latest;
+    {
+        std::error_code ec;
+        const auto dir = leaderSaveDir();
+        std::filesystem::file_time_type latestTime;
+        for(const auto& entry : std::filesystem::directory_iterator(dir, ec)) {
+            if(!entry.is_regular_file(ec)) continue;
+            if(entry.path().extension() != ".ez") continue;
+            const auto t = entry.last_write_time(ec);
+            if(latest.empty() || t > latestTime) {
+                latestTime = t;
+                latest = entry.path().u8string();
+            }
+        }
+    }
+    eAction resumeAction;
+    if(!latest.empty()) {
+        resumeAction = [this, latest]() {
+            loadGame(latest);
+        };
+    }
 
     const auto loadGameAction = [this, mm]() {
         const auto fw = new eFileWidget(this);
@@ -363,34 +508,17 @@ void eMainWindow::showMainMenu() {
             fw->deleteLater();
         };
         const auto dir = leaderSaveDir();
-        fw->intialize(eLanguage::zeusText(1, 3),
+        fw->intialize(eLanguage::zeusText(293, 3),
                       dir, func, closeAct);
         mm->addWidget(fw);
         fw->align(eAlignment::center);
     };
 
-    const auto editGameAction = [this]() {
-        showChooseGameEditMenu();
-    };
-
-    const auto settingsAction = [this]() {
-        showSettingsMenu();
-    };
-
-    const auto quitAction = [this]() {
-        mQuit = true;
-    };
-
-    const auto leaderAction = [this]() {
-        showRosterOfLeaders();
-    };
-
-    mm->initialize(newGameAction,
+    mm->initialize(resumeAction,
                    loadGameAction,
-                   editGameAction,
-                   settingsAction,
-                   quitAction,
-                   leaderAction);
+                   [this]() { showChooseGameMenu(false); },
+                   [this]() { showChooseGameMenu(true); },
+                   [this]() { showRosterOfLeaders(); });
 }
 
 void eMainWindow::showSettingsMenu() {
@@ -398,9 +526,11 @@ void eMainWindow::showSettingsMenu() {
     esm->resize(width(), height());
 
     const auto applyA = [this](const eSettings& settings) {
-        const bool loadNeeded = settings.fRes != mSettings.fRes;
+        const bool loadNeeded = settings.fRes != mSettings.fRes ||
+                                settings.fRes.uiScale() !=
+                                mSettings.fRes.uiScale();
         setResolution(settings.fRes);
-        setFullscreen(settings.fFullscreen);
+        setFullscreen(settings.fFullscreen, settings.fBorderless);
         mSettings = settings;
         mSettings.write();
         if(!mSettings.fTinyTextures &&
@@ -411,19 +541,19 @@ void eMainWindow::showSettingsMenu() {
         }
         eGameTextures::setSettings(mSettings);
         if(loadNeeded) showMenuLoading();
-        else showMainMenu();
+        else showGameChooser();
     };
-    const auto fullscrennA = [this](const bool f) {
-        setFullscreen(f);
+    const auto fullscrennA = [this](const bool f, const bool b) {
+        setFullscreen(f, b);
     };
     esm->initialize(applyA, fullscrennA);
     setWidget(esm);
 }
 
-void eMainWindow::showChooseGameMenu() {
+void eMainWindow::showChooseGameMenu(const bool custom) {
     const auto gem = new eChooseGameEditMenu(this);
     gem->resize(width(), height());
-    gem->initialize(false);
+    gem->initialize(false, custom);
     setWidget(gem);
 }
 
@@ -461,6 +591,8 @@ void eMainWindow::showGame(eGameBoard* b,
         mBoard->waitUntilFinished();
     }
 
+    // entering the city: the mission narrator stops
+    eMusic::stopCampaignVoice();
     eMusic::playRandomMusic();
     mGW = new eGameWidget(this);
     mGW->setBoard(b);
@@ -482,6 +614,20 @@ void eMainWindow::showWorld() {
         mWW->update();
     }
     setWidget(mWW);
+}
+
+void eMainWindow::askToQuit() {
+    // only on the menu screens; the city and world map use Escape themselves,
+    // and quitting mid-load could leave work half done
+    if(!mWidget || mWidget == mGW || mWidget == mWW) return;
+    if(dynamic_cast<eMenuLoadingWidget*>(mWidget)) return;
+    if(dynamic_cast<eGameLoadingWidget*>(mWidget)) return;
+    const auto q = new eQuestionWidget(this);
+    // the original's own question, "Exit Game?" (Zeus_Text group 5, item 1)
+    q->initialize(eLanguage::zeusText(5, 1), "",
+                  [this]() { mQuit = true; }, nullptr);
+    execDialog(q);
+    q->align(eAlignment::center);
 }
 
 void eMainWindow::execDialog(
@@ -575,7 +721,7 @@ int eMainWindow::exec() {
 
         while(SDL_PollEvent(&e)) {
             int x, y;
-            SDL_GetMouseState(&x, &y);
+            mousePosition(x, y);
             const bool shift = mShiftPressed > 0;
             const bool ctrl = mCtrlPressed > 0;
             if(e.type == SDL_QUIT) {
@@ -644,7 +790,10 @@ int eMainWindow::exec() {
                     mCtrlPressed++;
                 }
                 const eKeyPressEvent ke(x, y, shift, ctrl, buttons, k);
-                if(mWidget) mWidget->keyPress(ke);
+                const bool handled = mWidget && mWidget->keyPress(ke);
+                if(!handled && k == SDL_Scancode::SDL_SCANCODE_ESCAPE) {
+                    askToQuit();
+                }
             } else if(e.type == SDL_KEYUP) {
                 const auto k = e.key.keysym.scancode;
                 if(k == SDL_Scancode::SDL_SCANCODE_LSHIFT ||
@@ -677,7 +826,7 @@ int eMainWindow::exec() {
                 const int wtt = tooltip.width();
                 const int htt = tooltip.height();
                 int mx, my;
-                SDL_GetMouseState(&mx, &my);
+                mousePosition(mx, my);
                 int xtt;
                 int ytt;
                 if(mx > width()/2) {
@@ -723,4 +872,18 @@ int eMainWindow::exec() {
     }
 
     return 0;
+}
+
+void eMainWindow::saveOptions(const eSettings& s) {
+    mSettings.fGameSpeed = s.fGameSpeed;
+    mSettings.fMusicOn = s.fMusicOn;
+    mSettings.fSpeechOn = s.fSpeechOn;
+    mSettings.fSoundsOn = s.fSoundsOn;
+    mSettings.fAmbientOn = s.fAmbientOn;
+    mSettings.fMusicVolume = s.fMusicVolume;
+    mSettings.fSpeechVolume = s.fSpeechVolume;
+    mSettings.fSoundsVolume = s.fSoundsVolume;
+    mSettings.fAmbientVolume = s.fAmbientVolume;
+    mSettings.applyAudio();
+    mSettings.write();
 }

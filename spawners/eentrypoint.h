@@ -13,6 +13,8 @@ public:
 
     void incTime(const int by) override;
     void spawn(eTile* const tile) override;
+private:
+    bool mImmigrationClosed = false;
 };
 
 class eSS_spawnFinish : public eCharActFunc {

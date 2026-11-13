@@ -137,7 +137,7 @@ public:
         mSelected = b;
         for(const auto l : mLabels) {
             if(b) l->setYellowFontColor();
-            else l->setLightFontColor();
+            else l->setDarkFontColor();
         }
         mEnlistedLabel->setVisible(b);
     }

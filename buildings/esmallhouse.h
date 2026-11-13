@@ -28,6 +28,14 @@ public:
     void setDisgruntled(const bool d);
     bool disgruntled() const { return mDisgruntled; }
 
+    // Original crime (exe 0x00566F20, 0x004A5F70, 0x005BFDE0): 0-100.
+    int crime() const { return mCrime; }
+    // twice a month: + crime increment + (40 - mood)/2 (or -20 with
+    // Dionysus), never below the level's crime base nor above 100
+    void crimeUpdate(const int mood, const bool active, const bool dionysus);
+    // a watchman passing lowers it by the guardpost's risk reducer (50)
+    void reduceCrime(const int by);
+
     bool lowFood() const;
     bool lowFleece() const { return mFleece < 2; }
     bool lowOil() const { return mOil < 2; }
@@ -45,12 +53,15 @@ public:
 
     static std::string sName(const int level);
 private:
-    void updateLevel();
+    void updateLevel(const bool timed = false);
+    void stepToward(const int target, const bool timed);
+    bool appealFor(const int l) const;
+    bool cultureFor(const int l) const;
     void updateSatisfaction();
 
     void spawnCharacter(const stdsptr<eCharacter>& c);
     void spawnSick();
-    void spawnDisgruntled();
+    void spawnOutlaw(const eCharacterType type);
 
     bool mSatisfactionProvidedThisMonth = false;
 
@@ -74,6 +85,11 @@ private:
     stdptr<eSick> mSick;
     int mSpawnDisg = 0;
     stdptr<eDisgruntled> mDisg;
+
+    int mCrime = 0;
+    double mOutlawCycle = 0;
+    int mFailedChecks = 0; // level checks failed in a row
+    int mPlagueTime = 0;
 };
 
 #endif // ESMALLHOUSE_H

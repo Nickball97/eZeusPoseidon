@@ -1,4 +1,5 @@
 #include "echaracter.h"
+#include "efigurestats.h"
 
 #include "engine/egameboard.h"
 
@@ -8,6 +9,10 @@
 
 #include "gods/egod.h"
 #include "heroes/ehero.h"
+#include "monsters/emonster.h"
+#include "actions/eheroaction.h"
+#include "engine/eevent.h"
+#include "engine/eeventdata.h"
 #include "audio/esounds.h"
 
 #include "esoldier.h"
@@ -29,21 +34,25 @@ bool eCharacter::canFight(eCharacter* const c) {
     if(dead()) return false;
     const auto ct = c->type();
     const auto t = type();
-    if((t == eCharacterType::hunter &&
-        (ct == eCharacterType::boar ||
-         ct == eCharacterType::deer)) ||
-        (ct == eCharacterType::hunter &&
-         (t == eCharacterType::boar ||
-          t == eCharacterType::deer))) {
+    // hunters, and wolves ("they do love goat, sheep, deer and boar",
+    // Citadel of Poseidon), go after boar and deer
+    const auto hunts = [](const eCharacterType a, const eCharacterType b) {
+        return (a == eCharacterType::hunter || a == eCharacterType::wolf) &&
+               (b == eCharacterType::boar || b == eCharacterType::deer);
+    };
+    if(hunts(t, ct) || hunts(ct, t)) {
     } else {
         if(!eTeamIdHelpers::isEnemy(teamId(), c->teamId())) return false;
+        if(c->hiddenUnderwater() && t != eCharacterType::kraken) return false;
     }
     if(attack() == 0 && c->attack() == 0) return false;
     const auto at = actionType();
     if(at == eCharacterActionType::fight ||
        at == eCharacterActionType::fight2) return false;
-    if(t == eCharacterType::disgruntled) {
-        if(ct == eCharacterType::watchman) return true;
+    if(t == eCharacterType::disgruntled || t == eCharacterType::mugger ||
+       t == eCharacterType::thief || t == eCharacterType::vandal) {
+        if(ct == eCharacterType::watchman ||
+           ct == eCharacterType::eliteCitizen) return true;
         else if(eRand::rand() % 10) return false;
     }
     if(isSoldier()) {
@@ -52,7 +61,8 @@ bool eCharacter::canFight(eCharacter* const c) {
     }
     if(ct == eCharacterType::boar ||
        ct == eCharacterType::deer) {
-        const bool h = t == eCharacterType::hunter;
+        const bool h = t == eCharacterType::hunter ||
+                       t == eCharacterType::wolf;
         if(!h) return false;
         return at != eCharacterActionType::carry;
     }
@@ -74,6 +84,11 @@ bool eCharacter::canFight(eCharacter* const c) {
     bool isMonster2;
     eMonster::sCharacterToMonsterType(ct, &isMonster2);
     if(isMonster1 && isMonster2) return false;
+    // a hero's duel with a monster is decided by eHeroAction, not by
+    // hit points
+    bool isHero2 = false;
+    eHero::sCharacterToHeroType(ct, &isHero2);
+    if(isMonster1 && isHero2) return false;
     return true;
 }
 
@@ -198,8 +213,10 @@ void eCharacter::changeTile(eTile* const t, const bool prepend) {
     if(t) t->addCharacter(tsptr, prepend);
     else deleteLater();
     if(t && mProvide != eProvide::none && mProvideCount > 0) {
-        for(const int x : {-1, 0, 1}) {
-            for(const int y : {-1, 0, 1}) {
+        // every service walker reaches 2 tiles each way (original exe
+        // 0x004A60E0 and siblings scan a 5x5 square)
+        for(const int x : {-2, -1, 0, 1, 2}) {
+            for(const int y : {-2, -1, 0, 1, 2}) {
                 const auto tt = t->tileRel<eTile>(x, y);
                 if(!tt) continue;
                 if(const auto b = tt->underBuilding()) {
@@ -213,6 +230,17 @@ void eCharacter::changeTile(eTile* const t, const bool prepend) {
 
 void eCharacter::incTime(const int by) {
     if(deleteScheduled()) return;
+    if(!figureStatsApplied()) {
+        // original-game speed and strength for this type (eFigureStats);
+        // a loaded character keeps its saved hit points
+        setFigureStatsApplied();
+        eFigureStats::sApply(this, !loadedFromSave());
+    }
+    if(mBurnTime > 0) {
+        const int t = std::min(by, mBurnTime);
+        mBurnTime -= t;
+        if(defend(mBurnDamage*t)) return;
+    }
     mTime += by;
     const auto at = actionType();
     if(mPlayFightSound &&
@@ -270,17 +298,39 @@ bool eCharacter::defend(const double a) {
     if(dead()) return true;
 
     bool isMonster = false;
-    eMonster::sCharacterToMonsterType(type(), &isMonster);
-    if(isMonster) return false;
+    const auto mt = eMonster::sCharacterToMonsterType(type(), &isMonster);
     bool isGod = false;
     eGod::sCharacterToGodType(type(), &isGod);
-    if(isGod) return false;
     bool isHero = false;
     eHero::sCharacterToHeroType(type(), &isHero);
-    if(isHero) return false;
 
+    // Gods, monsters and heroes have hit points too (Model "God",
+    // "Monster", "Hero" rows), so soldiers and towers can wear them down.
     setHP(hp() - a);
     if(hp() <= 0) {
+        if(isMonster) {
+            // slain as if by its hero
+            auto& board = getBoard();
+            const auto cid = onCityId();
+            eEventData ed(cid);
+            ed.fMonster = mt;
+            ed.fTile = tile();
+            board.event(eEvent::monsterSlain, ed);
+            killWithCorpse();
+            board.addSlayedMonster(cid, mt);
+            return true;
+        } else if(isGod) {
+            // a beaten god leaves the city
+            kill();
+            return true;
+        } else if(isHero) {
+            // a beaten hero goes home to his hall to recover
+            eFigureStats::sApply(this, true); // full hit points again
+            if(const auto ha = dynamic_cast<eHeroAction*>(action())) {
+                ha->goBackToHall();
+            }
+            return false;
+        }
         killWithCorpse();
         return true;
     } else {
@@ -337,6 +387,7 @@ std::shared_ptr<eTexture> eCharacter::getTexture(
 
 void eCharacter::read(eReadStream& src) {
     eCharacterBase::read(src);
+    setLoadedFromSave();
     src >> mIOID;
     src >> mVisible;
     src >> mProvide;
@@ -411,4 +462,9 @@ void eCharacter::write(eWriteStream& dst) const {
         }
         dst << a.fO;
     }
+}
+
+void eCharacter::setBurning(const double damagePerTick, const int ticks) {
+    mBurnDamage = damagePerTick;
+    mBurnTime = std::max(mBurnTime, ticks);
 }

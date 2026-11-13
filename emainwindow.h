@@ -41,6 +41,17 @@ public:
 
     void setResolution(const eResolution& res);
     void setFullscreen(const bool f);
+    // borderless: full screen as a desktop-sized window (SDL "desktop"
+    // full screen); the game is drawn at the chosen resolution and
+    // stretched to the desktop if the two differ
+    void setFullscreen(const bool f, const bool borderless);
+    // mouse position and warping in game pixels, also when the picture is
+    // stretched in borderless full screen
+    void mousePosition(int& x, int& y) const;
+    void warpMouse(const int x, const int y);
+    // F5 and F8 in the game (zeus.exe window procedure 0x005C4A90)
+    void toggleFullscreen();
+    void centerWindow();
 
     void startGameAction(eGameBoard* const board,
                          const eGameWidgetSettings& settings);
@@ -54,12 +65,17 @@ public:
     bool saveGame(const std::string& path);
     bool loadGame(const std::string& path);
     void closeGame();
+    // the in-city Options (game speed and sounds): applied and saved at once
+    void saveOptions(const eSettings& s);
 
+    // home page, as in the original: game chooser -> roster of leaders ->
+    // player menu (showMainMenu) -> adventure lists
+    void showGameChooser();
     void showRosterOfLeaders();
     void showMenuLoading();
     void showMainMenu();
     void showSettingsMenu();
-    void showChooseGameMenu();
+    void showChooseGameMenu(const bool custom = false);
     void showChooseGameEditMenu();
     void showGame(const stdsptr<eCampaign>& c,
                   const eGameWidgetSettings& settings);
@@ -83,12 +99,20 @@ public:
     const std::string& leader() const { return mLeader; }
     void setLeader(const std::string& leader) { mLeader = leader; }
     std::string leaderSaveDir() const;
+    // Zeus or Poseidon picked on the first screen (logos, roster picture
+    // and which original adventures are listed)
+    bool poseidon() const { return mPoseidon; }
+    void setPoseidon(const bool p) { mPoseidon = p; }
 private:
+    void updateLogicalSize();
     void clearWidgets();
+    // Escape on a menu screen: ask "Exit game?" before quitting
+    void askToQuit();
 
     eSettings mSettings;
 
     std::string mLeader;
+    bool mPoseidon = false;
 
     bool mQuit = false;
     bool mFirstFullscrenSetting = true;

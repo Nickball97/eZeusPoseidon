@@ -1,4 +1,20 @@
 #include "ebuildingtextures.h"
+#include "spriteData/poseidonGrandStatueWater15.h"
+#include "spriteData/poseidonGrandStatueWater30.h"
+#include "spriteData/poseidonGrandStatueWater45.h"
+#include "spriteData/poseidonGrandStatueWater60.h"
+#include "spriteData/poseidonGrandStatue115.h"
+#include "spriteData/poseidonGrandStatue130.h"
+#include "spriteData/poseidonGrandStatue145.h"
+#include "spriteData/poseidonGrandStatue160.h"
+#include "spriteData/poseidonGrandStatue215.h"
+#include "spriteData/poseidonGrandStatue230.h"
+#include "spriteData/poseidonGrandStatue245.h"
+#include "spriteData/poseidonGrandStatue260.h"
+#include "spriteData/poseidonGrandStatue315.h"
+#include "spriteData/poseidonGrandStatue330.h"
+#include "spriteData/poseidonGrandStatue345.h"
+#include "spriteData/poseidonGrandStatue360.h"
 
 #include "spriteData/bibliotheke15.h"
 #include "spriteData/bibliotheke30.h"
@@ -168,6 +184,13 @@ void eBuildingTextures::loadPoseidonBridge() {
     for(int i = 1; i < 17; i++) {
         loader.load(1, i, fPoseidonBridge);
     }
+    // Atlantean Bridge pieces (0-7) use the same 2x2-tile canvas as the
+    // Large Water Crossing
+    for(int i = 0; i < 8; i++) {
+        fPoseidonBridge.getTexture(i)->setOffset(30, -20);
+    }
+    fPoseidonBridge.getTexture(3)->setOffset(59, -5);
+    fPoseidonBridge.getTexture(4)->setOffset(1, -5);
 }
 
 void eBuildingTextures::loadOrichalcTowerOverlay() {
@@ -513,6 +536,50 @@ void eBuildingTextures::loadCorral() {
 
         for(int i = 1878; i < 1938; i++) {
             loader.load(1878, i, fCorralProcessingOverlay);
+        }
+    }
+}
+
+void eBuildingTextures::loadPoseidonGrandStatue() {
+    if(fPoseidonGrandStatueLoaded) return;
+    fPoseidonGrandStatueLoaded = true;
+
+    const std::vector<eSpriteData>* sds[3] = {
+        &spriteData(fTileH,
+                    ePoseidonGrandStatue1SpriteData15,
+                    ePoseidonGrandStatue1SpriteData30,
+                    ePoseidonGrandStatue1SpriteData45,
+                    ePoseidonGrandStatue1SpriteData60),
+        &spriteData(fTileH,
+                    ePoseidonGrandStatue2SpriteData15,
+                    ePoseidonGrandStatue2SpriteData30,
+                    ePoseidonGrandStatue2SpriteData45,
+                    ePoseidonGrandStatue2SpriteData60),
+        &spriteData(fTileH,
+                    ePoseidonGrandStatue3SpriteData15,
+                    ePoseidonGrandStatue3SpriteData30,
+                    ePoseidonGrandStatue3SpriteData45,
+                    ePoseidonGrandStatue3SpriteData60)};
+    for(int k = 0; k < 3; k++) {
+        eSpriteLoader loader(fTileH,
+                             "poseidonGrandStatue" + std::to_string(k + 1),
+                             *sds[k], nullptr, fRenderer);
+        loader.load(201, 201, fPoseidonGrandStatue);
+    }
+    // Fountain frames (Poseidon_GrandStatue3 202-206). The finished image's
+    // record puts them 242 pixels below its top; it is 381 tall and they
+    // are 122, so drawn bottom-aligned with it they sit 17 pixels higher.
+    {
+        const auto& sds = spriteData(fTileH,
+                                     ePoseidonGrandStatueWaterSpriteData15,
+                                     ePoseidonGrandStatueWaterSpriteData30,
+                                     ePoseidonGrandStatueWaterSpriteData45,
+                                     ePoseidonGrandStatueWaterSpriteData60);
+        eSpriteLoader loader(fTileH, "poseidonGrandStatueWater", sds,
+                             nullptr, fRenderer);
+        for(int i = 202; i <= 206; i++) {
+            const auto& tex = loader.load(202, i, fPoseidonGrandStatueWater);
+            tex->setOffset(0, 17);
         }
     }
 }

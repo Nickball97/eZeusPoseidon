@@ -52,7 +52,7 @@ private:
     std::string mText;
     std::shared_ptr<eTexture> mTexture;
     bool mUpdateTextTextureFailed = false;
-    eFontColor mFontColor = eFontColor::light;
+    eFontColor mFontColor = eFontColor::dark; // the original's text is dark navy; white marks the selected item
     eAlignment mTextAlign = eAlignment::center;
     eAlignment mWrapAlign = eAlignment::left;
 };

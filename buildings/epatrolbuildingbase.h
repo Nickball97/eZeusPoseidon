@@ -30,6 +30,10 @@ public:
                         const eCityId cid);
     ~ePatrolBuildingBase();
 
+    // Tiles a roaming walker from this building type walks before turning
+    // back (original game values where known).
+    static int sMaxDistance(const eBuildingType type);
+
     static stdsptr<eCharacterAction> sDefaultActGenerator(
         eCharacter* const c,
         ePatrolBuildingBase* const b,
@@ -37,6 +41,8 @@ public:
         const stdsptr<eDirectionTimes>& dirTimes);
 
     void timeChanged(const int by) override;
+    // a blessing (more walkers) lasts until one extra walker went out
+    bool blessingLastsUntilUsed() const override { return true; }
 
     using ePatrolGuides = std::vector<ePatrolGuide>;
     ePatrolGuides& patrolGuides() { return mPatrolGuides; };
@@ -47,6 +53,8 @@ public:
 
     void setSpawnPatrolers(const bool s);
     bool spawnPatrolers() const { return mSpawnPatrolers; }
+    // the walker it has out, if any (for the info window)
+    eCharacter* patroler() const { return mChar.get(); }
 
     int maxDistance() const { return mMaxDistance; }
 

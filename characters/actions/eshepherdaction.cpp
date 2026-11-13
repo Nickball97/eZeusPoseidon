@@ -67,7 +67,7 @@ bool eShepherdAction::decide() {
     if(coll > 0) {
         if(inShed) {
             const auto rType = mShed->resourceType();
-            mShed->addProduced(rType, coll);
+            mShed->addProduced(rType, mShed->useBlessing(coll));
             mCharacter->incCollected(-coll);
 
             if(mFinishOnce) {

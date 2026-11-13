@@ -210,7 +210,8 @@ bool eViewModeHelpers::characterVisible(
         const int iMax = static_cast<int>(eCharacterType::greekHorseman);
         if(ic >= iMin && ic <= iMax) return true;
         if(c == eCharacterType::trireme ||
-           c == eCharacterType::enemyBoat) return true;
+           c == eCharacterType::enemyBoat ||
+           c == eCharacterType::enemyWarship) return true;
         return c == eCharacterType::watchman;
     } break;
 
@@ -270,6 +271,9 @@ bool eViewModeHelpers::characterVisible(
 
     case eViewMode::problems: {
         return c == eCharacterType::disgruntled ||
+               c == eCharacterType::mugger ||
+               c == eCharacterType::thief ||
+               c == eCharacterType::vandal ||
                c == eCharacterType::sick;
     } break;
 
@@ -295,7 +299,10 @@ bool eViewModeHelpers::characterVisible(
     } break;
     case eViewMode::unrest: {
         return c == eCharacterType::watchman ||
-               c == eCharacterType::disgruntled;
+               c == eCharacterType::disgruntled ||
+               c == eCharacterType::mugger ||
+               c == eCharacterType::thief ||
+               c == eCharacterType::vandal;
     } break;
 
     case eViewMode::actors: {

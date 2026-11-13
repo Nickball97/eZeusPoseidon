@@ -62,6 +62,9 @@ public:
     void addCharacter(const stdsptr<eCharacter>& c,
                       const bool prepend = false);
     bool removeCharacter(const stdsptr<eCharacter>& c);
+    // Small Water Crossings (4 tiles or fewer) block ships; Large ones
+    // and Atlantean Bridges let them pass (manuals; cut-off from Nicolás)
+    bool bridgeBlocksShips() const override;
     bool hasCharacter(const eHasChar& func) const override;
 
     const std::vector<stdsptr<eCharacter>>& characters() const
@@ -76,6 +79,10 @@ public:
     bool hasRoad() const override;
     bool hasAvenue() const;
     void setUnderBuilding(const stdsptr<eBuilding>& b);
+    // rises whenever any tile's building changes; pictures that depend on
+    // the buildings around them (Avenue trees) use it to know when to
+    // pick again (not saved)
+    static int sBuildingRevision;
     eBuilding* underBuilding() const
     { return mUnderBuilding.get(); }
     eBuildingType underBuildingType() const override;

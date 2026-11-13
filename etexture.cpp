@@ -103,7 +103,10 @@ std::vector<std::string> textLines(const std::string& text,
             if(isLast && c != ' ' && c != '\n') word += c;
             int w = 0;
             int h = 0;
-            const auto newLine = line + (line.empty() ? "" : " ") + word;
+            // no second space after one kept from the text (keepSpaces):
+            // that doubled every gap and spread the words out
+            const bool sep = !line.empty() && line.back() != ' ';
+            const auto newLine = line + (sep ? " " : "") + word;
             TTF_SizeUTF8(&font, newLine.c_str(), &w, &h);
             if(line.empty() || w < width) {
                 line = newLine;
@@ -126,7 +129,10 @@ std::vector<std::string> textLines(const std::string& text,
             word += c;
         }
     }
-    if(!word.empty()) line += (line.empty() ? "" : " ") + word;
+    if(!word.empty()) {
+        const bool sep = !line.empty() && line.back() != ' ';
+        line += (sep ? " " : "") + word;
+    }
     if(!line.empty()) result.push_back(line);
     return result;
 }
@@ -246,11 +252,18 @@ bool eTexture::loadText(SDL_Renderer* const r,
         SDL_SetRenderDrawColor(r, 0, 0, 0, 0);
         SDL_RenderFillRect(r, NULL);
 
-        const SDL_Rect dstRect2{0, 0, w, h};
+        // dark text looks carved in the original: its light edge (col2)
+        // sits one pixel down-right, under the letters; for the other
+        // colours the dark edge is up-left and the letters on top
+        const bool carved = color == eFontColor::dark ||
+                            color == eFontColor::darkOnDark;
+        const SDL_Rect dstRect2 = carved ? SDL_Rect{dx, dy, w, h} :
+                                           SDL_Rect{0, 0, w, h};
         SDL_RenderCopy(r, tex2, NULL, &dstRect2);
         SDL_SetTextureAlphaMod(tex2, 128);
         SDL_RenderCopy(r, tex2, NULL, &dstRect2);
-        const SDL_Rect dstRect1{dx, dy, w, h};
+        const SDL_Rect dstRect1 = carved ? SDL_Rect{0, 0, w, h} :
+                                           SDL_Rect{dx, dy, w, h};
         SDL_RenderCopy(r, tex1, NULL, &dstRect1);
         SDL_SetTextureAlphaMod(tex1, 128);
         SDL_RenderCopy(r, tex1, NULL, &dstRect1);

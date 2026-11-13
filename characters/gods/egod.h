@@ -37,7 +37,18 @@ public:
     static int sGodBlessTime(const eGodType gt);
     static int sGodAppearTime(const eGodType gt);
 
+    // buildings the god blesses (sanctifies)
     static bool sTarget(const eGodType gt, const eBuildingType bt);
+    // what an angry god destroys, curses, and whether it attacks anything
+    static bool sAttackTarget(const eGodType gt, const eBuildingType bt);
+    static bool sCurseTarget(const eGodType gt, const eBuildingType bt);
+    // the original's curse lists (zeus.exe 0x004ED200, lists 0x006383E0):
+    // the god's list number, -1 if it never curses, 10 for a random list
+    static int sCurseKind(const eGodType gt);
+    static bool sCurseKindTarget(const int kind, const eBuildingType bt);
+    // months a curse on a building type lasts (table 0x0063AEAC)
+    static int sCurseMonths(const eGodType gt, const int difficulty);
+    static bool sGeneralAttack(const eGodType gt);
 
     static std::string sGodName(const eGodType gt);
 

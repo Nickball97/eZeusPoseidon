@@ -28,6 +28,11 @@ public:
     eHippodromePiece* aboveHippodrome() const { return mAboveHippodrome; }
 
     bool isBridge() const;
+    // Large Water Crossing or Atlantean Bridge tile: water is drawn under
+    // it and bridgePiece() on top (nullptr where a neighbour's piece
+    // covers this tile)
+    bool largeBridge() const;
+    std::shared_ptr<eTexture> bridgePiece(const eTileSize size) const;
     bool isRoadblock() const;
     void setRoadblock(const bool rb);
 

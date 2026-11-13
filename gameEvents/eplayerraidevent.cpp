@@ -47,7 +47,14 @@ void ePlayerRaidEvent::trigger() {
     if(rel == eForeignCityRelationship::ally) {
         const auto wboard = worldBoard();
         wboard->attackedAlly(pid);
-        board->event(eEvent::allyAttackedByPlayer, ed);
+        // Symphonia Ithikos: an Atlantean attacking an Atlantean ally
+        const auto cid = cityId();
+        const auto pc = board->boardCityWithId(cid);
+        const bool broken = wboard && pc && pc->atlantean() &&
+                            mCity->nationality() == eNationality::atlantean &&
+                            wboard->breakSymphoniaIthikos(board->cityIdToTeamId(cid));
+        board->event(broken ? eEvent::atlanteanAlliesHateYou :
+                              eEvent::allyAttackedByPlayer, ed);
     }
     if(raided) {
         eResourceType res = mResource;

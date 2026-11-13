@@ -13,6 +13,9 @@ public:
     int maxCount() const { return mMaxCount; }
     void setMaxCount(const int c) { mMaxCount = c; }
 
+    // Consult Oracle: picks the count now; the event then keeps it
+    void oracleChooseCount();
+
     void write(eWriteStream& dst) const;
     void read(eReadStream& src);
 protected:
@@ -26,6 +29,7 @@ protected:
     int mMaxCount = 16;
 
     int mCount = 16;
+    bool mOracleCount = false;
 };
 
 #endif // ECOUNTEVENTVALUE_H

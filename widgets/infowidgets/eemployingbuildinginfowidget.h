@@ -17,7 +17,9 @@ public:
                     eEmployingBuilding* const b,
                     const std::string& subText);
 
-    void addEmploymentWidget(eEmployingBuilding* const b);
+    // activity: what the workers are doing, shown under the count
+    void addEmploymentWidget(eEmployingBuilding* const b,
+                             const std::string& activity = "");
 };
 
 #endif // EEMPLOYINGBUILDINGINFOWIDGET_H

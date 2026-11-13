@@ -45,6 +45,10 @@ bool loadLineBP(const int x,
             ele.fType = eSanctEleType::sanctuary;
         } else if(codeStr == "m") {
             ele.fType = eSanctEleType::monument;
+        } else if(codeStr == "p") {
+            ele.fType = eSanctEleType::obelisk;
+        } else if(codeStr == "g") {
+            ele.fType = eSanctEleType::grandStatue;
         } else if(codeStr == "a") {
             ele.fType = eSanctEleType::altar;
         } else if(codeStr == "c") {
@@ -224,10 +228,12 @@ void eSanctBlueprints::loadImpl() {
 
     loadBP(fPoseidonW, dir + "poseidon.txt");
     fPoseidonH = rotate(fPoseidonW);
+    loadBP(fPoseidonCitadelW, dir + "poseidonCitadel.txt");
+    fPoseidonCitadelH = rotate(fPoseidonCitadelW);
 }
 
 const eSanctBlueprint* eSanctBlueprints::sSanctuaryBlueprint(
-        const eBuildingType type, const bool rotate) {
+        const eBuildingType type, const bool rotate, const bool atlantean) {
     const auto& i = eSanctBlueprints::instance;
     switch(type) {
     case eBuildingType::templeZeus: {
@@ -322,6 +328,9 @@ const eSanctBlueprint* eSanctBlueprints::sSanctuaryBlueprint(
         }
     } break;
     case eBuildingType::templePoseidon: {
+        if(atlantean) {
+            return rotate ? &i.fPoseidonCitadelH : &i.fPoseidonCitadelW;
+        }
         if(rotate) {
             return &i.fPoseidonH;
         } else {

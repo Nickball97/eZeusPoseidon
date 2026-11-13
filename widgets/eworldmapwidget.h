@@ -23,10 +23,14 @@ public:
     void updateWidgets();
 
     void setMap(const eWorldMap map);
+    // sizes the map to fill w x h keeping its shape, drawn from the
+    // smallest of eZeus's map copies (1x, 1.5x, 2x) that is big enough
+    void fitTo(const int w, const int h);
 protected:
     void paintEvent(ePainter& p);
     bool mousePressEvent(const eMouseEvent& e);
 private:
+    void paintEdgeFade(ePainter& p) const;
     void armyDrawXY(eWorldCity& c1, eWorldCity& c2,
                     const double frac, int& x, int& y);
 
@@ -39,6 +43,9 @@ private:
     eGameBoard* mGameBoard = nullptr;
     eWorldBoard* mWorldBoard = nullptr;
     int mFrame = 0;
+
+    std::string mMapFile; // e.g. "Zeus_MapOfGreece01.JPG"
+    stdsptr<eTexture> mDrawTex; // the copy drawn, scaled to the widget
 
     std::map<std::string, stdsptr<eTexture>> mNames;
 

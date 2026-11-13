@@ -4,6 +4,7 @@
 #include "elanguage.h"
 #include "engine/eworldcity.h"
 #include "engine/egameboard.h"
+#include "fileIO/efileformat.h"
 
 eCityEventValue::eCityEventValue(eGameBoard &board,
                                  const eValidator& v) :
@@ -13,6 +14,7 @@ void eCityEventValue::write(eWriteStream& dst) const {
     dst.writeCity(mCity.get());
     dst << mMinCityId;
     dst << mMaxCityId;
+    dst << mOracleCity;
 }
 
 void eCityEventValue::read(eReadStream& src, eGameBoard& board) {
@@ -21,6 +23,9 @@ void eCityEventValue::read(eReadStream& src, eGameBoard& board) {
     });
     src >> mMinCityId;
     src >> mMaxCityId;
+    if(src.formatVersion() >= eFileFormat::oracleTimer) {
+        src >> mOracleCity;
+    }
 }
 
 void eCityEventValue::setSingleCity(const stdsptr<eWorldCity> &c) {
@@ -37,7 +42,17 @@ void eCityEventValue::setSingleCity(const stdsptr<eWorldCity> &c) {
     }
 }
 
+void eCityEventValue::oracleChooseCity() {
+    if(mOracleCity) return;
+    chooseCity();
+    mOracleCity = true;
+}
+
 void eCityEventValue::chooseCity() {
+    if(mOracleCity) { // already chosen when the Oracle predicted it
+        mOracleCity = false;
+        return;
+    }
     const int id = chooseCityId();
     const auto& world = mBoard.world();
     const auto cid = static_cast<eCityId>(id);

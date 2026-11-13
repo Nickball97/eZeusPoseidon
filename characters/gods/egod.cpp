@@ -9,6 +9,8 @@
 
 #include "buildings/ebuilding.h"
 
+#include <algorithm>
+
 #include "textures/egametextures.h"
 
 eGod::eGod(eGameBoard& board, const eGodType gt) :
@@ -478,89 +480,206 @@ int eGod::sGodAppearTime(const eGodType gt) {
     return sl*eCharacter::sTextureTimeDivisor;
 }
 
+// Buildings each god sanctifies (blesses) while walking around the city.
+// Zeus manual, Mythology chapter (Sanctuaries), and Poseidon manual (Hera,
+// Atlas, Apollo in Atlantis); HeavenGames' sanctuaries page agrees. Atlas
+// follows HeavenGames and the Citadel of Poseidon (timber mill and refinery),
+// per Nicolás; his finished sanctuary also speeds up marble quarrying.
 bool eGod::sTarget(const eGodType gt, const eBuildingType bt) {
     switch(gt) {
-    case eGodType::aphrodite:
+    case eGodType::aphrodite: // "she sanctifies some of your houses"
         return bt == eBuildingType::commonHouse ||
-               bt == eBuildingType::fountain ||
                bt == eBuildingType::eliteHousing;
     case eGodType::apollo:
+        // Podiums, Gymnasiums, Theaters and Stadium; in Atlantis any
+        // Bibliotheke, Laboratory, Observatory or ... (the manual's
+        // sentence is cut off; the Museum is kept as before).
         return bt == eBuildingType::podium ||
-               bt == eBuildingType::college ||
-               bt == eBuildingType::dramaSchool ||
+               bt == eBuildingType::gymnasium ||
                bt == eBuildingType::theater ||
                bt == eBuildingType::stadium ||
-               bt == eBuildingType::gymnasium ||
                bt == eBuildingType::bibliotheke ||
-               bt == eBuildingType::inventorsWorkshop ||
                bt == eBuildingType::laboratory ||
-               bt == eBuildingType::university ||
                bt == eBuildingType::observatory ||
                bt == eBuildingType::museum;
     case eGodType::ares:
         return false;
-    case eGodType::artemis:
-        return bt == eBuildingType::huntingLodge ||
-               bt == eBuildingType::granary;
-    case eGodType::athena:
-        return bt == eBuildingType::growersLodge ||
-               bt == eBuildingType::oliveTree ||
-               bt == eBuildingType::olivePress ||
-               bt == eBuildingType::oilVendor;
-    case eGodType::atlas:
-        return bt == eBuildingType::masonryShop ||
-               bt == eBuildingType::artisansGuild ||
-               bt == eBuildingType::timberMill ||
-               bt == eBuildingType::sculptureStudio;
-    case eGodType::demeter:
+    case eGodType::artemis: // the Boar Hunter's Lodge
+        return bt == eBuildingType::huntingLodge;
+    case eGodType::athena: // Carding Sheds and Olive Presses
+        return bt == eBuildingType::cardingShed ||
+               bt == eBuildingType::olivePress;
+    case eGodType::atlas: // Timber Mills and Refineries
+        return bt == eBuildingType::timberMill ||
+               bt == eBuildingType::refinery;
+    case eGodType::demeter: // "your farms"
         return bt == eBuildingType::wheatFarm ||
                bt == eBuildingType::onionsFarm ||
-               bt == eBuildingType::carrotsFarm ||
-               bt == eBuildingType::cardingShed ||
-               bt == eBuildingType::dairy ||
-               bt == eBuildingType::corral ||
-               bt == eBuildingType::growersLodge ||
-               bt == eBuildingType::orangeTendersLodge ||
-               bt == eBuildingType::foodVendor ||
-               bt == eBuildingType::granary;
-    case eGodType::dionysus:
-        return bt == eBuildingType::growersLodge ||
-               bt == eBuildingType::vine ||
-               bt == eBuildingType::winery ||
-               bt == eBuildingType::wineVendor;
-    case eGodType::hades:
-        return bt == eBuildingType::foundry ||
-               bt == eBuildingType::refinery ||
-               bt == eBuildingType::mint;
-    case eGodType::hephaestus:
-        return bt == eBuildingType::foundry ||
-               bt == eBuildingType::refinery ||
-               bt == eBuildingType::blackMarbleWorkshop ||
+               bt == eBuildingType::carrotsFarm;
+    case eGodType::dionysus: // Wineries
+        return bt == eBuildingType::winery;
+    case eGodType::hades: // Tax Offices, Mints and Foundries
+        return bt == eBuildingType::taxOffice ||
                bt == eBuildingType::mint ||
-               bt == eBuildingType::armory ||
+               bt == eBuildingType::foundry;
+    case eGodType::hephaestus: // Armories and Sculpture Studios
+        return bt == eBuildingType::armory ||
                bt == eBuildingType::sculptureStudio;
-    case eGodType::hera:
-        return bt == eBuildingType::foodVendor ||
-               bt == eBuildingType::fleeceVendor ||
-               bt == eBuildingType::oilVendor ||
-               bt == eBuildingType::wineVendor ||
-               bt == eBuildingType::armsVendor ||
-               bt == eBuildingType::horseTrainer ||
-               bt == eBuildingType::chariotFactory ||
-               bt == eBuildingType::orangeTendersLodge ||
-               bt == eBuildingType::orangeTree;
+    case eGodType::hera: // Corrals and Orange Tenders' Lodges
+        return bt == eBuildingType::corral ||
+               bt == eBuildingType::orangeTendersLodge;
     case eGodType::hermes:
-        return bt == eBuildingType::tradePost ||
-               bt == eBuildingType::pier;
-    case eGodType::poseidon:
+        return false;
+    case eGodType::poseidon: // Fisheries, Urchin Quays, Horse Ranches
         return bt == eBuildingType::urchinQuay ||
                bt == eBuildingType::fishery ||
-               bt == eBuildingType::pier ||
-               bt == eBuildingType::triremeWharf;
-    case eGodType::zeus:
+               bt == eBuildingType::horseRanch;
+    case eGodType::zeus: // "will occasionally sanctify a building"
         return true;
     }
     return false;
+}
+// What an angry (attacking) god does to buildings. Zeus manual, Mythology
+// chapter ("When Gods Attack"), and Poseidon manual (Hera, Atlas, Apollo
+// in Atlantis).
+
+// Buildings an angry god destroys on purpose. Only Zeus is described as
+// destroying a particular building: "He'll destroy the city's Palace,
+// then look for other buildings to crush" (the second part is his
+// general attack, see sGeneralAttack).
+bool eGod::sAttackTarget(const eGodType gt, const eBuildingType bt) {
+    switch(gt) {
+    case eGodType::zeus:
+        return bt == eBuildingType::palace;
+    case eGodType::demeter: // "destroy crops"; per Nicolas, the farm buildings themselves
+        return bt == eBuildingType::wheatFarm ||
+               bt == eBuildingType::carrotsFarm ||
+               bt == eBuildingType::onionsFarm;
+    case eGodType::poseidon:
+        // "Poseidon destroys fisheries, urchin quays, piers and ships"
+        // (Citadel of Poseidon); a dock's water part is the pier
+        return bt == eBuildingType::fishery ||
+               bt == eBuildingType::urchinQuay ||
+               bt == eBuildingType::pier;
+    default:
+        return false;
+    }
+}
+
+// Buildings an angry god curses; cursed buildings stop working until the
+// curse is lifted.
+int eGod::sCurseKind(const eGodType gt) {
+    switch(gt) {
+    case eGodType::zeus: return 10;
+    case eGodType::poseidon: return 1;
+    case eGodType::demeter:
+    case eGodType::artemis: return 0;
+    case eGodType::apollo:
+    case eGodType::dionysus: return 6;
+    case eGodType::hephaestus:
+    case eGodType::atlas: return 2;
+    case eGodType::athena: return 3;
+    case eGodType::hades: return 4;
+    case eGodType::hera: return 9;
+    // Ares (list 10), Aphrodite (7) and Hermes (2) have 0 months
+    default: return -1;
+    }
+}
+
+bool eGod::sCurseKindTarget(const int kind, const eBuildingType bt) {
+    using T = eBuildingType;
+    const auto in = [bt](const std::initializer_list<T> l) {
+        return std::find(l.begin(), l.end(), bt) != l.end();
+    };
+    const bool sanct = bt >= T::templeAphrodite && bt <= T::templeZeus;
+    switch(kind) {
+    case 0: // granary, farms, agoras, dairy, hunting, fishing, corral,
+            // fruit growers' lodge
+        return in({T::granary, T::wheatFarm, T::onionsFarm, T::carrotsFarm,
+                   T::commonAgora, T::grandAgora, T::dairy,
+                   T::huntingLodge, T::fishery, T::urchinQuay, T::corral,
+                   T::orangeTendersLodge});
+    case 1:
+        return in({T::fishery, T::urchinQuay, T::triremeWharf, T::pier});
+    case 2:
+        return in({T::timberMill, T::masonryShop, T::foundry, T::mint,
+                   T::cardingShed, T::sculptureStudio, T::olivePress,
+                   T::winery, T::armory, T::warehouse, T::refinery,
+                   T::chariotFactory, T::blackMarbleWorkshop});
+    case 3:
+        return in({T::armory, T::horseRanch, T::wall, T::tower,
+                   T::gatehouse, T::triremeWharf, T::foundry,
+                   T::chariotFactory, T::watchPost});
+    case 4:
+        return in({T::taxOffice, T::eliteHousing, T::mint, T::pier,
+                   T::tradePost, T::hippodromePiece});
+    case 5:
+        return in({T::tower, T::triremeWharf});
+    case 6:
+        return in({T::commonHouse, T::watchPost, T::hospital,
+                   T::maintenanceOffice, T::commonAgora, T::grandAgora,
+                   T::fountain, T::bibliotheke, T::gymnasium});
+    case 7:
+        return in({T::doricColumn, T::ionicColumn, T::corinthianColumn,
+                   T::bench, T::flowerGarden, T::gazebo, T::hedgeMaze,
+                   T::fishPond, T::tallObelisk, T::sundial, T::topiary,
+                   T::spring, T::stoneCircle, T::shortObelisk,
+                   T::dolphinSculpture, T::orrery, T::shellGarden,
+                   T::baths, T::birdBath, T::commemorative, T::waterPark});
+    case 8:
+        return sanct || eBuilding::sHeroHall(bt) ||
+               in({T::artisansGuild, T::masonryShop});
+    case 9:
+        return sanct || eBuilding::sHeroHall(bt) ||
+               in({T::palace, T::stadium, T::theater, T::hippodromePiece,
+                   T::museum, T::observatory, T::eliteHousing});
+    default:
+        return false;
+    }
+}
+
+int eGod::sCurseMonths(const eGodType gt, const int difficulty) {
+    const int d = std::clamp(difficulty, 0, 4);
+    switch(gt) {
+    case eGodType::apollo: {
+        const int m[5] = {1, 1, 2, 2, 3};
+        return m[d];
+    }
+    case eGodType::ares:
+    case eGodType::aphrodite:
+    case eGodType::hermes:
+        return 0;
+    default: {
+        const int m[5] = {1, 2, 4, 6, 9};
+        return m[d];
+    }
+    }
+}
+
+bool eGod::sCurseTarget(const eGodType gt, const eBuildingType bt) {
+    const int kind = sCurseKind(gt);
+    if(kind < 0) return false;
+    if(kind < 10) return sCurseKindTarget(kind, bt);
+    for(int k = 0; k < 10; k++) {
+        if(sCurseKindTarget(k, bt)) return true;
+    }
+    return false;
+}
+
+// Gods that smash buildings and kill people wherever they walk. Zeus
+// "wreaks general havoc"; Hephaestus sets buildings on fire. Ares and
+// Artemis attack with armies (Sparti, Amazons) in the original; until
+// those armies exist they keep attacking in person.
+bool eGod::sGeneralAttack(const eGodType gt) {
+    switch(gt) {
+    case eGodType::zeus:
+    case eGodType::hephaestus:
+    case eGodType::ares:
+    case eGodType::artemis:
+        return true;
+    default:
+        return false;
+    }
 }
 
 std::string eGod::sGodName(const eGodType gt) {

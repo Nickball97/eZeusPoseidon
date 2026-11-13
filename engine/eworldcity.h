@@ -147,6 +147,15 @@ struct eResourceTrade {
         }
 
         src >> fMax;
+        // Older saves may hold a negative yearly amount (supply/demand
+        // decrease events used to subtract without a lower bound).
+        if(fMax < 0) fMax = 0;
+    }
+
+    // Supply/demand change events: a yearly amount can't go below zero.
+    void changeMax(const int by) {
+        fMax += by;
+        if(fMax < 0) fMax = 0;
     }
 };
 
@@ -254,6 +263,9 @@ public:
     void setMilitaryStrength(const int s);
 
     int wealth() const { return mWealth; }
+    // has already sent debt relief ("rescue cash"); each city does so once
+    bool rescueGiven() const { return mRescueGiven; }
+    void setRescueGiven(const bool r) { mRescueGiven = r; }
     void setWealth(const int w) { mWealth = w; }
 
     void setWaterTrade(const bool w, const eCityId cid);
@@ -353,6 +365,7 @@ private:
 
     std::set<eCityId> mWaterTrade;
     bool mVisible = true;
+    bool mRescueGiven = false;
 
     std::vector<eResourceTrade> mBuys;
     std::vector<eResourceTrade> mSells;

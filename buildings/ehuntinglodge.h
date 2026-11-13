@@ -15,6 +15,9 @@ public:
 
     void timeChanged(const int by) override;
 
+    // a blessing gives one bigger delivery (see useBlessing)
+    bool blessingLastsUntilUsed() const override { return true; }
+    bool blessingBoostsSpeed() const override { return false; }
     void read(eReadStream& src) override;
     void write(eWriteStream& dst) const override;
 
@@ -22,7 +25,9 @@ public:
 private:
     bool spawn();
 
-    stdptr<eHunter> mHunter;
+    // "Each hunting lodge sends out 3 hunters" (Citadel of Poseidon)
+    std::vector<stdptr<eHunter>> mHunters;
+    int hunterCount();
     double mSpawnTime = 1000000;
 };
 

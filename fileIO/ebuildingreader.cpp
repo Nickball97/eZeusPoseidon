@@ -1,4 +1,6 @@
 #include "ebuildingreader.h"
+#include "buildings/sanctuaries/etempleobeliskbuilding.h"
+#include "buildings/sanctuaries/etemplegrandstatuebuilding.h"
 
 #include "buildings/allbuildings.h"
 #include "engine/egameboard.h"
@@ -353,6 +355,9 @@ stdsptr<eBuilding> eBuildingReader::sRead(
     case eBuildingType::avenue: {
         b = e::make_shared<eAvenue>(board, cid);
     } break;
+    case eBuildingType::boulevard: {
+        b = e::make_shared<eAvenue>(board, cid, eBuildingType::boulevard);
+    } break;
 
     case eBuildingType::commemorative: {
         int id;
@@ -474,6 +479,18 @@ stdsptr<eBuilding> eBuildingReader::sRead(
     } break;
     case eBuildingType::templeAltar: {
         const auto ts = e::make_shared<eTempleAltarBuilding>(board, cid);
+        b = ts;
+        readSanctBuildingMonument(board, src, ts);
+    } break;
+    case eBuildingType::templeGrandStatue: {
+        const auto ts = e::make_shared<eTempleGrandStatueBuilding>(board, cid);
+        b = ts;
+        readSanctBuildingMonument(board, src, ts);
+    } break;
+    case eBuildingType::templeObelisk: {
+        int id;
+        src >> id;
+        const auto ts = e::make_shared<eTempleObeliskBuilding>(id, board, cid);
         b = ts;
         readSanctBuildingMonument(board, src, ts);
     } break;

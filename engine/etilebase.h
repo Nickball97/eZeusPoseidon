@@ -34,6 +34,10 @@ public:
     bool hasWater() const;
     bool hasLava() const;
     bool hasDeepWater() const;
+    // Water Crossings: the number of tiles in the crossing this tile is
+    // part of (0 if none). Small crossings block ships, see eTile.
+    int bridgeLength() const;
+    virtual bool bridgeBlocksShips() const { return false; }
     bool hasQuake() const;
 
     bool walkableTerrain() const;

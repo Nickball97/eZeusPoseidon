@@ -12,6 +12,8 @@ struct eNumbers {
     static double sEliteHousingTaxMultiplier;
     static double sCommonHousingTaxMulitplier;
     static double sWageMultiplier;
+    // city-wide tax coverage below which taxes please people like "None"
+    static double sVeryLowTaxCoverage;
 
     static int sReinforcementsTravelTime;
     static int sArmyTravelTime;
@@ -168,6 +170,7 @@ struct eNumbers {
 
     static int sFriendlyGodVisitPeriod;
     static int sGodHelpPeriod;
+    static int sSanctuaryActivePeriod;
     static int sGodHelpAttackPeriod;
     static int sGodHelpAttackPlayerPeriod;
 

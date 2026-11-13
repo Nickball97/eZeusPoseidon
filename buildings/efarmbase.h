@@ -4,6 +4,7 @@
 #include "eresourcebuildingbase.h"
 
 #include "textures/ebuildingtextures.h"
+#include "engine/edate.h"
 
 class eFarmBase : public eResourceBuildingBase {
 public:
@@ -17,6 +18,14 @@ public:
     std::vector<eOverlay> getOverlays(const eTileSize size) const override;
 
     void timeChanged(const int by) override;
+    // a blessing lasts until used and multiplies the next output once
+    bool blessingLastsUntilUsed() const override { return true; }
+    bool blessingBoostsSpeed() const override { return false; }
+
+    // for the info window: how far the crop has grown towards a full
+    // harvest (0-1), and the month it is brought in
+    double growth() const;
+    eMonth harvestMonth() const;
 
     void read(eReadStream& src) override;
     void write(eWriteStream& dst) const override;

@@ -161,6 +161,8 @@ SOURCES += \
         buildings/sanctuaries/estairsrenderer.cpp \
         buildings/sanctuaries/etemplealtarbuilding.cpp \
         buildings/sanctuaries/etemplebuilding.cpp \
+        buildings/sanctuaries/etemplegrandstatuebuilding.cpp \
+        buildings/sanctuaries/etempleobeliskbuilding.cpp \
         buildings/sanctuaries/etemplemonumentbuilding.cpp \
         buildings/sanctuaries/etemplestatuebuilding.cpp \
         buildings/sanctuaries/etempletilebuilding.cpp \
@@ -212,12 +214,18 @@ SOURCES += \
         characters/actions/etakecattleaction.cpp \
         characters/actions/etraderaction.cpp \
         characters/actions/etriremeaction.cpp \
+        characters/actions/eenemywarshipaction.cpp \
+        characters/actions/epriestaction.cpp \
+        characters/actions/ekrakendefenderaction.cpp \
+        characters/actions/eguardiandefenderaction.cpp \
+        characters/actions/eoutlawaction.cpp \
         characters/actions/ewaitaction.cpp \
         characters/actions/ewolfaction.cpp \
         characters/actions/godHelp/eaphroditehelpaction.cpp \
         characters/actions/godHelp/eapollohelpaction.cpp \
         characters/actions/godHelp/eareshelpaction.cpp \
         characters/actions/godHelp/eartemishelpaction.cpp \
+        characters/actions/godHelp/eartemishuntaction.cpp \
         characters/actions/godHelp/eathenahelpaction.cpp \
         characters/actions/godHelp/eatlashelpaction.cpp \
         characters/actions/godHelp/edemeterhelpaction.cpp \
@@ -273,6 +281,8 @@ SOURCES += \
         characters/eegyptianhoplite.cpp \
         characters/eelitecitizen.cpp \
         characters/eenemyboat.cpp \
+        characters/eenemywarship.cpp \
+        characters/epriest.cpp \
         characters/eenlistedforces.cpp \
         characters/efightingcharacter.cpp \
         characters/efightingpatroler.cpp \
@@ -385,6 +395,7 @@ SOURCES += \
         engine/ecityrequest.cpp \
         engine/ecolonymonumentaction.cpp \
         engine/edate.cpp \
+        engine/emessagehistory.cpp \
         engine/edifficulty.cpp \
         engine/eemploymentdistributor.cpp \
         engine/eepisode.cpp \
@@ -450,6 +461,7 @@ SOURCES += \
         gameEvents/edemandchangeevent.cpp \
         gameEvents/eearthquakeevent.cpp \
         gameEvents/eeconomicchangeevent.cpp \
+        gameEvents/efavorchangeevent.cpp \
         gameEvents/eeconomicmilitarychangeeventbase.cpp \
         gameEvents/eeventtrigger.cpp \
         gameEvents/egameevent.cpp \
@@ -501,6 +513,7 @@ SOURCES += \
         gameEvents/ewagechangeevent.cpp \
         gameEvents/ewarning.cpp \
         main.cpp \
+        missiles/eatlanteanfiremissile.cpp \
         missiles/earrowmissile.cpp \
         missiles/earrowspearbase.cpp \
         missiles/edustmissile.cpp \
@@ -630,6 +643,9 @@ SOURCES += \
         widgets/efulfilldialog.cpp \
         widgets/egameloadingwidget.cpp \
         widgets/egamemainmenu.cpp \
+        widgets/egameoptions.cpp \
+        widgets/emessageswidget.cpp \
+        widgets/ecursors.cpp \
         widgets/egamemenu.cpp \
         widgets/egamemenubase.cpp \
         widgets/egamewidget.cpp \
@@ -651,6 +667,7 @@ SOURCES += \
         widgets/elinewidget.cpp \
         widgets/eloadingwidget.cpp \
         widgets/emainmenu.cpp \
+        widgets/egamechooser.cpp \
         widgets/emainmenubase.cpp \
         widgets/emainwidget.cpp \
         widgets/emenuloadingwidget.cpp \
@@ -665,6 +682,7 @@ SOURCES += \
         widgets/emultilinelabel.cpp \
         widgets/emultipleselectionwidget.cpp \
         widgets/enamewidget.cpp \
+        widgets/echeatwidget.cpp \
         widgets/enumlineedit.cpp \
         widgets/enumlineeditwidget.cpp \
         widgets/eokbutton.cpp \
@@ -736,6 +754,7 @@ HEADERS += \
     audio/emusicvector.h \
     audio/esounds.h \
     audio/esoundvector.h \
+    audio/eaudiosettings.h \
     buildings/allbuildings.h \
     buildings/eaestheticsbuilding.h \
     buildings/eagorabase.h \
@@ -819,6 +838,7 @@ HEADERS += \
     buildings/esculpturestudio.h \
     buildings/eshepherbuildingbase.h \
     buildings/esmallhouse.h \
+    buildings/ehousemodel.h \
     buildings/estadium.h \
     buildings/estadiumrenderer.h \
     buildings/estoragebuilding.h \
@@ -858,6 +878,8 @@ HEADERS += \
     buildings/sanctuaries/estairsrenderer.h \
     buildings/sanctuaries/etemplealtarbuilding.h \
     buildings/sanctuaries/etemplebuilding.h \
+    buildings/sanctuaries/etemplegrandstatuebuilding.h \
+    buildings/sanctuaries/etempleobeliskbuilding.h \
     buildings/sanctuaries/etemplemonumentbuilding.h \
     buildings/sanctuaries/etemplestatuebuilding.h \
     buildings/sanctuaries/etempletilebuilding.h \
@@ -907,12 +929,18 @@ HEADERS += \
     characters/actions/etakecattleaction.h \
     characters/actions/etraderaction.h \
     characters/actions/etriremeaction.h \
+    characters/actions/eenemywarshipaction.h \
+    characters/actions/epriestaction.h \
+    characters/actions/ekrakendefenderaction.h \
+    characters/actions/eguardiandefenderaction.h \
+    characters/actions/eoutlawaction.h \
     characters/actions/ewaitaction.h \
     characters/actions/ewolfaction.h \
     characters/actions/godHelp/eaphroditehelpaction.h \
     characters/actions/godHelp/eapollohelpaction.h \
     characters/actions/godHelp/eareshelpaction.h \
     characters/actions/godHelp/eartemishelpaction.h \
+    characters/actions/godHelp/eartemishuntaction.h \
     characters/actions/godHelp/eathenahelpaction.h \
     characters/actions/godHelp/eatlashelpaction.h \
     characters/actions/godHelp/edemeterhelpaction.h \
@@ -967,6 +995,8 @@ HEADERS += \
     characters/eegyptianhoplite.h \
     characters/eelitecitizen.h \
     characters/eenemyboat.h \
+    characters/eenemywarship.h \
+    characters/epriest.h \
     characters/eenlistedforces.h \
     characters/efightingcharacter.h \
     characters/efightingpatroler.h \
@@ -1155,6 +1185,7 @@ HEADERS += \
     gameEvents/edemandchangeevent.h \
     gameEvents/eearthquakeevent.h \
     gameEvents/eeconomicchangeevent.h \
+    gameEvents/efavorchangeevent.h \
     gameEvents/eeconomicmilitarychangeeventbase.h \
     gameEvents/eeventtrigger.h \
     gameEvents/egameevent.h \
@@ -1205,6 +1236,7 @@ HEADERS += \
     gameEvents/etroopsrequestfulfilledevent.h \
     gameEvents/ewagechangeevent.h \
     gameEvents/ewarning.h \
+    missiles/eatlanteanfiremissile.h \
     missiles/earrowmissile.h \
     missiles/earrowspearbase.h \
     missiles/edustmissile.h \
@@ -2843,6 +2875,10 @@ HEADERS += \
     widgets/efulfilldialog.h \
     widgets/egameloadingwidget.h \
     widgets/egamemainmenu.h \
+    widgets/egameoptions.h \
+    widgets/emessageswidget.h \
+    widgets/ecursors.h \
+    engine/emessagehistory.h \
     widgets/egamemenu.h \
     widgets/egamemenubase.h \
     widgets/egamewidget.h \
@@ -2860,6 +2896,7 @@ HEADERS += \
     widgets/elinewidget.h \
     widgets/eloadingwidget.h \
     widgets/emainmenu.h \
+    widgets/egamechooser.h \
     widgets/emainmenubase.h \
     widgets/emainwidget.h \
     widgets/emenuloadingwidget.h \
@@ -2874,6 +2911,7 @@ HEADERS += \
     widgets/emultilinelabel.h \
     widgets/emultipleselectionwidget.h \
     widgets/enamewidget.h \
+    widgets/echeatwidget.h \
     widgets/enumlineedit.h \
     widgets/enumlineeditwidget.h \
     widgets/eokbutton.h \

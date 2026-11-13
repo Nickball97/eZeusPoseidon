@@ -2,6 +2,7 @@
 
 #include "textures/egametextures.h"
 #include "enumbers.h"
+#include "efigurestats.h"
 
 eChariotBase::eChariotBase(eGameBoard& board,
                              const eCharTexs charTexs,
@@ -11,6 +12,8 @@ eChariotBase::eChariotBase(eGameBoard& board,
     setAttack(eNumbers::sChariotAttack);
     setSpeed(eNumbers::sChariotSpeed);
     setHP(eNumbers::sChariotHP);
+    // original-game strength for this soldier type, if it has one
+    eFigureStats::sApply(this);
 }
 
 std::shared_ptr<eTexture>

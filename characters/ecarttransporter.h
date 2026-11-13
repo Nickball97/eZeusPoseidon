@@ -40,6 +40,7 @@ public:
 
     eResourceType resType() const { return mResourceType; }
     int resCount() const { return mResourceCount; }
+    void setMaxCount(const int m) { mMaxCount = m; }
     bool hasResource() const { return mResourceCount > 0; }
 
     void setResourceValue(const eResourceType type,
@@ -87,6 +88,7 @@ private:
     bool mBigTrailer = false;
 
     int mMaxDistance = 10000;
+    int mMaxCount = 0; // loads per trip; 0 = the usual size for the good
 
     stdptr<eOx> mOx;
     stdptr<eTrailer> mTrailer;

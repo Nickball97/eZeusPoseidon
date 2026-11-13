@@ -1,9 +1,12 @@
 #include "emoveaction.h"
+#include "enumbers.h"
 
 #include "../echaracter.h"
 #include "walkable/ewalkableobject.h"
 
 #include "vec2.h"
+#include "engine/egameboard.h"
+#include "buildings/sanctuaries/esanctuary.h"
 
 eMoveAction::eMoveAction(eCharacter* const c,
                          const stdsptr<eWalkableObject>& tileWalkable,
@@ -87,7 +90,24 @@ void eMoveAction::increment(const int by) {
     }
 
     const auto c = character();
-    moveBy(c->speed()*0.005 * by);
+    double speed = c->speed();
+    const auto ct = c->type();
+    const bool cart = ct == eCharacterType::cartTransporter;
+    const bool trade = ct == eCharacterType::trader ||
+                       ct == eCharacterType::donkey ||
+                       ct == eCharacterType::tradeBoat;
+    if(cart || trade) {
+        // Hermes' Refuge finished (original exe 0x004E1B20): deliverymen
+        // speed code x1.33 (6 -> 7, 1.25x; Citadel of Poseidon speed.html
+        // agrees), merchants, donkeys and trade ships x1.5
+        const auto s = c->getBoard().sanctuary(c->cityId(), eGodType::hermes);
+        if(s && s->active()) speed *= cart ? 1.25 : 1.5;
+    }
+    // a normal walker covers 54.4 tiles a month (Citadel of Poseidon
+    // speed.html; original exe: speed code 6 moves one of a tile's 15 steps
+    // per walker tick, 816 ticks a month)
+    static const double sTilesPerTick = 54.4*12/(365.*eNumbers::sDayLength);
+    moveBy(speed*sTilesPerTick*by);
 }
 
 void eMoveAction::read(eReadStream& src) {

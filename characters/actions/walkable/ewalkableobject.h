@@ -23,7 +23,8 @@ enum class eWalkableObjectType {
     ranch,
     all,
     attacker,
-    artisan
+    artisan,
+    soldier // the player's soldiers: as default, plus the palace grounds
 };
 
 class eHasResourceObject;
@@ -48,6 +49,7 @@ public:
             const eWalkableObjectType type);
     static stdsptr<eWalkableObject> sCreateDefault();
     static stdsptr<eWalkableObject> sCreateArtisan();
+    static stdsptr<eWalkableObject> sCreateSoldier();
     static stdsptr<eWalkableObject> sCreateRoad();
     static stdsptr<eWalkableObject> sCreateRoadAvenue();
     static stdsptr<eWalkableObject> sCreateRoadblock();

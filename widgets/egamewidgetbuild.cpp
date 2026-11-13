@@ -1,4 +1,5 @@
 #include "egamewidget.h"
+#include "buildings/ehousemodel.h"
 
 #include "eiteratesquare.h"
 #include "engine/egameboard.h"
@@ -785,7 +786,19 @@ bool eGameWidget::buildMouseRelease() {
                 const auto b = t->underBuilding();
                 const auto r = static_cast<eRoad*>(b);
                 const bool rb = r->isRoadblock();
-                if(!rb) r->setRoadblock(true);
+                if(!rb) {
+                    r->setRoadblock(true);
+                    if(!mEditorMode) {
+                        // 2/3/4/5/10 drachmas by difficulty (Citadel of
+                        // Poseidon building models, Nefermenu)
+                        static const int sCost[] = {2, 3, 4, 5, 10};
+                        const auto ppid = mBoard->personPlayer();
+                        const auto diff = mBoard->difficulty(ppid);
+                        const int cost = sCost[static_cast<int>(diff)];
+                        mBoard->incDrachmas(ppid, -cost,
+                                            eFinanceTarget::construction);
+                    }
+                }
             }
         } break;
         case eBuildingMode::bridge: {
@@ -1047,6 +1060,62 @@ bool eGameWidget::buildMouseRelease() {
             if(!t1) return true;
             const bool cb = mBoard->canBuild(t1->x() + 1, t1->y() + 1, 4, 4, mEditorMode, cid, pid);
             if(!cb) return true;
+            if(!mEditorMode) {
+                // Before an elite home can be placed the storehouses must
+                // hold 2 crates of food, 1 skein of fleece and 1 jug of oil,
+                // and the area needs high appeal (game text 19:204-207;
+                // Citadel of Poseidon, housing.html and Zeus and Europa
+                // ep. 3). The goods are only checked, not used.
+                const auto warn = [&](const int id, const int n) {
+                    auto text = eLanguage::zeusText(19, id);
+                    eStringHelpers::replace(text, "[warning_amount]",
+                                            std::to_string(n));
+                    showTip(cid, text);
+                };
+                const auto vcid = mViewedCityId;
+                if(mBoard->resourceCount(vcid, eResourceType::food) < 2) {
+                    warn(204, 2);
+                    return true;
+                }
+                if(mBoard->resourceCount(vcid, eResourceType::fleece) < 1) {
+                    warn(205, 1);
+                    return true;
+                }
+                if(mBoard->resourceCount(vcid, eResourceType::oliveOil) < 1) {
+                    warn(206, 1);
+                    return true;
+                }
+                // zeus.exe (0x004FF430): the highest appeal over the 4x4
+                // spot, plus 10 when a tile along its edge is water
+                // (0x004A4500)
+                double best = -1e9;
+                int n = 0;
+                bool water = false;
+                for(int x = t1->x(); x < t1->x() + 6; x++) {
+                    for(int y = t1->y(); y < t1->y() + 6; y++) {
+                        const auto t = mBoard->tile(x, y);
+                        if(!t) continue;
+                        const bool inX = x > t1->x() && x < t1->x() + 5;
+                        const bool inY = y > t1->y() && y < t1->y() + 5;
+                        if(inX && inY) {
+                            best = std::max(best,
+                                            mBoard->appeal(t->dx(), t->dy()));
+                            n++;
+                        } else if(inX || inY) {
+                            if(t->hasWater()) water = true;
+                        }
+                    }
+                }
+                if(water) best += 10;
+                const auto diff = mBoard->difficulty(pid);
+                int need = eHouseModel::eliteEvolve(diff, 1);
+                const auto aph = mBoard->sanctuary(vcid, eGodType::aphrodite);
+                if(aph && aph->active()) need -= 10; // Aphrodite
+                if(n == 0 || best < need) {
+                    showTip(cid, eLanguage::zeusText(19, 207));
+                    return true;
+                }
+            }
             r = mBoard->build(t1->x() + 1, t1->y() + 1, 4, 4, cid, pid, mEditorMode, [&]() {
                 return e::make_shared<eEliteHousing>(*mBoard, mViewedCityId);
             });
@@ -1234,6 +1303,11 @@ bool eGameWidget::buildMouseRelease() {
 
 
         case eBuildingMode::pier: {
+            // "You may only have 10 active Piers" (original game text 19:30)
+            if(!mEditorMode && mBoard->countBuildings(cid, eBuildingType::pier) >= 10) {
+                showTip(cid, eLanguage::zeusText(19, 30));
+                break;
+            }
             eDiagonalOrientation o;
             const bool c = canBuildPier(mHoverTX, mHoverTY, o, cid, pid, mEditorMode);
             if(c) {
@@ -1441,8 +1515,22 @@ bool eGameWidget::buildMouseRelease() {
             };
             break;
         case eBuildingMode::tower: {
-            r = mBoard->build(mHoverTX, mHoverTY, 2, 2, cid, pid, mEditorMode,
-                  [this]() { return e::make_shared<eTower>(*mBoard, mViewedCityId); });
+            // As in the original game, a tower is built on top of 4 walls
+            // (upstream #55). The map editor may still place it anywhere.
+            const auto creator = [this]() {
+                return e::make_shared<eTower>(*mBoard, mViewedCityId);
+            };
+            const bool onWalls = mBoard->canBuildTowerOnWalls(
+                                     mHoverTX, mHoverTY, cid, pid);
+            if(onWalls) {
+                mBoard->eraseWallsUnderTower(mHoverTX, mHoverTY);
+                // flat: walkers standing on the walls don't block the tower
+                r = mBoard->build(mHoverTX, mHoverTY, 2, 2, cid, pid,
+                                  mEditorMode, creator, false, true);
+            } else if(mEditorMode) {
+                r = mBoard->build(mHoverTX, mHoverTY, 2, 2, cid, pid,
+                                  mEditorMode, creator);
+            }
         } break;
         case eBuildingMode::gatehouse: {
             int dx;
@@ -1694,15 +1782,23 @@ bool eGameWidget::buildMouseRelease() {
             return true;
         } break;
         case eBuildingMode::avenue:
-            apply = [this, cid, pid, &r](eTile* const tile) {
-                const bool hr = canBuildAvenue(tile, cid, pid, mEditorMode);
-                if(!hr) return;
-                r = mBoard->build(tile->x(), tile->y(), 1, 1, cid, pid, mEditorMode,
-                      [this]() { return e::make_shared<eAvenue>(*mBoard, mViewedCityId); },
-                      false, true) || r;
-            };
+        case eBuildingMode::boulevard: {
+            // laid along a road like the original (eGameBoard::avenuePieces)
+            const auto type = eBuildingModeHelpers::toBuildingType(mode);
+            const auto pieces = mBoard->avenuePieces(
+                        mPressedTX, mPressedTY, mHoverTX, mHoverTY,
+                        type, cid, pid, mEditorMode);
+            std::vector<eTile*> tiles;
+            for(const auto& p : pieces) {
+                const bool b = mBoard->buildAvenuePiece(p, type, cid, pid,
+                                                        mEditorMode);
+                if(!b) continue;
+                r = true;
+                for(const auto t : p.fTrees) tiles.push_back(t);
+            }
+            updateMaps(tiles);
             mBoard->scheduleTerrainUpdate();
-            break;
+        } break;
 
 
         case eBuildingMode::populationMonument:
@@ -2013,7 +2109,10 @@ bool eGameWidget::buildMouseRelease() {
             }
 
             const auto bt = eBuildingModeHelpers::toBuildingType(mode);
-            const int m = eBuilding::sInitialMarbleCost(bt);
+            const bool citadel = bt == eBuildingType::templePoseidon &&
+                                 mBoard->atlantean(mViewedCityId);
+            const int m = citadel ? eSanctuary::sCitadelInitialMarble :
+                                    eBuilding::sInitialMarbleCost(bt);
             const int hasM = mBoard->resourceCount(mViewedCityId, eResourceType::marble);
             if(!mEditorMode && hasM < m) {
                 auto text = eLanguage::zeusText(19, 201);
@@ -2026,7 +2125,9 @@ bool eGameWidget::buildMouseRelease() {
                 return false;
             }
 
-            const auto h = eSanctBlueprints::sSanctuaryBlueprint(bt, mRotate);
+            const auto h = eSanctBlueprints::sSanctuaryBlueprint(
+                bt, mRotate, bt == eBuildingType::templePoseidon &&
+                             mBoard->atlantean(mViewedCityId));
 
             const int sw = h->fW;
             const int sh = h->fH;

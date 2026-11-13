@@ -468,7 +468,7 @@ void eReceiveRequestEvent::trigger() {
                 board->event(eEvent::famineAllyWarning, ed);
             }
         }
-    } else if(mRequestType == eReceiveRequestType::general) {
+    } else if(mRequestType == eReceiveRequestType::project) {
         if(mCity->isRival()) {
             if(mPostpone == 0) { // initial
                 board->event(eEvent::projectRivalInitial, ed);
@@ -698,4 +698,35 @@ void eReceiveRequestEvent::finished(eEventTrigger& t, const eReason& r) {
     const auto item = eResourceTypeHelpers::typeLongName(mResource);
     eStringHelpers::replaceAll(rFull, "[item]", item);
     t.trigger(*this, date, rFull);
+}
+
+bool eReceiveRequestEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    if(!isMainEvent()) return false;
+    oracleChooseCity();
+    if(!mCity) return false;
+    oracleChooseType();
+    oracleChooseCount();
+    std::string base;
+    switch(mRequestType) {
+    case eReceiveRequestType::tribute: base = "tribute_due"; break;
+    case eReceiveRequestType::general: base = "general_request"; break;
+    case eReceiveRequestType::famine: base = "famine_relief_relief"; break;
+    case eReceiveRequestType::project: base = "building_project"; break;
+    case eReceiveRequestType::festival: base = "great_festival"; break;
+    case eReceiveRequestType::financialWoes: base = "financial_woes"; break;
+    }
+    if(base.empty()) return false;
+    // same variant choice as trigger()
+    std::string variant;
+    if(mRequestType == eReceiveRequestType::tribute) variant = "_D";
+    else if(mCity->isRival()) variant = "_D";
+    else if(mCity->isVassal() || mCity->isColony()) variant = "_P";
+    else if(mCity->isParentCity()) variant = "_R";
+    else variant = "_S";
+    ed.fCity = mCity;
+    ed.fResourceType = mResource;
+    ed.fResourceCount = mCount;
+    ed.fGod = mGod;
+    msg = eMessages::oracleMessage(base, variant);
+    return true;
 }

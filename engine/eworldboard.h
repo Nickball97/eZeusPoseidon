@@ -61,6 +61,10 @@ public:
     void read(eReadStream& src);
 
     void attackedAlly(const ePlayerId pid);
+    // Symphonia Ithikos (Poseidon manual, Atlanteans in the World): an
+    // Atlantean leader who attacks an Atlantean ally makes every Atlantean
+    // ally a rival; returns true if any city turned
+    bool breakSymphoniaIthikos(const eTeamId playerTeam);
 
     stdsptr<eWorldCity> colonyWithId(const int id) const;
     void activateColony(const int id);

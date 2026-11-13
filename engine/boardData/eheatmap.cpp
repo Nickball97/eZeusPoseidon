@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 
 void eHeatMap::add(const eHeatMap& other) {
     assert(mDX == other.mDX);
@@ -84,6 +85,37 @@ void eHeatMap::addHeat(const eHeat& a,
     const int r = a.fRange;
     if(r <= 0) return;
     const double v = a.fValue;
+    if(a.fStep > 0) {
+        // Original rule (exe 0x004A4BF0/0x004A4C60, documented "verified"
+        // in zeus-poseidon-arm64 docs/engine/terrain.md 7.1): ring r = 1 ..
+        // min(range, 6) around the footprint (square rings) gets the
+        // current value, which changes by fStepSize after every fStep
+        // rings. The footprint itself gets nothing, and every tile stays
+        // within -100..100 after each addition.
+        const int rr = std::min(r, 6);
+        for(int x = ax - rr; x < ax + sw + rr; x++) {
+            for(int y = ay - rr; y < ay + sh + rr; y++) {
+                const int ddx = x < ax ? ax - x :
+                                (x >= ax + sw ? x - (ax + sw - 1) : 0);
+                const int ddy = y < ay ? ay - y :
+                                (y >= ay + sh ? y - (ay + sh - 1) : 0);
+                const int dist = std::max(ddx, ddy);
+                if(dist == 0 || dist > rr) continue;
+                const int steps = (dist - 1)/a.fStep;
+                const double val = v + steps*a.fStepSize;
+                int dtx;
+                int dty;
+                eTileHelper::tileIdToDTileId(x, y, dtx, dty);
+                addHeat(dtx, dty, 2*val); // addHeat() halves its input
+                if(dtx >= mDX && dty >= mDY &&
+                   dtx < mWidth + mDX && dty < mHeight + mDY) {
+                    auto& tile = mMap[dtx - mDX][dty - mDY];
+                    tile.fAppeal = std::clamp(tile.fAppeal, -100., 100.);
+                }
+            }
+        }
+        return;
+    }
     for(int x = ax - r; x <= ax + sw + r; x++) {
         for(int y = ay - r; y <= ay + sh + r; y++) {
             const double cx = ax + 0.5*sw;

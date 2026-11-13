@@ -13,6 +13,7 @@
 #include "widgets/eprogressbar.h"
 
 #include <algorithm>
+#include <cctype>
 
 eSanctuaryInfoWidget::eSanctuaryInfoWidget(
         eMainWindow* const window,
@@ -100,6 +101,29 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
         descLabel->fitContent();
         cw->addWidget(descLabel);
 
+        // mod feature 1B: the original's unused texts, "This Sanctuary is
+        // inactive..." (132, 5) and "This Sanctuary is active for another"
+        // (132, 8) followed by the days left (Days: 8, 45)
+        {
+            const auto activeLabel = new eLabel(window());
+            activeLabel->setNoPadding();
+            activeLabel->setSmallFontSize();
+            activeLabel->setWrapWidth(cww);
+            if(s->active()) {
+                auto days = eLanguage::zeusText(8, 45);
+                if(!days.empty()) days[0] = std::tolower(days[0]);
+                const int n = s->activeDaysLeft();
+                activeLabel->setText(eLanguage::zeusText(132, 8) + " " +
+                                     std::to_string(n) + " " + days + ".");
+            } else {
+                activeLabel->setYellowFontColor();
+                activeLabel->setText(eLanguage::zeusText(132, 5));
+            }
+            activeLabel->fitContent();
+            cw->addWidget(activeLabel);
+            activeLabel->setY(descLabel->y() + descLabel->height() + p);
+        }
+
         const auto buttonReasonW = new eWidget(window());
         buttonReasonW->setNoPadding();
         cw->addWidget(buttonReasonW);
@@ -139,11 +163,14 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
                     case eHelpDenialReason::error:
                         string = -1;
                         break;
+                    case eHelpDenialReason::inactive:
+                        string = 5; // This Sanctuary is inactive...
+                        break;
                     }
                     reasonLabel->setYellowFontColor();
                 } else {
                     string = 24 + godId;
-                    reasonLabel->setLightFontColor();
+                    reasonLabel->setDarkFontColor();
                 }
                 const auto txt = eLanguage::zeusText(132, string);
                 reasonLabel->setText(txt);
@@ -153,13 +180,37 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
                 buttonReasonW->fitHeight();
                 buttonReasonW->align(eAlignment::bottom);
             });
-            const auto bar = new eProgressBar(window());
-            bar->setRange(0, 100);
-            const double frac = s->helpTimeFraction();
-            bar->setValue(std::clamp(int(std::floor(100*frac)), 5, 100));
-            bw->addWidget(bar);
-            const int w = pb->width();
-            bar->resize(w, p);
+            // no timer bar under the button: the original has none
+
+            bw->stackVertically(p);
+            bw->fitContent();
+        }
+        if(s->hasOracle()) {
+            // Zeus manual, Consulting the Oracle: like prayer; if the
+            // Oracle responds it issues a prediction
+            const auto bw = new eWidget(window());
+            bw->setNoPadding();
+            buttonsW->addWidget(bw);
+            const auto txt = eLanguage::zeusText(132, 109); // Consult Oracle
+            const auto pb = new eFramedButton(txt, window());
+            pb->setUnderline(false);
+            pb->fitContent();
+            bw->addWidget(pb);
+            pb->setPressAction([s, buttonReasonW, reasonLabel]() {
+                const bool active = s->active();
+                if(active && s->oracleReady()) {
+                    s->consultOracle();
+                    return;
+                }
+                reasonLabel->setYellowFontColor();
+                // inactive: "This Sanctuary is inactive...", else Oracle Unavailable
+                reasonLabel->setText(eLanguage::zeusText(132, active ? 110 : 5));
+                reasonLabel->fitContent();
+                buttonReasonW->stackVertically();
+                buttonReasonW->fitHeight();
+                buttonReasonW->align(eAlignment::bottom);
+            });
+            // no timer bar under the button: the original has none
 
             bw->stackVertically(p);
             bw->fitContent();
@@ -195,15 +246,20 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
                         case eHelpDenialReason::error:
                             string = -1;
                             break;
+                        case eHelpDenialReason::inactive:
+                            string = -2;
+                            break;
                         }
                         reasonLabel->setYellowFontColor();
                     } else {
                         string = 25;
-                        reasonLabel->setLightFontColor();
+                        reasonLabel->setDarkFontColor();
                     }
                     const auto godType = s->godType();
                     const auto godName = eGod::sGodName(godType);
-                    const auto txt = godName + " " + eLanguage::zeusText(59, string);
+                    const auto txt = string == -2 ?
+                        eLanguage::zeusText(132, 5) : // This Sanctuary is inactive...
+                        godName + " " + eLanguage::zeusText(59, string);
                     reasonLabel->setText(txt);
                     reasonLabel->fitContent();
 
@@ -229,13 +285,7 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
                     mw->openDialog(choose);
                 }
             });
-            const auto bar = new eProgressBar(window());
-            bar->setRange(0, 100);
-            const double frac = s->helpAttackTimeFraction();
-            bar->setValue(std::clamp(int(std::floor(100*frac)), 5, 100));
-            bw->addWidget(bar);
-            const int w = pb->width();
-            bar->resize(w, p);
+            // no timer bar under the button: the original has none
 
             bw->stackVertically(p);
             bw->fitContent();

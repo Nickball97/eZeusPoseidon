@@ -1,11 +1,18 @@
 #include "ehousebase.h"
 
 #include "engine/egameboard.h"
+#include "engine/eboardcity.h"
+#include "buildings/estadium.h"
+#include "buildings/emuseum.h"
+#include "buildings/sanctuaries/esanctuary.h"
 
 #include "characters/esettler.h"
+#include "characters/ehomeless.h"
+#include "characters/actions/esettleraction.h"
 #include "characters/actions/emovetoaction.h"
 #include "characters/actions/ekillcharacterfinishfail.h"
 #include "enumbers.h"
+#include "fileIO/efileformat.h"
 
 #include <algorithm>
 
@@ -49,6 +56,37 @@ int eHouseBase::allCultureScience() const {
     return result;
 }
 
+int eHouseBase::aphroditeAppealBonus() const {
+    const auto s = getBoard().sanctuary(cityId(), eGodType::aphrodite);
+    return s && s->finished() ? 10 : 0;
+}
+
+bool eHouseBase::hasCultureBonusBuilding() const {
+    auto& b = getBoard();
+    const auto c = b.boardCityWithId(cityId());
+    if(!c) return false;
+    if(atlantean()) {
+        const auto m = c->museum();
+        return m && m->enabled();
+    }
+    const auto s = c->stadium();
+    return s && s->enabled();
+}
+
+int eHouseBase::culturePoints() const {
+    const bool atl = atlantean();
+    int p = 0;
+    // original exe 0x00484DE0: philosopher 15, actor 25, athlete 20,
+    // competitor 20; Atlantean inventor 25, astronomer 20, scholar 15,
+    // curator 20
+    if(mPhilosophers > 0) p += atl ? 25 : 15;
+    if(mActors > 0) p += atl ? 20 : 25;
+    if(mAthletes > 0) p += atl ? 15 : 20;
+    if(mCompetitors > 0) p += 20;
+    if(hasCultureBonusBuilding()) p += 10;
+    return p;
+}
+
 void eHouseBase::levelUp() {
     setLevel(mLevel + 1);
 }
@@ -59,6 +97,14 @@ void eHouseBase::levelDown() {
 
 int eHouseBase::kill(int k) {
     k = std::clamp(k, 0, mPeople);
+    setPeople(mPeople - k);
+    return k;
+}
+
+int eHouseBase::emigrate(int k) {
+    k = std::clamp(k, 0, mPeople);
+    if(k <= 0) return 0;
+    popData().incLeft(k);
     setPeople(mPeople - k);
     return k;
 }
@@ -129,6 +175,9 @@ void eHouseBase::read(eReadStream& src) {
     src >> mCompetitors;
 
     src >> mUpdateCulture;
+    if(src.formatVersion() >= eFileFormat::cityMoodCrime) {
+        src >> mUnfedUpdates;
+    }
 }
 
 void eHouseBase::write(eWriteStream& dst) const {
@@ -150,6 +199,18 @@ void eHouseBase::write(eWriteStream& dst) const {
     dst << mCompetitors;
 
     dst << mUpdateCulture;
+    dst << mUnfedUpdates;
+}
+
+// The house's share of the city mood's food factor (original exe
+// 0x00566F20): +2 when fed; -1, -2, -3 after 1, 2, 3+ updates unfed.
+int eHouseBase::foodMoodFactor() {
+    if(mFood > 0) {
+        mUnfedUpdates = 0;
+        return 2;
+    }
+    mUnfedUpdates = std::min(3, mUnfedUpdates + 1);
+    return -mUnfedUpdates;
 }
 
 void eHouseBase::setLevel(const int l) {
@@ -170,6 +231,24 @@ int eHouseBase::evict() {
     const int e = -vacancies();
     if(e <= 0) return 0;
     setPeople(mPeople - e);
+    // the people who no longer fit walk off as homeless and look for a
+    // new home (Citadel of Poseidon, walkers/housing.html), as when a
+    // house is demolished
+    const auto tile = centerTile();
+    if(tile) {
+        auto& board = getBoard();
+        const auto h = e::make_shared<eHomeless>(board);
+        h->setOnCityId(tile->cityId());
+        h->setCityId(eCityId::neutralFriendly);
+        h->changeTile(tile);
+        const auto fa = std::make_shared<eKillCharacterFinishFail>(board);
+        const auto a = e::make_shared<eSettlerAction>(h.get());
+        a->setNumberPeople(e);
+        a->setFailAction(fa);
+        a->setFinishAction(fa);
+        a->setDeleteFailAction(fa);
+        h->setAction(a);
+    }
     return e;
 }
 

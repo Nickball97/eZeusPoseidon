@@ -1,4 +1,6 @@
 ﻿#include "egamewidget.h"
+#include "ecursors.h"
+#include "characters/eenemyboat.h"
 
 #include "eterraineditmenu.h"
 
@@ -314,6 +316,13 @@ void eGameWidget::updateTerrainTextures() {
 }
 
 void eGameWidget::paintEvent(ePainter& p) {
+    // the original's shovel pointer while clearing land, over the map
+    {
+        const bool overMap = mHoverX < width() - mGm->width();
+        const bool erase = mGm->mode() == eBuildingMode::erase;
+        eCursors::set(erase && overMap ? eCursors::eCursor::shovel :
+                                         eCursors::eCursor::arrow);
+    }
     if(mUpdateViewedTileScheduled) {
         mUpdateViewedTileScheduled = false;
         const auto oldC = mViewedTile ? mViewedTile->cityId() :
@@ -380,7 +389,10 @@ void eGameWidget::paintEvent(ePainter& p) {
     if(updateTips) updateTipPositions();
     mBoard->incFrame();
 
-    const bool iterate = mSpeedId == sMaxSpeedId;
+    // 100%: the original runs a tick every 2 ms or every frame, whichever is
+    // slower, and its frame rate isn't known, so 100% keeps eZeus's own
+    // fastest speed (5 x 100 ticks a frame)
+    const bool iterate = window()->settings().fGameSpeed >= 100;
     const int iMax = iterate ? 5 : 1;
     for(int i = 0; i < iMax; i++) {
         mBoard->scheduleDataUpdate();
@@ -395,8 +407,9 @@ void eGameWidget::paintEvent(ePainter& p) {
                 w->episodeLost();
                 return;
             } else {
-                mTime += mSpeed;
-                mBoard->incTime(mSpeed);
+                const int ticks = iterate ? 100 : gameSpeedTicks();
+                mTime += ticks;
+                mBoard->incTime(ticks);
             }
         }
         mBoard->emptyRubbish();
@@ -840,6 +853,51 @@ void eGameWidget::paintEvent(ePainter& p) {
                     const int a = ch->allCultureScience();
                     drawColumn(tp, a, rx + cdx, ry + cdy, builTexs.fColumn1);
                 }
+            } else if(mViewMode == eViewMode::security) {
+                // As the original's See Security (upstream #73, with a
+                // screenshot of the original): on each elite house's
+                // floor stand the soldiers it gives the army, one figure
+                // each, horsemen first, in a row facing the same way.
+                if(bt != eBuildingType::eliteHousing) return;
+                const auto eh = static_cast<eEliteHousing*>(ub);
+                int hoplites;
+                int horsemen;
+                eh->soldiers(hoplites, horsemen);
+                if(hoplites + horsemen <= 0) return;
+                // the player's own soldiers: Greek hoplites and horsemen, or
+                // Atlantean hoplites and chariots, as their companies look
+                // (eSoldierBanner::characterType)
+                const bool atl = eh->atlantean();
+                if(atl) {
+                    if(horsemen > 0) eGameTextures::loadChariotPoseidon();
+                    if(hoplites > 0) eGameTextures::loadHoplitePoseidon();
+                } else {
+                    if(horsemen > 0) eGameTextures::loadHorseman();
+                    if(hoplites > 0) eGameTextures::loadHoplite();
+                }
+                const int o = static_cast<int>(eOrientation::bottomLeft);
+                const auto standing = [&](const std::vector<eTextureCollection>& walk) {
+                    std::shared_ptr<eTexture> tex;
+                    if(o < static_cast<int>(walk.size()) &&
+                       walk[o].size() > 0) {
+                        tex = walk[o].getTexture(0);
+                    }
+                    return tex;
+                };
+                const auto horseTex = standing(atl ? charTexs.fChariotPoseidon.fWalk :
+                                                     charTexs.fHorseman.fWalk);
+                const auto hopliteTex = standing(atl ? charTexs.fHoplitePoseidon.fWalk :
+                                                       charTexs.fHoplite.fWalk);
+                // the row climbs to the upper right, as in the original;
+                // drawn from the back so nearer figures overlap the others
+                const double xx = rx - 2.6;
+                const double yy = ry - 0.4;
+                const double step = 0.45;
+                const int n = horsemen + hoplites;
+                for(int i = n - 1; i >= 0; i--) {
+                    const auto& tex = i < horsemen ? horseTex : hopliteTex;
+                    if(tex) tp.scheduleDrawTexture(xx, yy - i*step, tex);
+                }
             } else if(mViewMode == eViewMode::supplies) {
                 if(bt == eBuildingType::commonHouse) {
                     const auto ch = static_cast<eSmallHouse*>(ub);
@@ -918,6 +976,16 @@ void eGameWidget::paintEvent(ePainter& p) {
                 const auto tex = getBasementTexture(rtx, rty, ub, trrTexs,
                                                     dir, boardw, boardh);
                 tp.drawTexture(rx, ry, tex, eAlignment::top);
+            }
+            // See Security: elite houses show only their floor, so their
+            // soldiers are added once, from the floor's last tile
+            if(mViewMode == eViewMode::security &&
+               bt == eBuildingType::eliteHousing) {
+                auto tr = ub->tileRect();
+                tr = eTileHelper::toRotatedRect(tr, dir, boardw, boardh);
+                if(rtx == tr.x + tr.w - 1 && rty == tr.y + tr.h - 1) {
+                    drawBuildingModes();
+                }
             }
         } else if(ub && !eBuilding::sFlatBuilding(bt)) {
             const auto getDisplacement =
@@ -1178,10 +1246,13 @@ void eGameWidget::paintEvent(ePainter& p) {
                     } else {
                         coll = &trrTexs.fAppeal;
                     }
-                    const double app = am.heat(dtx, dty);
-                    const double mult = app > 0 ? 1 : -1;
-                    const double appS = mult*pow(abs(app), 0.75);
-                    int appId = (int)std::round(appS + 2.);
+                    // original colour bands (exe 0x0044BCF0): -11 or less 0,
+                    // -10 .. 69 appeal/10 + 2, 70 or more 9
+                    const int app = static_cast<int>(am.heat(dtx, dty));
+                    int appId;
+                    if(app <= -11) appId = 0;
+                    else if(app >= 70) appId = 9;
+                    else appId = app/10 + 2;
                     appId = std::clamp(appId, 0, 9);
                     const auto tex = coll->getTexture(appId);
                     tp.drawTexture(rx + da, ry + da, tex, eAlignment::top);
@@ -1228,6 +1299,7 @@ void eGameWidget::paintEvent(ePainter& p) {
                 const auto& chars = tile->characters();
                 for(const auto& c : chars) {
                     if(!c->visible()) continue;
+                    const bool shadow = c->hiddenUnderwater();
                     const auto ct = c->type();
                     if(ct == eCharacterType::cartTransporter ||
                        ct == eCharacterType::ox ||
@@ -1239,6 +1311,7 @@ void eGameWidget::paintEvent(ePainter& p) {
                     const bool cbig = ct == eCharacterType::scylla ||
                                       ct == eCharacterType::kraken ||
                                       ct == eCharacterType::enemyBoat ||
+                                      ct == eCharacterType::enemyWarship ||
                                       ct == eCharacterType::trireme ||
                                       ct == eCharacterType::tradeBoat;
                     if(big != cbig) continue;
@@ -1321,7 +1394,9 @@ void eGameWidget::paintEvent(ePainter& p) {
                             y -= fa;
                         }
                     }
-                    const auto tex = c->getTexture(mTileSize);
+                    const auto tex = shadow ?
+                        static_cast<eEnemyBoat*>(c.get())->shadowTexture(mTileSize) :
+                        c->getTexture(mTileSize);
                     if(tex) {
                         const double offX = mTileH*tex->offsetX()/30.;
                         const double offY = mTileH*tex->offsetY()/30.;
@@ -1331,12 +1406,20 @@ void eGameWidget::paintEvent(ePainter& p) {
                         const int ddstYf = mDY + dstYf;
                         const int ddstX = std::round(ddstXf);
                         const int ddstY = std::round(ddstYf);
+                        if(shadow) {
+                            tex->setColorMod(20, 40, 60);
+                            tex->setAlpha(90);
+                        }
                         if(hover) {
                             tex->setColorMod(hr, hg, hb);
                         }
                         tex->render(r, ddstX, ddstY, false);
                         if(hover) {
                             tex->clearColorMod();
+                        }
+                        if(shadow) {
+                            tex->clearColorMod();
+                            tex->clearAlphaMod();
                         }
                     }
                     if(c->hasSecondaryTexture()) {
@@ -1649,6 +1732,14 @@ void eGameWidget::paintEvent(ePainter& p) {
             }
         }
         //drawTerrain(tile);
+        // Large Water Crossing / Atlantean Bridge piece over the water
+        if(tile && tile->hasBridge()) {
+            const auto r = static_cast<eRoad*>(tile->underBuilding());
+            if(r && r->largeBridge()) {
+                const auto tex = r->bridgePiece(mTileSize);
+                if(tex) tp.drawTexture(rx, ry, tex, eAlignment::top);
+            }
+        }
 
         drawSheepGoat();
         drawPatrol();
@@ -2221,8 +2312,27 @@ void eGameWidget::paintEvent(ePainter& p) {
             drawBuildCount(buildCount);
         }
 
+        if(mode == eBuildingMode::avenue ||
+           mode == eBuildingMode::boulevard) {
+            // the trees the drag would plant (eGameBoard::avenuePieces)
+            const auto type = eBuildingModeHelpers::toBuildingType(mode);
+            const auto pieces = mBoard->avenuePieces(
+                        mPressedTX, mPressedTY, mHoverTX, mHoverTY,
+                        type, mViewedCityId, ppid, mEditorMode);
+            const auto& tex = trrTexs.fBuildingBase;
+            for(const auto& p : pieces) {
+                for(const auto t : p.fTrees) {
+                    double rx;
+                    double ry;
+                    drawXY(t->x(), t->y(), rx, ry, 1, 1, t->altitude());
+                    tp.drawTexture(rx, ry, tex, eAlignment::top);
+                }
+            }
+            drawBuildCount(pieces.size());
+            return;
+        }
+
         if(mode == eBuildingMode::park ||
-           mode == eBuildingMode::avenue ||
            mode == eBuildingMode::wall) {
             int buildW = 0;
             int buildH = 0;
@@ -2238,11 +2348,6 @@ void eGameWidget::paintEvent(ePainter& p) {
                     const bool b = static_cast<bool>(terr & eTerrain::buildable);
                     if(!b) continue;
                     if(t->underBuilding()) continue;
-                    if(mode == eBuildingMode::avenue) {
-                        const bool hr = canBuildAvenue(t, mViewedCityId, ppid,
-                                                       mEditorMode);
-                        if(!hr) continue;
-                    }
                     const int a = t->altitude();
                     drawXY(x, y, rx, ry, 1, 1, a);
                     tp.drawTexture(rx, ry, tex, eAlignment::top);
@@ -2743,13 +2848,27 @@ void eGameWidget::paintEvent(ePainter& p) {
                 return canBuildVendor(tx, ty, eResourceType::chariot);
             };
         } break;
-        case eBuildingMode::avenue: {
+        case eBuildingMode::avenue:
+        case eBuildingMode::boulevard: {
+            // green where the trees of the piece at the cursor would go
+            // (eGameBoard::avenuePieces), red if there are none
+            const auto type = eBuildingModeHelpers::toBuildingType(mode);
+            const bool ok = !mBoard->avenuePieces(
+                        mHoverTX, mHoverTY, mHoverTX, mHoverTY, type,
+                        mViewedCityId, ppid, mEditorMode, true).empty();
+            canBuildFunc = [ok](int, int, int, int) { return ok; };
+        } break;
+        case eBuildingMode::tower: {
             canBuildFunc = [&](const int tx, const int ty,
                                const int sw, const int sh) {
-                (void)sw;
-                (void)sh;
-                const auto t = mBoard->tile(tx, ty);
-                return canBuildAvenue(t, mViewedCityId, ppid, mEditorMode);
+                if(mBoard->canBuildTowerOnWalls(tx, ty, mViewedCityId, ppid)) {
+                    return true;
+                }
+                // The map editor may still place a tower anywhere.
+                if(!mEditorMode) return false;
+                return mBoard->canBuild(tx, ty, sw, sh,
+                                        mEditorMode,
+                                        mViewedCityId, ppid);
             };
         } break;
         default: {
@@ -2878,7 +2997,9 @@ void eGameWidget::paintEvent(ePainter& p) {
         case eBuildingMode::templeZeus: {
             const auto& tex = trrTexs.fBuildingBase;
             const auto type = eBuildingModeHelpers::toBuildingType(mode);
-            const auto h = eSanctBlueprints::sSanctuaryBlueprint(type, mRotate);
+            const auto h = eSanctBlueprints::sSanctuaryBlueprint(
+                type, mRotate, type == eBuildingType::templePoseidon &&
+                               mBoard->atlantean(mViewedCityId));
             const int sw = h->fW;
             const int sh = h->fH;
             const int xMin = mHoverTX - sw/2;
@@ -3661,9 +3782,23 @@ void eGameWidget::paintEvent(ePainter& p) {
             const auto b1 = e::make_shared<eCorinthianColumn>(*mBoard, mViewedCityId);
             ebs.emplace_back(mHoverTX, mHoverTY, b1);
         } break;
-        case eBuildingMode::avenue: {
-            const auto b1 = e::make_shared<eAvenue>(*mBoard, mViewedCityId);
-            ebs.emplace_back(mHoverTX, mHoverTY, b1);
+        case eBuildingMode::avenue:
+        case eBuildingMode::boulevard: {
+            const auto type = eBuildingModeHelpers::toBuildingType(mode);
+            const auto pieces = mBoard->avenuePieces(
+                        mHoverTX, mHoverTY, mHoverTX, mHoverTY, type,
+                        mViewedCityId, ppid, mEditorMode, true);
+            if(pieces.empty()) {
+                const auto b1 = e::make_shared<eAvenue>(
+                                    *mBoard, mViewedCityId, type);
+                ebs.emplace_back(mHoverTX, mHoverTY, b1);
+            } else {
+                for(const auto tt : pieces.front().fTrees) {
+                    const auto b1 = e::make_shared<eAvenue>(
+                                        *mBoard, mViewedCityId, type);
+                    ebs.emplace_back(tt->x(), tt->y(), b1);
+                }
+            }
         } break;
 
         case eBuildingMode::populationMonument: {

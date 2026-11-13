@@ -16,6 +16,7 @@
 void eThreadBuilding::load(eBuilding* const src) {
     if(!mCleared) {
         mVacancies = 0;
+        mLevel = 0;
 
         mResourcesAvailable = false;
         mWorkedOn = false;
@@ -41,6 +42,7 @@ void eThreadBuilding::load(eBuilding* const src) {
         case eBuildingType::ionicColumn:
         case eBuildingType::corinthianColumn:
         case eBuildingType::avenue:
+        case eBuildingType::boulevard:
 
         case eBuildingType::commemorative:
         case eBuildingType::godMonument:
@@ -74,6 +76,7 @@ void eThreadBuilding::load(eBuilding* const src) {
         case eBuildingType::eliteHousing: {
             const auto h = static_cast<eEliteHousing*>(src);
             mVacancies = h->vacancies();
+            mLevel = h->level();
         } break;
         case eBuildingType::granary:
         case eBuildingType::warehouse:
@@ -144,6 +147,8 @@ void eThreadBuilding::load(eBuilding* const src) {
         case eBuildingType::templeMonument:
         case eBuildingType::templeStatue:
         case eBuildingType::templeTile:
+        case eBuildingType::templeGrandStatue:
+        case eBuildingType::templeObelisk:
 
         case eBuildingType::pyramidPart:
         case eBuildingType::pyramidWall:

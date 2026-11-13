@@ -46,7 +46,18 @@ bool eTileBase::hasLava() const {
 }
 
 bool eTileBase::hasDeepWater() const {
-    return hasWater() && !isShoreTile();
+    return hasWater() && !isShoreTile() && !bridgeBlocksShips();
+}
+
+int eTileBase::bridgeLength() const {
+    if(!hasBridge()) return 0;
+    int a = 1;
+    for(auto t = topLeft(); t && t->hasBridge(); t = t->topLeft()) a++;
+    for(auto t = bottomRight(); t && t->hasBridge(); t = t->bottomRight()) a++;
+    int b = 1;
+    for(auto t = topRight(); t && t->hasBridge(); t = t->topRight()) b++;
+    for(auto t = bottomLeft(); t && t->hasBridge(); t = t->bottomLeft()) b++;
+    return std::max(a, b);
 }
 
 bool eTileBase::hasQuake() const {

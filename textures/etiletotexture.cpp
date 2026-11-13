@@ -1,4 +1,5 @@
 #include "etiletotexture.h"
+#include "buildings/eroad.h"
 
 #include <algorithm>
 
@@ -173,6 +174,8 @@ std::shared_ptr<eTexture> eTileToTexture::get(eTile* const tile,
     }
     case eBuildingType::temple:
     case eBuildingType::templeStatue:
+    case eBuildingType::templeGrandStatue:
+    case eBuildingType::templeObelisk:
     case eBuildingType::templeMonument:
     case eBuildingType::templeAltar: {
         const auto& coll = blds.fSanctuarySpace;
@@ -395,7 +398,8 @@ std::shared_ptr<eTexture> eTileToTexture::get(eTile* const tile,
                     const int dx = tile->dx();
                     const int dy = tile->dy();
                     const double appeal = board.appeal(dx, dy);
-                    const bool highAppeal = appeal > 3;
+                    // paved above appeal 4 (original exe 0x004A0480)
+                    const bool highAppeal = appeal > 4;
                     if(highAppeal) {
                         id = 93 + relId;
                     } else {
@@ -412,9 +416,13 @@ std::shared_ptr<eTexture> eTileToTexture::get(eTile* const tile,
         }
     }
 
-    if(hr || ut == eBuildingType::avenue) {
+    if(hr || ut == eBuildingType::avenue ||
+       ut == eBuildingType::boulevard) {
         const auto b = tile->underBuilding();
-        return b->getTexture(tileSize);
+        // long crossings: plain water here, the bridge piece is drawn
+        // over it with the buildings (eGameWidget::paintEvent)
+        const bool large = hr && static_cast<eRoad*>(b)->largeBridge();
+        if(!large) return b->getTexture(tileSize);
     }
 
     switch(tile->terrain()) {

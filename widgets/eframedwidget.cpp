@@ -4,11 +4,29 @@
 
 #include <random>
 
+#include "elabelbase.h"
+
+namespace {
+void recolorDarkText(eWidget* const w, const eFontColor to) {
+    for(const auto c : w->children()) {
+        if(const auto l = dynamic_cast<eLabelBase*>(c)) {
+            // only text labels: a label showing a picture has no text, and
+            // changing its colour would replace the picture
+            if(!l->text().empty() &&
+               l->fontColor() == eFontColor::dark) l->setFontColor(to);
+        }
+        recolorDarkText(c, to);
+    }
+}
+}
+
 void eFramedWidget::setType(const eFrameType type) {
     mType = type;
 }
 
 void eFramedWidget::paintEvent(ePainter& p) {
+    // text in the original's darker inner boxes has its own style
+    if(mType == eFrameType::inner) recolorDarkText(this, mTextColor);
     int iRes;
     int mult;
     iResAndMult(iRes, mult);

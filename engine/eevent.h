@@ -410,7 +410,25 @@ enum class eEvent {
     wageIncrease,
     wageDecrease,
 
-    areaCutOff
+    areaCutOff,
+
+    // added at the end so existing values keep their numbers
+    invasionBribedMonn,
+    atlanteanAlliesHateYou,
+    favorIncrease,
+    favorDecrease,
+
+    // debt relief from an ally or the parent city (eventmsg "rescue_cash")
+    rescueGranted,
+    rescueCashGranted,
+    rescuePartialSpace,
+    rescueInsufficientSpace,
+    rescueLastChance,
+    rescueForfeited,
+    rescueAccepted,
+    rescueCashAccepted,
+    rescuePostponed,
+    rescueRefused
 };
 
 #endif // EEVENT_H

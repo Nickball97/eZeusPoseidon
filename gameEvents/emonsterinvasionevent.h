@@ -37,6 +37,7 @@ public:
     void setWarningMonths(const int ms) override;
 
     void trigger() override;
+    bool oraclePrediction(eEventData& ed, eMessageType& msg) override;
     std::string longName() const override;
 private:
     eMonsterInvasionWarning* mInitialWarning = nullptr;

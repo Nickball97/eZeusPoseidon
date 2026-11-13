@@ -6,6 +6,7 @@
 class eEliteHousing : public eHouseBase {
 public:
     eEliteHousing(eGameBoard& board, const eCityId cid);
+    ~eEliteHousing();
 
     std::shared_ptr<eTexture>
     getTexture(const eTileSize) const override { return nullptr; }
@@ -38,6 +39,10 @@ public:
     int arms() const { return mArms; }
 
     int horses() const { return mHorses; }
+    // the hoplites and horsemen this house gives the army, by its level,
+    // arms and horses (the companies are raised from these, and the
+    // military view shows them standing on the house)
+    void soldiers(int& hoplites, int& horsemen) const;
 
     bool lowFood() const;
     bool lowFleece() const { return mFleece < 2; }
@@ -59,13 +64,26 @@ private:
     const eTextureCollection& getTextureCollection(
             const eTileSize size) const;
 
-    void updateLevel();
+    void updateLevel(const bool timed = false);
+    void stepToward(const int target, const bool timed);
+    bool appealFor(const int l) const;
+    bool cultureFor(const int l) const;
 
     int mUpdateLevel = 0;
+    int mFailedChecks = 0; // level checks failed in a row
 
     int mWine = 0;
     int mArms = 0;
     int mHorses = 0;
+
+    // a lived-in elite house sends out a nobleman who roams the streets
+    // and stops disgruntled citizens and outlaws (Zeus manual)
+    void spawnNoble();
+public:
+    // a thief takes the goods and food kept in this house (Zeus manual)
+    void robbed();
+    stdptr<eCharacter> mNoble;
+    int mNobleWait = 0;
 };
 
 #endif // EELITEHOUSING_H

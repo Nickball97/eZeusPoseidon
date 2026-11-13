@@ -5,8 +5,19 @@
 
 #include "fileIO/ewritestream.h"
 #include "fileIO/ereadstream.h"
+#include "fileIO/efileformat.h"
+
+void eResourceEventValue::oracleChooseType() {
+    if(mOracleType) return;
+    chooseType();
+    mOracleType = true;
+}
 
 void eResourceEventValue::chooseType() {
+    if(mOracleType) { // already chosen when the Oracle predicted it
+        mOracleType = false;
+        return;
+    }
     std::vector<eResourceType> types;
     for(const auto r : mResources) {
         if(r == eResourceType::none) continue;
@@ -43,6 +54,7 @@ void eResourceEventValue::write(eWriteStream& dst) const {
     for(const auto r : mResources) {
         dst << r;
     }
+    dst << mOracleType;
 }
 
 void eResourceEventValue::read(eReadStream& src) {
@@ -50,5 +62,8 @@ void eResourceEventValue::read(eReadStream& src) {
 
     for(int i = 0; i < 3; i++) {
         src >> mResources[i];
+    }
+    if(src.formatVersion() >= eFileFormat::oracleTimer) {
+        src >> mOracleType;
     }
 }

@@ -1,5 +1,8 @@
 #include "epainter.h"
 
+#include <algorithm>
+#include <cmath>
+
 ePainter::ePainter(SDL_Renderer* const renderer) :
     mRenderer(renderer) {
 
@@ -78,6 +81,21 @@ void ePainter::drawTexture(const SDL_Rect& rect,
 void ePainter::drawTexture(const int x, const int y,
                            const std::shared_ptr<eTexture>& tex) const {
     tex->render(mRenderer, mX + x, mY + y);
+}
+
+void ePainter::drawTextureCover(const SDL_Rect& rect,
+                                const std::shared_ptr<eTexture>& tex) const {
+    const int tw = tex->width();
+    const int th = tex->height();
+    if(tw <= 0 || th <= 0 || rect.w <= 0 || rect.h <= 0) return;
+    const double s = std::max(static_cast<double>(rect.w)/tw,
+                              static_cast<double>(rect.h)/th);
+    const int sw = std::min(tw, static_cast<int>(std::round(rect.w/s)));
+    const int sh = std::min(th, static_cast<int>(std::round(rect.h/s)));
+    const SDL_Rect srcRect{tex->x() + (tw - sw)/2,
+                           tex->y() + (th - sh)/2, sw, sh};
+    const SDL_Rect dstRect{mX + rect.x, mY + rect.y, rect.w, rect.h};
+    tex->render(mRenderer, srcRect, dstRect);
 }
 
 void ePainter::fillRect(const SDL_Rect& rect,

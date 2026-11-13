@@ -1,4 +1,5 @@
 #include "egoddisasterevent.h"
+#include "emessages.h"
 
 #include "engine/egameboard.h"
 #include "engine/eeventdata.h"
@@ -57,4 +58,14 @@ void eGodDisasterEvent::read(eReadStream& src) {
     eCityEventValue::read(src, *gameBoard());
     src >> mDuration;
     src >> mEnd;
+}
+
+bool eGodDisasterEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    oracleChooseCity();
+    if(!mCity) return false;
+    ed.fCity = mCity;
+    ed.fGod = mGod;
+    const auto god = eMessages::godKey(mGod);
+    msg = eMessages::oracleMessage(god + (mEnd ? "_disaster_ends" : "_disaster"));
+    return true;
 }

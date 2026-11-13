@@ -10,6 +10,7 @@
 #include "engine/epathfinder.h"
 #include "etilehelper.h"
 #include "characters/actions/eheroaction.h"
+#include "fileIO/efileformat.h"
 #include "engine/eevent.h"
 #include "engine/eeventdata.h"
 #include "enumbers.h"
@@ -48,11 +49,24 @@ eHeroType eHerosHall::sHallTypeToHeroType(const eBuildingType type,
     return eHeroType::achilles;
 }
 
+// Achilles needs Hephaestus' sanctuary when the episode has it, even if
+// Athena's is also allowed (Citadel of Poseidon: Trojan War ep. 5, Two
+// Worlds Collide ep. 2), and Athena's otherwise (Zeus and Europa ep. 7).
+// Gymnasium / observatory coverage band for the status text; the original
+// needs above 89% (exe 0x004FBC20 case 5), band 4.
+int coverageBand(const int ac) {
+    if(ac > 89) return 4;
+    if(ac >= 75) return 3;
+    if(ac >= 50) return 2;
+    if(ac >= 25) return 1;
+    return 0;
+}
+
 eGodType athenaHephaestus(eBoardCity& c) {
-    const bool athena = c.availableBuilding(eBuildingType::templeAthena) ||
-                        c.hasBuilding(eBuildingType::templeAthena);
-    if(athena) return eGodType::athena;
-    return eGodType::hephaestus;
+    const bool heph = c.availableBuilding(eBuildingType::templeHephaestus) ||
+                      c.hasBuilding(eBuildingType::templeHephaestus);
+    if(heph) return eGodType::hephaestus;
+    return eGodType::athena;
 }
 
 std::pair<eGodType, eGodType> athenaHermesZeusHades(eBoardCity& c) {
@@ -121,6 +135,11 @@ std::string eHerosHall::sHeroRequirementText(const eHeroRequirement& hr,
     case eHeroRequirementType::people:
         return cstr + " " + eLanguage::zeusText(185, 52);;
 
+    case eHeroRequirementType::triremes:
+        // Atlantean cities need frigates in the original, but eZeus doesn't
+        // have frigates yet: Atlantean cities build triremes too, so name
+        // what the player can actually build.
+        return cstr + " " + eLanguage::zeusText(8, 51); // Triremes
     case eHeroRequirementType::horsemen:
         if(atlantean) {
             return cstr + " " + eLanguage::zeusText(51, 86) + " " + eLanguage::zeusText(185, 17);
@@ -260,6 +279,8 @@ std::string eHerosHall::sHeroRequirementStatusText(const eHeroRequirement& hr,
     case eHeroRequirementType::people:
         return cstr + " " + eLanguage::zeusText(185, 52);
 
+    case eHeroRequirementType::triremes:
+        return cstr + " " + eLanguage::zeusText(185, 32); // operational
     case eHeroRequirementType::horsemen:
         return cstr + " " + eLanguage::zeusText(185, 17);
     case eHeroRequirementType::horses:
@@ -389,6 +410,22 @@ std::string eHerosHall::sHeroRequirementStatusText(const eHeroRequirement& hr,
 }
 
 void eHerosHall::summon() {
+    // Summoning takes the required drachmas out of the treasury
+    // (Perseus, Bellerophon), as in the original game.
+    // The requirement list is only refreshed every few days, so check
+    // the treasury again before taking the money.
+    for(const auto& r : mRequirements) {
+        if(r.fType != eHeroRequirementType::drachmas) continue;
+        if(getBoard().drachmas(playerId()) < r.fRequiredCount) {
+            updateRequirementsStatus();
+            return;
+        }
+    }
+    for(const auto& r : mRequirements) {
+        if(r.fType != eHeroRequirementType::drachmas) continue;
+        getBoard().incDrachmas(playerId(), -r.fRequiredCount,
+                               eFinanceTarget::construction);
+    }
     mStage = eHeroSummoningStage::summoned;
     mArrivalCountdown = eNumbers::sHerosHallArrivalPeriod;
 }
@@ -448,6 +485,9 @@ void eHerosHall::read(eReadStream& src) {
     src >> mPhilosophers;
     src >> mActors;
     src >> mAthletes;
+    if(src.formatVersion() >= eFileFormat::heroHallCurators) {
+        src >> mCompetitors;
+    }
     src >> mUpdateCulture;
     src >> mHeroOnQuest;
     src >> mSpawnWait;
@@ -463,6 +503,7 @@ void eHerosHall::write(eWriteStream& dst) const {
     dst << mPhilosophers;
     dst << mActors;
     dst << mAthletes;
+    dst << mCompetitors;
     dst << mUpdateCulture;
     dst << mHeroOnQuest;
     dst << mSpawnWait;
@@ -566,6 +607,7 @@ void eHerosHall::updateRequirementStatus(eHeroRequirement& hr) {
         sc += mPhilosophers > 0 ? 1 : 0;
         sc += mActors > 0 ? 1 : 0;
         sc += mAthletes > 0 ? 1 : 0;
+        sc += mCompetitors > 0 ? 1 : 0;
         break;
     case eHeroRequirementType::panHellenicGameWinHippodrome:
         if(atlentean) {
@@ -577,14 +619,17 @@ void eHerosHall::updateRequirementStatus(eHeroRequirement& hr) {
     case eHeroRequirementType::cityGymnasiumObservatoryAccess: {
         if(atlentean) {
             const int ac = board.dramaAstronomyCoverage(cid);
-            sc = ac/24;
+            sc = coverageBand(ac);
         } else {
             const int ac = board.athleticsLearningCoverage(cid);
-            sc = ac/24;
+            sc = coverageBand(ac);
         }
     } break;
     case eHeroRequirementType::people:
         sc = board.population(pid);
+        break;
+    case eHeroRequirementType::triremes:
+        sc = board.countWorkingTriremes(cid);
         break;
     case eHeroRequirementType::horsemen: {
         sc = board.countBanners(eBannerType::horseman, cid);
@@ -597,12 +642,14 @@ void eHerosHall::updateRequirementStatus(eHeroRequirement& hr) {
         break;
 
     case eHeroRequirementType::popularity: {
+        // original: popularity (city mood) above 89 (exe 0x004FBC20 case 8)
         const int p = board.popularity(cid);
         sc = p/10;
     } break;
     case eHeroRequirementType::health: {
+        // original: health above 79 (exe 0x004FBC20 case 9)
         const int p = board.health(cid);
-        sc = p/7;
+        sc = p/8;
     } break;
     case eHeroRequirementType::eliteHouses:
         sc = board.eliteHouses(cid);
@@ -650,7 +697,10 @@ void eHerosHall::updateRequirementStatus(eHeroRequirement& hr) {
                 return false;
             };
 
-            for(int k = 0; k < 10; k++) {
+            // original: a palace tile within 5 tiles of the hall (exe
+            // 0x004FBB20 called with 5); rings counted from the hall's
+            // centre, so 1 more for its own half-width
+            for(int k = 0; k <= 6; k++) {
                 eIterateSquare::iterateSquare(k, prcsTile, 1);
                 if(found) break;
             }
@@ -662,14 +712,16 @@ void eHerosHall::updateRequirementStatus(eHeroRequirement& hr) {
         }
     } break;
     case eHeroRequirementType::appeal: {
+        // original: the hall's appeal above 60 (exe 0x004FBC20 case 13);
+        // the lower bands only pick the status text
         const double a = eBuilding::appeal();
-        if(a < 12.) {
+        if(a < 20.) {
             sc = 0;
-        } else if(a < 14.5) {
+        } else if(a < 35.) {
             sc = 1;
-        } else if(a < 15.5) {
+        } else if(a < 50.) {
             sc = 2;
-        } else if(a < 17.) {
+        } else if(a <= 60.) {
             sc = 3;
         } else {
             sc = 4;
@@ -723,8 +775,9 @@ void eHerosHall::updateRequirementStatus(eHeroRequirement& hr) {
         sc = board.banners(cid).size();
         break;
     case eHeroRequirementType::taxes: {
+        // original: tax coverage above 88% (exe 0x004FBC20 case 17)
         const int tc = board.taxesCoverage(cid);
-        sc = tc/22;
+        sc = tc > 88 ? 4 : std::min(3, tc/22);
     } break;
     case eHeroRequirementType::bronzeOrichalc:
         if(atlentean) {
@@ -771,20 +824,24 @@ eHerosHall::eHerosHall(const eHeroType type, eGameBoard& board,
         addRequirement({eHeroRequirementType::wine, 24});
         break;
     case eHeroType::hercules:
-        addRequirement({eHeroRequirementType::hallCultureAccess, 3});
+        // every culture walker type must pass the hall: philosopher, actor,
+        // athlete and competitor (Atlantean: inventor, astronomer, scholar,
+        // curator), per the Citadel of Poseidon walkthroughs
+        addRequirement({eHeroRequirementType::hallCultureAccess, 4});
         addRequirement({eHeroRequirementType::panHellenicGameWinHippodrome, 1});
-        addRequirement({eHeroRequirementType::cityGymnasiumObservatoryAccess, 3});
+        addRequirement({eHeroRequirementType::cityGymnasiumObservatoryAccess, 4});
         addRequirement({eHeroRequirementType::people, 1500});
         addRequirement({eHeroRequirementType::wine, 32});
         break;
     case eHeroType::jason:
+        addRequirement({eHeroRequirementType::triremes, 3});
         addRequirement({eHeroRequirementType::horsemen, 2});
         addRequirement({eHeroRequirementType::horses, 8});
         addRequirement({eHeroRequirementType::food, 64});
         addRequirement({eHeroRequirementType::wine, 16});
         break;
     case eHeroType::odysseus:
-        addRequirement({eHeroRequirementType::popularity, 8});
+        addRequirement({eHeroRequirementType::popularity, 9});
         addRequirement({eHeroRequirementType::health, 10});
         addRequirement({eHeroRequirementType::eliteHouses, 8});
         addRequirement({eHeroRequirementType::oil, 32});
@@ -884,6 +941,7 @@ void eHerosHall::timeChanged(const int by) {
         mPhilosophers = std::max(0, mPhilosophers - 1);
         mActors = std::max(0, mActors - 1);
         mAthletes = std::max(0, mAthletes - 1);
+        mCompetitors = std::max(0, mCompetitors - 1);
     }
 
     if(mStage == eHeroSummoningStage::summoned) {
@@ -916,6 +974,9 @@ int eHerosHall::provide(const eProvide p, const int n) {
         break;
     case eProvide::gymnastScholar:
         value = &mAthletes;
+        break;
+    case eProvide::competitorCurator:
+        value = &mCompetitors;
         break;
     default:
         return eBuilding::provide(p, n);

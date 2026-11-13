@@ -38,6 +38,10 @@ public:
                                     const eGodType god);
     static bool sIsToGod(const eBuildingType type);
 private:
+    // Spreads the original game's material totals over the pieces created
+    // by initialize().
+    void applyOriginalMaterials();
+
     stdsptr<ePyramid> mSelf;
 
     std::vector<bool> mDark;

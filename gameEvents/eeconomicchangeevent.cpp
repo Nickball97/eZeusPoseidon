@@ -1,4 +1,5 @@
 #include "eeconomicchangeevent.h"
+#include "emessages.h"
 
 #include "engine/egameboard.h"
 #include "engine/eeventdata.h"
@@ -33,4 +34,13 @@ void eEconomicChangeEvent::trigger() {
 
 std::string eEconomicChangeEvent::longName() const {
     return eLanguage::text("economic_change_long_name");
+}
+
+bool eEconomicChangeEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    oracleChooseCity();
+    oracleChooseCount();
+    if(!mCity || count() == 0) return false;
+    ed.fCity = mCity;
+    msg = eMessages::oracleMessage("economic_change", count() > 0 ? "_I" : "_D");
+    return true;
 }

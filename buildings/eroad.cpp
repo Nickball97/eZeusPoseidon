@@ -1,12 +1,99 @@
 #include "eroad.h"
+#include <cmath>
 
 #include "textures/egametextures.h"
 
 #include "engine/egameboard.h"
 #include "eagorabase.h"
+#include "eavenue.h"
 #include "egatehouse.h"
 #include "ehippodromepiece.h"
 #include "elanguage.h"
+
+namespace {
+// The original's road pieces (zeus.exe tables 0x00637098 for plain roads
+// and 0x006371F0 for paved and rutted ones, read by 0x004A6920). fN gives
+// the 8 tiles around, from the top-right going clockwise (top-right,
+// right, bottom-right, bottom, bottom-left, left, top-left, top):
+// 1 = a road, 0 = no road, 2 = either. The first piece that fits gives the
+// image (as seen facing north; eZeus turns the neighbours instead).
+struct eRoadPiece {
+    char fN[8];
+    int fImg;
+};
+
+const eRoadPiece gPlainRoad[] = {
+    {{1, 2, 1, 2, 1, 2, 1, 2}, 17},
+    {{1, 2, 1, 2, 1, 2, 0, 2}, 13},
+    {{0, 2, 1, 2, 1, 2, 1, 2}, 14},
+    {{1, 2, 0, 2, 1, 2, 1, 2}, 15},
+    {{1, 2, 1, 2, 0, 2, 1, 2}, 16},
+    {{1, 2, 1, 2, 0, 2, 0, 2}, 4},
+    {{0, 2, 1, 2, 1, 2, 0, 2}, 5},
+    {{0, 2, 0, 2, 1, 2, 1, 2}, 6},
+    {{1, 2, 0, 2, 0, 2, 1, 2}, 7},
+    {{1, 2, 0, 2, 1, 2, 0, 2}, 0},
+    {{0, 2, 1, 2, 0, 2, 1, 2}, 1},
+    {{1, 2, 0, 2, 0, 2, 0, 2}, 8},
+    {{0, 2, 1, 2, 0, 2, 0, 2}, 9},
+    {{0, 2, 0, 2, 1, 2, 0, 2}, 10},
+    {{0, 2, 0, 2, 0, 2, 1, 2}, 11},
+    {{0, 2, 0, 2, 0, 2, 0, 2}, 12},
+    {{2, 2, 2, 2, 2, 2, 2, 2}, 12}
+};
+
+// paved and rutted roads also have pieces for wide road areas
+const eRoadPiece gWideRoad[] = {
+    {{1, 0, 1, 0, 1, 0, 1, 0}, 17},
+    {{1, 0, 1, 0, 1, 2, 0, 2}, 13},
+    {{1, 1, 1, 1, 1, 2, 0, 2}, 18},
+    {{1, 0, 1, 1, 1, 2, 0, 2}, 26},
+    {{1, 1, 1, 0, 1, 2, 0, 2}, 30},
+    {{0, 2, 1, 0, 1, 0, 1, 2}, 14},
+    {{0, 2, 1, 1, 1, 1, 1, 2}, 19},
+    {{0, 2, 1, 0, 1, 1, 1, 2}, 31},
+    {{0, 2, 1, 1, 1, 0, 1, 2}, 27},
+    {{1, 2, 0, 2, 1, 0, 1, 0}, 15},
+    {{1, 2, 0, 2, 1, 1, 1, 1}, 20},
+    {{1, 2, 0, 2, 1, 0, 1, 1}, 32},
+    {{1, 2, 0, 2, 1, 1, 1, 0}, 28},
+    {{1, 0, 1, 2, 0, 2, 1, 0}, 16},
+    {{1, 1, 1, 2, 0, 2, 1, 1}, 21},
+    {{1, 1, 1, 2, 0, 2, 1, 0}, 33},
+    {{1, 0, 1, 2, 0, 2, 1, 1}, 29},
+    {{1, 1, 1, 2, 0, 0, 0, 2}, 22},
+    {{0, 2, 1, 1, 1, 2, 0, 0}, 23},
+    {{0, 0, 0, 2, 1, 1, 1, 2}, 24},
+    {{1, 2, 0, 0, 0, 2, 1, 1}, 25},
+    {{1, 0, 1, 0, 1, 1, 1, 1}, 34},
+    {{1, 1, 1, 0, 1, 0, 1, 1}, 35},
+    {{1, 1, 1, 1, 1, 0, 1, 0}, 36},
+    {{1, 0, 1, 1, 1, 1, 1, 0}, 37},
+    {{1, 0, 1, 0, 1, 0, 1, 1}, 38},
+    {{1, 1, 1, 0, 1, 0, 1, 0}, 39},
+    {{1, 0, 1, 1, 1, 0, 1, 0}, 40},
+    {{1, 0, 1, 0, 1, 1, 1, 0}, 41},
+    {{1, 1, 1, 1, 1, 0, 1, 1}, 42},
+    {{1, 1, 1, 1, 1, 1, 1, 0}, 43},
+    {{1, 0, 1, 1, 1, 1, 1, 1}, 44},
+    {{1, 1, 1, 0, 1, 1, 1, 1}, 45},
+    {{1, 1, 1, 0, 1, 1, 1, 0}, 46},
+    {{1, 0, 1, 1, 1, 0, 1, 1}, 47},
+    {{1, 2, 1, 2, 0, 2, 0, 2}, 4},
+    {{0, 2, 1, 2, 1, 2, 0, 2}, 5},
+    {{0, 2, 0, 2, 1, 2, 1, 2}, 6},
+    {{1, 2, 0, 2, 0, 2, 1, 2}, 7},
+    {{1, 2, 0, 2, 1, 2, 0, 2}, 0},
+    {{0, 2, 1, 2, 0, 2, 1, 2}, 1},
+    {{1, 2, 0, 2, 0, 2, 0, 2}, 8},
+    {{0, 2, 1, 2, 0, 2, 0, 2}, 9},
+    {{0, 2, 0, 2, 1, 2, 0, 2}, 10},
+    {{0, 2, 0, 2, 0, 2, 1, 2}, 11},
+    {{0, 0, 0, 0, 0, 0, 0, 0}, 12},
+    {{1, 1, 1, 1, 1, 1, 1, 1}, 48},
+    {{2, 2, 2, 2, 2, 2, 2, 2}, 12}
+};
+}
 
 eRoad::eRoad(eGameBoard& board, const eCityId cid) :
     eBuilding(board, eBuildingType::road, 1, 1, cid) {}
@@ -117,157 +204,16 @@ std::shared_ptr<eTexture> eRoad::getTexture(const eTileSize size) const {
         return builTexs.fBridge.getTexture(texId);
     }
 
-    const auto trt = tr ? tr->underBuildingType() : eBuildingType::none;
-    const auto brt = br ? br->underBuildingType() : eBuildingType::none;
-    const auto tlt = tl ? tl->underBuildingType() : eBuildingType::none;
-    const auto blt = bl ? bl->underBuildingType() : eBuildingType::none;
-
-    const bool avn = trt == eBuildingType::avenue ||
-                     brt == eBuildingType::avenue ||
-                     tlt == eBuildingType::avenue ||
-                     blt == eBuildingType::avenue;
+    const auto isAvn = [](eTileBase* const t) {
+        return t && eAvenue::sAvenueType(t->underBuildingType());
+    };
+    const bool avn = isAvn(tr) || isAvn(br) || isAvn(tl) || isAvn(bl);
 
     if(avn) {
-        const bool tlb = tlt == eBuildingType::avenue ||
-                         tlt == eBuildingType::road;
-        const bool brb = brt == eBuildingType::avenue ||
-                         brt == eBuildingType::road;
-        const bool blb = blt == eBuildingType::avenue ||
-                         blt == eBuildingType::road;
-        const bool trb = trt == eBuildingType::avenue ||
-                         trt == eBuildingType::road;
-
-        const auto t = ti->topRotated<eTile>(dir);
-        const auto b = ti->bottomRotated<eTile>(dir);
-        const auto l = ti->leftRotated<eTile>(dir);
-        const auto r = ti->rightRotated<eTile>(dir);
-
-        const auto tt = t ? t->underBuildingType() : eBuildingType::none;
-        const auto bt = b ? b->underBuildingType() : eBuildingType::none;
-        const auto lt = l ? l->underBuildingType() : eBuildingType::none;
-        const auto rt = r ? r->underBuildingType() : eBuildingType::none;
-
-        const bool tb = tt == eBuildingType::avenue ||
-                        tt == eBuildingType::road;
-        const bool lb = lt == eBuildingType::avenue ||
-                        lt == eBuildingType::road;
-        const bool bb = bt == eBuildingType::avenue ||
-                        bt == eBuildingType::road;
-        const bool rb = rt == eBuildingType::avenue ||
-                        rt == eBuildingType::road;
-
-        int id = 0;
-        if(tlb && brb && blb && trb) {
-            if(!tb && !lb && !bb && !rb) {
-                id = 0;
-            } else if(!tb && !lb && !bb && rb) {
-                id = 1;
-            } else if(!tb && !lb && bb && !rb) {
-                id = 2;
-            } else if(!tb && lb && !bb && !rb) {
-                id = 3;
-            } else if(tb && !lb && !bb && !rb) {
-                id = 4;
-            } else if(tb && lb && !bb && !rb) {
-                id = 5;
-            } else if(tb && !lb && !bb && rb) {
-                id = 6;
-            } else if(!tb && !lb && bb && rb) {
-                id = 7;
-            } else if(!tb && lb && bb && !rb) {
-                id = 8;
-            } else if(!tb && lb && !bb && rb) {
-                id = 9;
-            } else if(tb && !lb && bb && !rb) {
-                id = 10;
-            } else if(tb && lb && !bb && rb) {
-                id = 11;
-            } else if(tb && lb && bb && !rb) {
-                id = 12;
-            } else if(tb && !lb && bb && rb) {
-                id = 13;
-            } else if(!tb && lb && bb && rb) {
-                id = 14;
-            } else if(tb && lb && bb && rb) {
-                id = 15 + seed() % 4;
-            }
-        } else if(trb && brb && blb) {
-            if(rb && bb) {
-                id = 19;
-            } else if(bb) {
-                id = 20;
-            } else if(rb) {
-                id = 21;
-            } else {
-                id = 22;
-            }
-        } else if(tlb && brb && blb) {
-            if(lb && bb) {
-                id = 23;
-            } else if(lb) {
-                id = 24;
-            } else if(bb) {
-                id = 25;
-            } else {
-                id = 26;
-            }
-        } else if(tlb && trb && blb) {
-            if(lb && tb) {
-                id = 27;
-            } else if(tb) {
-                id = 28;
-            } else if(lb) {
-                id = 29;
-            } else {
-                id = 30;
-            }
-        } else if(tlb && trb && brb) {
-            if(rb && tb) {
-                id = 31;
-            } else if(rb) {
-                id = 32;
-            } else if(tb) {
-                id = 33;
-            } else {
-                id = 34;
-            }
-        } else if(trb && brb) {
-            if(rb) {
-                id = 35;
-            } else {
-                id = 36;
-            }
-        } else if(blb && brb) {
-            if(bb) {
-                id = 37;
-            } else {
-                id = 38;
-            }
-        } else if(blb && tlb) {
-            if(lb) {
-                id = 39;
-            } else {
-                id = 40;
-            }
-        } else if(tlb && trb) {
-            if(tb) {
-                id = 41;
-            } else {
-                id = 42;
-            }
-        } else if(blb && trb) {
-            id = 43;
-        } else if(tlb && brb) {
-            id = 44;
-        } else if(trb) {
-            id = 45;
-        } else if(brb) {
-            id = 46;
-        } else if(blb) {
-            id = 47;
-        } else if(tlb) {
-            id = 48;
-        }
+        // zeus.exe picks the Avenue/Boulevard road picture from its table
+        // (0x004193A0, 0x005E92B8); see eAvenue::sRoadImage
+        eGameTextures::loadAvenue();
+        const int id = eAvenue::sRoadImage(ti, dir, seed());
         return builTexs.fAvenueRoad.getTexture(id);
     }
 
@@ -310,47 +256,55 @@ std::shared_ptr<eTexture> eRoad::getTexture(const eTileSize size) const {
         return bcoll.getTexture(12);
 
     } else {
-        const auto& pcoll = trrTexs.fPrettyRoad;
-        const auto& rcoll = trrTexs.fRoad;
-
+        // the original's road looks by the tile's appeal (zeus.exe
+        // 0x004A0190, 0x004A0450): below 0 rutted, 0-15 plain, 16-29
+        // paved, 30 or more plaza stones
         const auto& b = getBoard();
         const auto t = centerTile();
+        const double a = b.appeal(t->dx(), t->dy());
 
-        const int dx = t->dx();
-        const int dy = t->dy();
-        const double a = b.appeal(dx, dy);
+        if(a >= 30) {
+            const auto& coll = trrTexs.fPlazaRoad;
+            return coll.getTexture(seed() % coll.size());
+        }
 
+        const eRoadPiece* pieces;
+        int nPieces;
         const eTextureCollection* coll;
-        if(a > 3) {
-            coll = &pcoll;
+        if(a < 16) {
+            pieces = gPlainRoad;
+            nPieces = sizeof(gPlainRoad)/sizeof(gPlainRoad[0]);
         } else {
-            coll = &rcoll;
+            pieces = gWideRoad;
+            nPieces = sizeof(gWideRoad)/sizeof(gWideRoad[0]);
+        }
+        if(a < 0) {
+            coll = &trrTexs.fRuttedRoad;
+        } else if(a < 16) {
+            coll = &trrTexs.fRoad;
+        } else {
+            coll = &trrTexs.fPrettyRoad;
         }
 
-        if(tlRoad && blRoad && trRoad && brRoad) return coll->getTexture(17);
-        if(trRoad && brRoad && blRoad) return coll->getTexture(13);
-        if(tlRoad && blRoad && brRoad) return coll->getTexture(14);
-        if(tlRoad && blRoad && trRoad) return coll->getTexture(15);
-        if(tlRoad && brRoad && trRoad) return coll->getTexture(16);
-
-        if(blRoad && trRoad) {
-            if(seed() % 2) return coll->getTexture(0);
-            else return coll->getTexture(2);
+        // the 8 tiles around, in the tables' order; off the map counts
+        // as road
+        const decltype(tr) ns[8] = {tr, ti->rightRotated(dir),
+                                    br, ti->bottomRotated(dir),
+                                    bl, ti->leftRotated(dir),
+                                    tl, ti->topRotated(dir)};
+        bool road[8];
+        for(int i = 0; i < 8; i++) {
+            road[i] = !ns[i] || ns[i]->hasRoad();
         }
-        if(tlRoad && brRoad) {
-            if(seed() % 2) return coll->getTexture(1);
-            else return coll->getTexture(3);
+        for(int p = 0; p < nPieces; p++) {
+            const auto& pc = pieces[p];
+            bool fits = true;
+            for(int i = 0; i < 8 && fits; i++) {
+                if(pc.fN[i] == 2) continue;
+                fits = road[i] == (pc.fN[i] == 1);
+            }
+            if(fits) return coll->getTexture(pc.fImg);
         }
-
-        if(trRoad && brRoad) return coll->getTexture(4);
-        if(blRoad && brRoad) return coll->getTexture(5);
-        if(blRoad && tlRoad) return coll->getTexture(6);
-        if(tlRoad && trRoad) return coll->getTexture(7);
-        if(trRoad) return coll->getTexture(8);
-        if(brRoad) return coll->getTexture(9);
-        if(blRoad) return coll->getTexture(10);
-        if(tlRoad) return coll->getTexture(11);
-
         return coll->getTexture(12);
     }
     return std::shared_ptr<eTexture>();
@@ -526,4 +480,72 @@ void eRoad::read(eReadStream &src) {
         setAboveHippodrome(static_cast<eHippodromePiece*>(bb));
     });
     src >> mCharacterAltitude;
+}
+
+bool eRoad::largeBridge() const {
+    const auto ti = centerTile();
+    if(!ti || !ti->hasBridge() || !ti->hasWater()) return false;
+    const int len = ti->bridgeLength();
+    // Long crossings are Large Water Crossings, and Atlantean cities build
+    // Bridges (manuals; 5+ tiles is large, per Nicolás). Very short
+    // Atlantean crossings keep the small deck: the end pieces need 4 tiles.
+    if(len < 4) return false;
+    const bool atl = getBoard().atlantean(cityId());
+    return atl || len > 4;
+}
+
+std::shared_ptr<eTexture> eRoad::bridgePiece(const eTileSize size) const {
+    if(!largeBridge()) return nullptr;
+    const auto ti = centerTile();
+    auto& board = getBoard();
+    const auto dir = board.direction();
+    const int sizeId = static_cast<int>(size);
+    const auto& builTexs = eGameTextures::buildings()[sizeId];
+
+    const auto tr = ti->topRightRotated<eTile>(dir);
+    const auto bl = ti->bottomLeftRotated<eTile>(dir);
+    const bool trb = tr && tr->hasBridge();
+    const bool blb = bl && bl->hasBridge();
+    // crossing running up-left to down-right on screen, or up-right to
+    // down-left
+    const bool tlbrAxis = !(trb || blb);
+
+    const int len = ti->bridgeLength();
+    int k = 0; // tiles to the upper end
+    auto t = ti;
+    while(true) {
+        const auto n = tlbrAxis ? t->topLeftRotated<eTile>(dir) :
+                                  t->topRightRotated<eTile>(dir);
+        if(!n || !n->hasBridge()) break;
+        t = n;
+        k++;
+    }
+
+    // Pieces as in the original (Nicolás's screenshots). Each end piece
+    // covers two tiles and is drawn from the lower one so the tiles drawn
+    // later don't cover it: the upper end from the second tile, the lower
+    // end from the last tile. Middle pieces cover their own tile.
+    int id;
+    if(k == 0 || k == len - 2) return nullptr;
+    if(k == 1) id = tlbrAxis ? 0 : 7;
+    else if(k == len - 1) id = tlbrAxis ? 3 : 4;
+    else id = tlbrAxis ? 1 : 5;
+    const bool middle = id == 1 || id == 5;
+
+    if(board.atlantean(cityId())) {
+        eGameTextures::loadPoseidonBridge();
+        if(middle) {
+            // the Atlantean Bridge leaves out the pillars in the middle,
+            // where ships pass under: deck only 296 / 301, with a pillar
+            // 297 / 300
+            const double c = 0.5*(len - 1);
+            const bool centre = std::abs(k - c) < 1.;
+            if(tlbrAxis) id = centre ? 1 : 2;
+            else id = centre ? 6 : 5;
+        }
+        return builTexs.fPoseidonBridge.getTexture(id);
+    }
+    eGameTextures::loadBridge();
+    if(middle && k % 2) id++;
+    return builTexs.fBridge.getTexture(id);
 }

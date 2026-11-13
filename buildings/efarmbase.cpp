@@ -2,6 +2,9 @@
 
 #include "textures/egametextures.h"
 #include "enumbers.h"
+#include "engine/egameboard.h"
+
+#include <cmath>
 
 #include <algorithm>
 
@@ -13,6 +16,8 @@ eFarmBase::eFarmBase(eGameBoard& board,
     eResourceBuildingBase(board, type, sw, sh, 10, resType, cid),
     mTextures(eGameTextures::buildings())  {
     eGameTextures::loadPlantation();
+    // room for a blessed harvest (4 x 8 loads)
+    setMaxResource(32);
 }
 
 std::shared_ptr<eTexture> eFarmBase::getTexture(const eTileSize size) const {
@@ -55,15 +60,31 @@ std::vector<eOverlay> eFarmBase::getOverlays(const eTileSize size) const {
     return os;
 }
 
+// One harvest a year. Zeus manual (Husbandry): carrots and onions are
+// harvested in April, wheat in July; a farm started a year before harvest
+// time with all its employees gives a full harvest, partial harvests come
+// from missing workers or late planting. HeavenGames
+// (gameinfo/industry-production): a farm makes 8 loads a year.
+// mNextRipe holds the growth (in ticks of fully staffed work) since the
+// last harvest; a full harvest needs one year of it.
 void eFarmBase::timeChanged(const int by) {
+    const double year = 365.*eNumbers::sDayLength;
     if(enabled()) {
         mNextRipe += by*effectiveness();
-        if(mNextRipe > eNumbers::sFarmRipePeriod) {
+    }
+    mNextRipe = std::min(mNextRipe, year);
+    mRipe = std::clamp(int(5*mNextRipe/year), 0, 5);
+
+    const auto& date = getBoard().date();
+    const auto harvestMonth = resourceType() == eResourceType::wheat ?
+                                  eMonth::july : eMonth::april;
+    if(date.month() == harvestMonth && date.day() == 1) {
+        const int loads = int(std::round(8*mNextRipe/year));
+        if(loads > 0) {
+            // a blessed farm brings in 4 times this harvest (sBlessMultiplier)
+            addProduced(resourceType(), useBlessing(loads));
             mNextRipe = 0;
-            if(++mRipe == 5) {
-                addProduced(resourceType(), 4);
-                mRipe = 0;
-            }
+            mRipe = 0;
         }
     }
     eResourceBuildingBase::timeChanged(by);
@@ -81,4 +102,14 @@ void eFarmBase::write(eWriteStream& dst) const {
 
     dst << mNextRipe;
     dst << mRipe;
+}
+
+double eFarmBase::growth() const {
+    const double year = 365.*eNumbers::sDayLength;
+    return std::clamp(mNextRipe/year, 0., 1.);
+}
+
+eMonth eFarmBase::harvestMonth() const {
+    return resourceType() == eResourceType::wheat ? eMonth::july :
+                                                    eMonth::april;
 }

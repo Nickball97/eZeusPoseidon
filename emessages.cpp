@@ -276,8 +276,36 @@ void eMessages::loadMessage(eMessageType& m,
                             const std::string& textKey) {
     m.fFull.fTitle = loadMessage("PHRASE_" + titleKey);
     m.fFull.fText = loadMessage("PHRASE_" + textKey);
-    m.fCondensed.fText = loadMessage("PHRASE_CONDENSED_" + titleKey);
+    m.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_" + titleKey);
     m.fCondensed.fText = loadMessage("PHRASE_CONDENSED_" + textKey);
+}
+
+eMessageType eMessages::oracleMessage(const std::string& base,
+                                      const std::string& variant) {
+    eMessageType m;
+    instance.loadMessage(m, base + "_title" + variant,
+                         base + "_oracle_prediction" + variant);
+    return m;
+}
+
+std::string eMessages::godKey(const eGodType god) {
+    switch(god) {
+    case eGodType::aphrodite: return "aphrodite";
+    case eGodType::apollo: return "apollo";
+    case eGodType::ares: return "ares";
+    case eGodType::artemis: return "artemis";
+    case eGodType::athena: return "athena";
+    case eGodType::atlas: return "atlas";
+    case eGodType::demeter: return "demeter";
+    case eGodType::dionysus: return "dionysus";
+    case eGodType::hades: return "hades";
+    case eGodType::hephaestus: return "hephaestus";
+    case eGodType::hera: return "hera";
+    case eGodType::hermes: return "hermes";
+    case eGodType::poseidon: return "poseidon";
+    case eGodType::zeus: return "zeus";
+    }
+    return "";
 }
 
 void eMessages::loadReason(eReason& r,
@@ -439,6 +467,9 @@ bool eMessages::loadImpl() {
     fHappinessMonument.fFull.fTitle = loadMessage("PHRASE_happiness_monument_title");
     fHappinessMonument.fFull.fText = loadMessage("PHRASE_happiness_monument_initial_announcement");
     fHappinessMonument.fCondensed.fText = loadMessage("PHRASE_CONDENSED_happiness_monument_initial_announcement");
+
+    loadMessage(fOracleNothing, "oracle_nothing_title",
+                "oracle_nothing_initial_announcement");
 
     fFire.fFull.fTitle = loadMessage("PHRASE_fire_title");
     fFire.fFull.fText = loadMessage("PHRASE_fire_initial_announcement");
@@ -624,11 +655,11 @@ bool eMessages::loadImpl() {
     fInvasionBribed.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_players_city_saved_bribery_title");
     fInvasionBribed.fCondensed.fText = loadMessage("PHRASE_CONDENSED_players_city_saved_bribery_initial_announcement");
 
-    fInvasionBribed.fFull.fTitle = loadMessage("PHRASE_players_city_saved_bribery_title");
-    fInvasionBribed.fFull.fText = loadMessage("PHRASE_players_city_saved_bribery_initial_announcement");
+    fInvasionBribedMonument.fFull.fTitle = loadMessage("PHRASE_players_city_saved_bribery_title");
+    fInvasionBribedMonument.fFull.fText = loadMessage("PHRASE_players_city_saved_bribery_init_announcment_comm_monument");
 
-    fInvasionBribed.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_players_city_saved_bribery_title");
-    fInvasionBribed.fCondensed.fText = loadMessage("PHRASE_CONDENSED_players_city_saved_bribery_initial_announcement");
+    fInvasionBribedMonument.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_players_city_saved_bribery_title");
+    fInvasionBribedMonument.fCondensed.fText = loadMessage("PHRASE_CONDENSED_players_city_saved_bribery_init_announcment_comm_monument");
 
     fInvasionDefeat.fFull.fTitle = loadMessage("PHRASE_enemy_victorious_title");
     fInvasionDefeat.fFull.fText = loadMessage("PHRASE_enemy_victorious_initial_announcement");
@@ -766,6 +797,7 @@ bool eMessages::loadImpl() {
     loadGeneralRequest(fTributeRequest, "D", "tribute_due");
 
     loadResourceGranted(fGiftGranted, "gift");
+    loadResourceGranted(fRescueGranted, "rescue_cash");
 
     fSupportTroopsArrive.fFull.fTitle = loadMessage("PHRASE_support_troops_arrive_title");
     fSupportTroopsArrive.fFull.fText = loadMessage("PHRASE_support_troops_arrive_initial_announcement");
@@ -848,6 +880,8 @@ bool eMessages::loadImpl() {
     fAllyAttackedByPlayer.fFull.fText = loadMessage("PHRASE_allies_hate_you_initial_announcement");
     fAllyAttackedByPlayer.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_allies_hate_you_title");
     fAllyAttackedByPlayer.fCondensed.fText = loadMessage("PHRASE_CONDENSED_allies_hate_you_initial_announcement");
+    loadMessage(fAtlanteanAlliesHateYou, "atlantean_allies_hate_you_title",
+                "atlantean_allies_hate_you_initial_announcement");
 
     fArmyReturns.fFull.fTitle = loadMessage("PHRASE_army_returns_title");
     fArmyReturns.fFull.fText = loadMessage("PHRASE_army_returns_initial_announcement");
@@ -873,6 +907,16 @@ bool eMessages::loadImpl() {
     fEconomicDecline.fFull.fText = loadMessage("PHRASE_economic_change_initial_announcement_D");
     fEconomicDecline.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_economic_change_title_D");
     fEconomicDecline.fCondensed.fText = loadMessage("PHRASE_CONDENSED_economic_change_initial_announcement_D");
+
+    fFavorIncrease.fFull.fTitle = loadMessage("PHRASE_favor_change_title_I");
+    fFavorIncrease.fFull.fText = loadMessage("PHRASE_favor_change_initial_announcement_I");
+    fFavorIncrease.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_favor_change_title_I");
+    fFavorIncrease.fCondensed.fText = loadMessage("PHRASE_CONDENSED_favor_change_initial_announcement_I");
+
+    fFavorDecrease.fFull.fTitle = loadMessage("PHRASE_favor_change_title_D");
+    fFavorDecrease.fFull.fText = loadMessage("PHRASE_favor_change_initial_announcement_D");
+    fFavorDecrease.fCondensed.fTitle = loadMessage("PHRASE_CONDENSED_favor_change_title_D");
+    fFavorDecrease.fCondensed.fText = loadMessage("PHRASE_CONDENSED_favor_change_initial_announcement_D");
 
     load(fAllyTroopsRequest, "ally", "S");
     load(fVassalTroopsRequest, "vassal", "P");

@@ -688,6 +688,9 @@ void eSounds::playAttackSound(const eCharacterType type) {
         sInstance->mArcherAttack.playRandomSound();
         break;
 
+    case eCharacterType::mugger:
+    case eCharacterType::thief:
+    case eCharacterType::vandal:
     case eCharacterType::disgruntled:
         sInstance->mOutlawAttack.playRandomSound();
         break;
@@ -870,6 +873,9 @@ void eSounds::playDieSound(eCharacter* const c) {
         sInstance->mArcherDie.playRandomSound();
         break;
 
+    case eCharacterType::mugger:
+    case eCharacterType::thief:
+    case eCharacterType::vandal:
     case eCharacterType::disgruntled:
         sInstance->mOutlawDie.playRandomSound();
         break;
@@ -988,6 +994,9 @@ void eSounds::playHitSound(eCharacter* const c) {
         sInstance->mArcherHit.playRandomSound();
         break;
 
+    case eCharacterType::mugger:
+    case eCharacterType::thief:
+    case eCharacterType::vandal:
     case eCharacterType::disgruntled:
         sInstance->mOutlawHit.playRandomSound();
         break;
@@ -1121,6 +1130,9 @@ eSoundVector* eSounds::getCharacterVoices(eCharacter* const c) {
     } break;
     case eCharacterType::homeless:
         return &sInstance->mHomelessVoices;
+    case eCharacterType::mugger:
+    case eCharacterType::thief:
+    case eCharacterType::vandal:
     case eCharacterType::disgruntled:
         return &sInstance->mDisgruntledVoices;
     case eCharacterType::sick:
@@ -1221,6 +1233,8 @@ eSoundVector* eSounds::getCharacterVoices(eCharacter* const c) {
         return &sInstance->mPhilosopherVoices;
     case eCharacterType::artisan:
         return &sInstance->mArtisanVoices;
+    case eCharacterType::priest:
+        return &sInstance->mPriestVoices;
     case eCharacterType::astronomer:
         return &sInstance->mAstronomerVoices;
     case eCharacterType::inventor:

@@ -37,6 +37,20 @@ public:
     void write(eWriteStream& dst) const override;
     void read(eReadStream& src) override;
 protected:
+    // lets a subclass pass its own settings on to a postponed offer
+    virtual void setupPostponed(eResourceGrantedEventBase* const e) const { (void)e; }
+    // called when the player takes drachmas from this offer
+    virtual void drachmasAccepted(const ePlayerId pid) { (void)pid; }
+    void setEvents(const eEvent giftCashAccepted,
+                   const eEvent giftAccepted,
+                   const eEvent giftPostponed,
+                   const eEvent giftRefused,
+                   const eEvent giftForfeited,
+                   const eEvent giftGranted,
+                   const eEvent giftLastChance,
+                   const eEvent giftInsufficientSpace,
+                   const eEvent giftPartialSpace);
+
     bool mPostpone = true;
 private:
     eEvent mGiftCashAccepted;

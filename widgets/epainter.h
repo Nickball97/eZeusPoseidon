@@ -34,6 +34,10 @@ public:
                      const eAlignment align) const;
     void drawTexture(const int x, const int y,
                      const std::shared_ptr<eTexture>& tex) const;
+    // scales the texture to cover the whole rect, keeping its shape and
+    // cutting off what overflows on either side (centred)
+    void drawTextureCover(const SDL_Rect& rect,
+                          const std::shared_ptr<eTexture>& tex) const;
     void fillRect(const SDL_Rect& rect,
                   const SDL_Color& color) const;
     void drawRect(const SDL_Rect& rect,

@@ -247,7 +247,12 @@ enum class eBuildingType {
     pyramidMuseum,
 
     hippodromePiece,
-    crosswalk
+    crosswalk,
+
+    // added at the end so saved types keep their numbers
+    templeGrandStatue, // Citadel of Poseidon centrepiece, 6x6
+    templeObelisk, // Citadel of Poseidon corner obelisk and its floor
+    boulevard // trees on both sides of a road (zeus.exe type 126)
 };
 
 struct eTextureSpace {
@@ -302,7 +307,8 @@ public:
                           std::string& title,
                           std::string& info,
                           std::string& employmentInfo,
-                          std::string& additionalInfo);
+                          std::string& additionalInfo,
+                          int* const textGroup = nullptr);
 
     using eTileValidator = std::function<bool(eTile*)>;
     eTile* tileNeighbour(const eMoveDirection o,
@@ -360,8 +366,17 @@ public:
     std::vector<eTile*> neighbours() const;
 
     void setBlessed(const double b);
+    // blessing or curse lasting the given number of ticks
+    void setBlessed(const double b, const int time);
     bool blessed() const { return mBlessed > 0.01; }
+    // Buildings whose blessing lasts until it is used (per Nicolas: "If a
+    // building is blessed, it is so until it spends that blessing").
+    // Others lose it after a while. Curses always wear off with time.
+    virtual bool blessingLastsUntilUsed() const { return false; }
+    // uses up part of the blessing (1 = all of a normal blessing)
+    void spendBlessing(const double amount = 1.);
     bool cursed() const { return mBlessed < -0.01; }
+    int blessTime() const { return mBlessTime; }
 
     bool accessToRoad() const;
 
@@ -398,6 +413,12 @@ private:
     double mHp = 1000;
 
     int mMaintance = 100;
+    // original fire and damage counters (exe 0x00492260): a building
+    // catches fire or collapses when one reaches 1000
+    int mDamageCounter = 0;
+    int mFireCounter = 0;
+    int mRiskCycle = 0;
+    bool riskCycle(const int by);
 
     bool mOnFire = false;
 

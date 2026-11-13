@@ -10,6 +10,16 @@ bool eWalkableObject::walkable(eTileBase* const t) const {
     switch(mType) {
     case eWalkableObjectType::ddefault:
         return t->walkable();
+    case eWalkableObjectType::soldier: {
+        // companies gather on the palace grounds, which other walkers
+        // can't cross
+        const auto type = t->underBuildingType();
+        if(type == eBuildingType::palaceTile) {
+            const auto terr = t->terrain() & eTerrain::walkable;
+            return static_cast<bool>(terr);
+        }
+        return t->walkable();
+    } break;
     case eWalkableObjectType::artisan: {
         const auto type = t->underBuildingType();
         const bool p = eBuilding::sPyramidBuilding(type);
@@ -22,7 +32,8 @@ bool eWalkableObject::walkable(eTileBase* const t) const {
         const auto type = t->underBuildingType();
         const bool hr = type == eBuildingType::road;
         if(hr) return true;
-        const bool a = type == eBuildingType::avenue;
+        const bool a = type == eBuildingType::avenue ||
+                       type == eBuildingType::boulevard;
         if(a) return true;
         return false;
     } break;
@@ -41,7 +52,9 @@ bool eWalkableObject::walkable(eTileBase* const t) const {
         if(type == eBuildingType::temple ||
            type == eBuildingType::templeAltar ||
            type == eBuildingType::templeStatue ||
-           type == eBuildingType::templeMonument) return false;
+           type == eBuildingType::templeMonument ||
+           type == eBuildingType::templeGrandStatue ||
+           type == eBuildingType::templeObelisk) return false;
         if(type == eBuildingType::road) return true;
         if(!t->walkableElev() && t->isElevationTile()) return false;
         const auto terr = t->terrain() & eTerrain::walkable;
@@ -118,6 +131,10 @@ stdsptr<eWalkableObject> eWalkableObject::sCreate(
 
 stdsptr<eWalkableObject> eWalkableObject::sCreateDefault() {
     return sCreate(eWalkableObjectType::ddefault);
+}
+
+stdsptr<eWalkableObject> eWalkableObject::sCreateSoldier() {
+    return sCreate(eWalkableObjectType::soldier);
 }
 
 stdsptr<eWalkableObject> eWalkableObject::sCreateArtisan() {

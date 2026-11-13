@@ -16,6 +16,7 @@
 
 #include "characters/ecentaurhorseman.h"
 #include "characters/ecentaurarcher.h"
+#include "characters/efigurestats.h"
 
 #include "characters/epersianhoplite.h"
 #include "characters/epersianhorseman.h"
@@ -107,20 +108,22 @@ void eInvasionHandler::disembark() {
             infantry = use;
         }
     }
-    {
-        const int use = std::min(mRem, mCavalryLeft);
-        if(use > 0) {
-            mRem -= use;
-            mCavalryLeft -= use;
-            cavalry = use;
-        }
-    }
+    // hoplites land first, then archers/rabble, then cavalry (Citadel of
+    // Poseidon, enemy_appearance.html)
     {
         const int use = std::min(mRem, mArchersLeft);
         if(use > 0) {
             mRem -= use;
             mArchersLeft -= use;
             archers = use;
+        }
+    }
+    {
+        const int use = std::min(mRem, mCavalryLeft);
+        if(use > 0) {
+            mRem -= use;
+            mCavalryLeft -= use;
+            cavalry = use;
         }
     }
     {
@@ -295,7 +298,8 @@ eInvasionHandler::generateSoldiersForCity(
         case eNationality::persian:
             s = spawnSoldier<ePersianHoplite>(mBoard, ocid, cid, tile);
             break;
-        case eNationality::centaur:
+        case eNationality::centaur: // swordsmen
+            s = spawnSoldier<eCentaurHorseman>(mBoard, ocid, cid, tile);
             break;
         case eNationality::amazon: {
             const auto a = spawnSoldier<eAmazon>(mBoard, ocid, cid, tile);
@@ -667,7 +671,7 @@ void eInvasionHandler::incTime(const int by) {
         }
     }
 
-    const auto invadingCid = mCity->cityId();
+    const auto invadingCid = invadingCityId();
     const auto invadingPid = mBoard.cityIdToPlayerId(invadingCid);
     const auto invasionDefeated = [&]() {
         tellHeroesAndGodsToGoBack();
@@ -695,7 +699,7 @@ void eInvasionHandler::incTime(const int by) {
                 invasionDefeated();
                 mStage = eInvasionStage::comeback;
             } else {
-                generateImmortals(mTile, mCity->cityId(),
+                generateImmortals(mTile, invadingCityId(),
                                   mAresLeft, mHeroesLeft);
                 mStage = eInvasionStage::spread;
             }
@@ -850,8 +854,7 @@ void eInvasionHandler::incTime(const int by) {
                 }
                 forces.kill(1 - double(count)/iniCount);
             }
-            assert(mEvent);
-            mEvent->invadersWon();
+            if(mEvent) mEvent->invadersWon();
         }
     } break;
     case eInvasionStage::comeback: {
@@ -1048,6 +1051,13 @@ void eInvasionHandler::spawnBoat() {
     const auto b = e::make_shared<eEnemyBoat>(mBoard);
     b->setCityId(cid);
     b->setOnCityId(ocid);
+    // transports have 100 hit points, Mayan 200 and Phoenician 150
+    // (Model "... Transport" rows; Citadel of Poseidon enemy_figures)
+    b->setFigureStatsApplied();
+    eFigureStats::sApply(b.get(), true);
+    const auto nat = mCity->nationality();
+    if(nat == eNationality::mayan) b->setHP(2*b->hp());
+    else if(nat == eNationality::phoenician) b->setHP(1.5*b->hp());
     b->changeTile(mBoatsTile);
     const auto a = e::make_shared<eMoveToAction>(b.get());
     a->setStateRelevance(eStateRelevance::terrain);
@@ -1117,4 +1127,22 @@ bool eInvasionHandler::immortalsFighting() const {
         if(i) return true;
     }
     return false;
+}
+
+eCityId eInvasionHandler::invadingCityId() const {
+    return mCity ? mCity->cityId() : eCityId::neutralAggresive;
+}
+
+void eInvasionHandler::initializeGodArmy(eTile* const tile,
+                                         const ePlayerSoldierType type,
+                                         const int count) {
+    mStage = eInvasionStage::spread;
+    mTile = tile;
+    std::vector<eSoldierBanner*> solds;
+    const eSs ss{{type, count}};
+    generateSoldiersForCity(tile, ss, eCityId::neutralAggresive, solds);
+    const int tx = tile->x();
+    const int ty = tile->y();
+    eSoldierBanner::sPlace(solds, tx, ty, mBoard, 3, 3);
+    mCurrentTile = tile;
 }

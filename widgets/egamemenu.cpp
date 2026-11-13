@@ -1,4 +1,5 @@
 ﻿#include "egamemenu.h"
+#include "buildings/sanctuaries/esanctuary.h"
 
 #include "textures/egametextures.h"
 #include "emainwindow.h"
@@ -21,6 +22,7 @@
 #include "eminimap.h"
 
 #include "eeventwidget.h"
+#include "emessageswidget.h"
 
 #include "egamewidget.h"
 
@@ -46,6 +48,9 @@ void tradePosts(const eCityId cid, std::vector<eSPR>& cs,
     const auto pid = board.cityIdToPlayerId(cid);
     const auto ppid = board.personPlayer();
     if(pid != ppid && !showAllPossibleBuildings) return;
+    // the scenario's trade buildings switch (zeus.exe 0x005B9410)
+    if(!showAllPossibleBuildings &&
+       !board.supportsBuilding(cid, eBuildingMode::tradePost)) return;
     const auto& wrld = board.world();
     int i = -1;
     for(const auto& c : wrld.cities()) {
@@ -102,11 +107,17 @@ public:
             tradePosts(cid, cs, mBoard, showAllPossibleBuildings);
             vis = !cs.empty();
         } else if(mMode == eBuildingMode::palace) {
-            vis = !mBoard.hasPalace(cid);
+            vis = !mBoard.hasPalace(cid) &&
+                  (showAllPossibleBuildings ||
+                   mBoard.supportsBuilding(cid, mMode));
         } else if(mMode == eBuildingMode::stadium) {
-            vis = !mBoard.atlantean(cid) && !mBoard.hasStadium(cid);
+            vis = !mBoard.atlantean(cid) && !mBoard.hasStadium(cid) &&
+                  (showAllPossibleBuildings ||
+                   mBoard.supportsBuilding(cid, mMode));
         } else if(mMode == eBuildingMode::museum) {
-            vis = mBoard.atlantean(cid) && !mBoard.hasMuseum(cid);
+            vis = mBoard.atlantean(cid) && !mBoard.hasMuseum(cid) &&
+                  (showAllPossibleBuildings ||
+                   mBoard.supportsBuilding(cid, mMode));
         } else if(mMode == eBuildingMode::none) {
             for(const auto& c : mChildren) {
                 const bool s = showAllPossibleBuildings ||
@@ -230,7 +241,18 @@ void eGameMenu::openBuildWidget(const int cmx, const int cmy,
     for(const auto& c : cs) {
         if(!mBoard->supportsBuilding(cid, c.fMode) &&
            !mShowAllPossibleBuildings) continue;
-        const auto bb = createBuildButton(c);
+        // Atlantean cities build a Frigate Wharf and the Citadel of
+        // Poseidon instead (Poseidon manual)
+        auto cc = c;
+        if(mBoard->atlantean(cid)) {
+            if(c.fMode == eBuildingMode::triremeWharf) {
+                cc.fName = eLanguage::zeusText(28, 164);
+            } else if(c.fMode == eBuildingMode::templePoseidon) {
+                cc.fName = eLanguage::zeusText(28, 98);
+                cc.fMarbleCost = eSanctuary::sCitadelInitialMarble;
+            }
+        }
+        const auto bb = createBuildButton(cc);
         ws.push_back(bb);
     }
     if(ws.empty()) return;
@@ -791,7 +813,8 @@ void eGameMenu::initialize(eGameBoard* const b,
                                       eSPR{eBuildingMode::doricColumn, eLanguage::zeusText(28, 129)},
                                       eSPR{eBuildingMode::ionicColumn, eLanguage::zeusText(28, 145)},
                                       eSPR{eBuildingMode::corinthianColumn, eLanguage::zeusText(28, 146)},
-                                      eSPR{eBuildingMode::avenue, eLanguage::zeusText(28, 118)}};
+                                      eSPR{eBuildingMode::avenue, eLanguage::zeusText(28, 118)},
+                                      eSPR{eBuildingMode::boulevard, eLanguage::zeusText(28, 126)}};
     const auto bb9 = [this, cmx, cmy, bb9spr]() {
         openBuildWidget(cmx, cmy, bb9spr);
     };
@@ -1019,6 +1042,8 @@ void eGameMenu::initialize(eGameBoard* const b,
         });
         const auto rb = eButton::sCreate(coll.fRoadBlock, window(), btmButtons);
         rb->setPressAction([this]() {
+            const auto cid = mGW->viewedCity();
+            if(!mBoard->supportsBuilding(cid, eBuildingMode::roadblock)) return;
             setMode(eBuildingMode::roadblock);
         });
         const auto e = eButton::sCreate(coll.fClear, window(), btmButtons);
@@ -1039,14 +1064,19 @@ void eGameMenu::initialize(eGameBoard* const b,
         const auto butts = new eWidget(window());
         const auto info = eCheckableButton::sCreate(coll.fShowInfo, window(), butts);
         const auto map = eCheckableButton::sCreate(coll.fShowMap, window(), butts);
+        // Zeus manual, "Overview Map Tab" / "Information Tab": the map
+        // button shows the overview map instead of the tab's information,
+        // the info button brings the information back (upstream #37)
         info->setChecked(true);
-        info->setCheckAction([info, map](const bool c) {
+        info->setCheckAction([this, info, map](const bool c) {
             if(!c) return info->setChecked(true);
             map->setChecked(false);
+            setMapMode(false);
         });
-        map->setCheckAction([info, map](const bool c) {
+        map->setCheckAction([this, info, map](const bool c) {
             if(!c) return map->setChecked(true);
             info->setChecked(false);
+            setMapMode(true);
         });
         butts->resize(info->width() + map->width(), info->height());
         butts->layoutHorizontally();
@@ -1055,8 +1085,22 @@ void eGameMenu::initialize(eGameBoard* const b,
     }
 
     {
-        const auto m = eCheckableButton::sCreate(coll.fMessages, window(), this);
+        // Messages button: the list of every message received
+        const auto m = eButton::sCreate(coll.fMessages, window(), this);
         m->move(mult*73, mult*239);
+        m->setTooltip(eLanguage::zeusText(68, 33)); // View messages
+        m->setPressAction([this]() {
+            if(mGW) mGW->showMessagesWindow();
+        });
+
+        // the box under the event icons: the latest message, short
+        const auto cm = new eCondensedMessages(window());
+        cm->resize(std::round(mult*84.5), mult*22);
+        cm->move(mult*4, std::round(mult*256.5));
+        cm->initialize(b, [this](const int i) {
+            if(mGW) mGW->showMessageRecord(i);
+        });
+        addWidget(cm);
     }
     {
         const auto butts = new eWidget(window());
@@ -1200,4 +1244,29 @@ void eGameMenu::setMode(const eBuildingMode mode) {
 bool eGameMenu::mousePressEvent(const eMouseEvent& e) {
     closeBuildWidget();
     return eGameMenuBase::mouseEnterEvent(e);
+}
+
+void eGameMenu::setMapMode(const bool m) {
+    if(m == mMapMode) return;
+    if(mWidgets.size() < 12 || !mMiniMap) return;
+    mMapMode = m;
+    // every tab's information gives way to the map, or comes back
+    for(const auto& w : mWidgets) {
+        if(w.fDW) w.fDW->setVisible(!m);
+    }
+    const auto overview = mWidgets[11].fW;
+    if(m) {
+        mMapHomeX = mMiniMap->x();
+        mMapHomeY = mMiniMap->y();
+        overview->removeWidget(mMiniMap);
+        addWidget(mMiniMap);
+        // where the tabs show their information
+        const auto& first = mWidgets[0];
+        mMiniMap->move(first.fW->x() + first.fDW->x(),
+                       first.fW->y() + first.fDW->y());
+    } else {
+        removeWidget(mMiniMap);
+        overview->addWidget(mMiniMap);
+        mMiniMap->move(mMapHomeX, mMapHomeY);
+    }
 }

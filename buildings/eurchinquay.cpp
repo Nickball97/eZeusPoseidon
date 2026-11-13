@@ -13,6 +13,8 @@ eUrchinQuay::eUrchinQuay(eGameBoard& board,
                                  2, 2, 10, eResourceType::urchin, cid),
     mO(o) {
     eGameTextures::loadUrchinQuay();
+    // holds at most 5 loads before it stops (original exe 0x0048CFB0)
+    setMaxResource(5);
 }
 
 eUrchinQuay::~eUrchinQuay() {
@@ -28,10 +30,14 @@ void eUrchinQuay::timeChanged(const int by) {
         }
         switch(mState) {
         case eUrchinQuayState::unpacking: {
+            // a cursed building does not work until the curse is lifted
+            if(cursed()) break;
             if(mStateCount > eNumbers::sUrchinQuayUnpackTime) {
                 mStateCount = 0;
                 mState = eUrchinQuayState::waiting;
-                addProduced(eResourceType::urchin, 3);
+                // a blessed urchin quay brings in 4 times this catch
+                // one load per trip (original exe 0x00430400)
+                addProduced(eResourceType::urchin, useBlessing(1));
                 updateDisabled();
             }
         } break;

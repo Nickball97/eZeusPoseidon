@@ -443,11 +443,14 @@ bool eTile::hasRoad() const {
 bool eTile::hasAvenue() const {
     if(!mUnderBuilding) return false;
     const auto t = mUnderBuilding->type();
-    return t == eBuildingType::avenue;
+    return t == eBuildingType::avenue || t == eBuildingType::boulevard;
 }
+
+int eTile::sBuildingRevision = 0;
 
 void eTile::setUnderBuilding(const stdsptr<eBuilding>& b) {
     mUnderBuilding = b;
+    sBuildingRevision++;
     scheduleTerrainUpdate();
 }
 
@@ -496,4 +499,13 @@ void eTile::setSoldierBanner(eSoldierBanner* const b) {
 
 void eTile::setDrawDim(const int drawDim) {
     mTerrainPainter.fDrawDim = drawDim;
+}
+
+bool eTile::bridgeBlocksShips() const {
+    if(!hasBridge()) return false;
+    if(!hasWater()) return false;
+    // Atlantean cities build Bridges, which ships always pass under
+    if(mBoard.atlantean(cityId())) return false;
+    const int smallCrossingMaxLength = 4;
+    return bridgeLength() <= smallCrossingMaxLength;
 }

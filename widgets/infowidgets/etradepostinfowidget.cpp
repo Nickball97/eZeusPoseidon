@@ -147,7 +147,7 @@ public:
             t->setSmallFontSize();
             const auto pid = stor->playerId();
             const int cc = trade.used(pid);
-            const int ccc = trade.fMax;
+            const int ccc = std::max(cc, trade.fMax); // as the original shows it
             t->setText(std::to_string(cc) + " " + eLanguage::zeusText(44, 148) + " " + std::to_string(ccc));
             t->fitContent();
             t->setHeight(rowHeight);

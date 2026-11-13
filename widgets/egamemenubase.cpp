@@ -119,3 +119,42 @@ bool eGameMenuBase::mouseLeaveEvent(const eMouseEvent& e) {
     (void)e;
     return true;
 }
+
+bool eGameMenuBase::selectTab(const int i) {
+    if(i < 0 || i >= static_cast<int>(mButtons.size())) return false;
+    const auto b = mButtons[i];
+    if(!b->visible()) return false;
+    if(!b->checked()) {
+        b->trigger();
+        return true;
+    }
+    // the same key again opens the tab's full report (zeus.exe 0x0051CA20
+    // opens the tab's advisor); eZeus has one only where the tab shows
+    // its "more info" button
+    if(i < static_cast<int>(mWidgets.size()) && mWidgets[i].fDW) {
+        mWidgets[i].fDW->openMoreInfo();
+    }
+    return true;
+}
+
+void eGameMenuBase::toggleOverviewTab(const int overviewTab) {
+    const int n = mButtons.size();
+    if(overviewTab < 0 || overviewTab >= n) return;
+    const auto ob = mButtons[overviewTab];
+    if(ob->checked()) {
+        const int t = mTabBeforeOverview;
+        mTabBeforeOverview = -1;
+        if(t < 0 || t >= n || t == overviewTab) return;
+        const auto b = mButtons[t];
+        if(b->visible()) b->trigger();
+        return;
+    }
+    mTabBeforeOverview = -1;
+    for(int i = 0; i < n; i++) {
+        if(mButtons[i]->checked()) {
+            mTabBeforeOverview = i;
+            break;
+        }
+    }
+    ob->trigger();
+}

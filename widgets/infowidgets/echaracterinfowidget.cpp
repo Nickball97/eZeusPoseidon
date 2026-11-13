@@ -1,6 +1,8 @@
 #include "echaracterinfowidget.h"
 
 #include "characters/ecarttransporter.h"
+#include "characters/epriest.h"
+#include "characters/actions/epriestaction.h"
 #include "characters/actions/ecarttransporteraction.h"
 #include "characters/egrower.h"
 #include "characters/ehunter.h"
@@ -16,9 +18,14 @@
 #include "widgets/ebuttonbase.h"
 #include "widgets/ebasicbutton.h"
 #include "engine/egameboard.h"
+#include "engine/eworldcity.h"
+#include "engine/eworldboard.h"
 #include "audio/esounds.h"
 #include "audio/esoundvector.h"
 #include "eiteratesquare.h"
+
+#include <algorithm>
+#include <cmath>
 
 eCharacterInfoWidget::eCharacterInfoWidget(
     eMainWindow* const window,
@@ -176,7 +183,13 @@ std::shared_ptr<eTexture> gCharPortrait(
         return zp.getTexture(21);
 
     case eCharacterType::disgruntled:
+        return zp.getTexture(22);
+    case eCharacterType::thief:
         return zp.getTexture(23);
+    case eCharacterType::mugger:
+        return zp.getTexture(27);
+    case eCharacterType::vandal:
+        return zp.getTexture(29);
 
     case eCharacterType::fishingBoat:
         return zp.getTexture(25);
@@ -222,8 +235,12 @@ std::shared_ptr<eTexture> gCharPortrait(
 
     case eCharacterType::trireme:
         return zp.getTexture(57);
+    case eCharacterType::enemyWarship:
+        return zp.getTexture(64);
     case eCharacterType::artisan:
         return zp.getTexture(58);
+    case eCharacterType::priest:
+        return zp.getTexture(65);
     case eCharacterType::wolf:
         return zp.getTexture(59);
     case eCharacterType::waterDistributor:
@@ -296,6 +313,9 @@ std::string gCharName(const eCharacterType c, const int seedId) {
     case eCharacterType::homeless:
     case eCharacterType::sick:
     case eCharacterType::healer:
+    case eCharacterType::mugger:
+    case eCharacterType::thief:
+    case eCharacterType::vandal:
     case eCharacterType::disgruntled:
     case eCharacterType::actor:
     case eCharacterType::philosopher:
@@ -375,6 +395,26 @@ std::string gCharName(const eCharacterType c, const int seedId) {
     }
 }
 
+int gGodTextId(const eGodType god) {
+    switch(god) {
+    case eGodType::zeus: return 0;
+    case eGodType::poseidon: return 1;
+    case eGodType::demeter: return 2;
+    case eGodType::apollo: return 3;
+    case eGodType::artemis: return 4;
+    case eGodType::ares: return 5;
+    case eGodType::aphrodite: return 6;
+    case eGodType::hermes: return 7;
+    case eGodType::athena: return 8;
+    case eGodType::hephaestus: return 9;
+    case eGodType::dionysus: return 10;
+    case eGodType::hades: return 11;
+    case eGodType::hera: return 12;
+    case eGodType::atlas: return 13;
+    }
+    return 0;
+}
+
 std::string gCharOccupation(
     const eCharacter* const c) {
     if(!c) return nullptr;
@@ -396,8 +436,15 @@ std::string gCharOccupation(
     case eCharacterType::hera:
     case eCharacterType::hermes:
     case eCharacterType::poseidon:
-    case eCharacterType::zeus:
-        return eLanguage::zeusText(64, 67);
+    case eCharacterType::zeus: {
+        // as in the original: the god's title ("God of Prophecy and
+        // Healing", 158) and "Friendly God" or "Unfriendly God" (83)
+        const auto gt = eGod::sCharacterToGodType(type);
+        const auto g = static_cast<const eGod*>(c);
+        const bool hostile = g->attitude() == eGodAttitude::hostile;
+        return eLanguage::zeusText(158, gGodTextId(gt)) + "\n" +
+               eLanguage::zeusText(83, hostile ? 1 : 0);
+    }
     case eCharacterType::achilles:
     case eCharacterType::atalanta:
     case eCharacterType::bellerophon:
@@ -489,7 +536,13 @@ std::string gCharOccupation(
         return eLanguage::zeusText(64, 21) + " " + cname;
 
     case eCharacterType::disgruntled:
+        return eLanguage::zeusText(64, 22);
+    case eCharacterType::thief:
         return eLanguage::zeusText(64, 23);
+    case eCharacterType::mugger:
+        return eLanguage::zeusText(64, 27);
+    case eCharacterType::vandal:
+        return eLanguage::zeusText(64, 29);
 
     case eCharacterType::fishingBoat:
         return eLanguage::zeusText(64, 25);
@@ -555,8 +608,12 @@ std::string gCharOccupation(
 
     case eCharacterType::trireme:
         return eLanguage::zeusText(64, 57);
+    case eCharacterType::enemyWarship:
+        return eLanguage::zeusText(64, 64);
     case eCharacterType::artisan:
         return eLanguage::zeusText(64, 58);
+    case eCharacterType::priest:
+        return eLanguage::zeusText(64, 65);
     case eCharacterType::wolf:
         return eLanguage::zeusText(64, 59);
     case eCharacterType::waterDistributor:
@@ -822,9 +879,10 @@ eCharMessage gCharMessage(eCharacter * const c) {
         }
         groupId = 203;
     } break;
+    case eCharacterType::mugger:
+    case eCharacterType::thief:
+    case eCharacterType::vandal:
     case eCharacterType::disgruntled: {
-        // groupId = 206;
-        // groupId = 207;
         const auto limit = board.immigrationLimit(cid);
         if(enemyImmortal) {
             stringId = 0;
@@ -845,8 +903,12 @@ eCharMessage gCharMessage(eCharacter * const c) {
         } else {
             stringId = 1;
         }
-        groupId = 208;
-        // groupId = 209;
+        switch(c->type()) {
+        case eCharacterType::vandal: groupId = 206; break;
+        case eCharacterType::thief: groupId = 207; break;
+        case eCharacterType::mugger: groupId = 208; break;
+        default: groupId = 209; break;
+        }
     } break;
     case eCharacterType::peddler: {
         groupId = 229;
@@ -1205,6 +1267,28 @@ eCharMessage gCharMessage(eCharacter * const c) {
             stringId = g;
         }
         groupId = 221;
+    } break;
+    case eCharacterType::priest: {
+        // the priest's own lines (text group 237): 0 danger, 1 looking
+        // for a goat, 2-4 to a sheep, 5 looking for cattle, 6 to a bull
+        groupId = 237;
+        const auto p = static_cast<ePriest*>(c);
+        const auto pa = dynamic_cast<ePriestAction*>(c->action());
+        const auto an = pa ? pa->animal() : nullptr;
+        const bool cattle = an && an->type() != eCharacterType::sheep &&
+                            an->type() != eCharacterType::goat;
+        if(enemyImmortal) {
+            stringId = 0;
+        } else if(p->load() == ePriestLoad::sheep ||
+                  p->load() == ePriestLoad::goat) {
+            stringId = 2 + eRand::rand() % 3;
+        } else if(p->load() == ePriestLoad::cattle) {
+            stringId = 6;
+        } else if(cattle) {
+            stringId = 5;
+        } else {
+            stringId = 1;
+        }
     } break;
     case eCharacterType::astronomer: {
         if(enemyImmortal) {
@@ -1567,99 +1651,131 @@ eCharMessage gCharMessage(eCharacter * const c) {
     return result;
 }
 
+namespace {
+// a walker's picture scaled to the strip's height, clickable to show
+// that walker (the original's strip of small pictures at the top)
+class eCharThumb : public eButtonBase {
+public:
+    using eButtonBase::eButtonBase;
+protected:
+    void paintEvent(ePainter& p) override {
+        const auto& tex = texture();
+        if(tex) p.drawTextureCover(rect(), tex);
+    }
+};
+}
+
+// Laid out like the original's walker window: a framed strip at the top
+// with a small picture of each walker on the spot, then a framed panel
+// with the portrait, the name in large letters, the occupation and what
+// the walker is saying, and below it what the walker is doing.
 void eCharacterInfoWidget::initialize(const std::vector<eCharacter*> chars) {
     eInfoWidget::initialize("");
     if(chars.empty()) return;
 
     const auto res = resolution();
-    if(chars.size() > 1) {
-        const auto w = new eWidget(window());
+    const double m = res.multiplier();
+    const int p = res.smallPadding();
+    const int fp = padding(); // inner frame margin (addFramedWidget)
 
+    {   // top strip
+        const int th = std::round(44*m);
+        const auto strip = addFramedWidget(th + 2*fp);
+        int x = 0;
         for(eCharacter* const c : chars) {
             const auto portrait = gCharPortrait(res, c);
-            const auto b = new eButtonBase(window());
+            if(!portrait) continue;
+            const auto b = new eCharThumb(window());
+            b->setNoPadding();
             b->setTexture(portrait);
+            const int pw = portrait->width();
+            const int ph = std::max(1, portrait->height());
+            const int tw = std::max(1, (int)std::round(double(th)*pw/ph));
+            b->resize(tw, th);
             b->setPressAction([this, c]() {
                 setCharacter(c);
             });
-            b->fitContent();
-            w->addWidget(b);
+            strip->addWidget(b);
+            b->move(x, 0);
+            x += tw + p;
         }
-
-        w->stackHorizontally();
-        w->fitContent();
-        addInfoWidget(w);
     }
 
     eCharacter * const c = chars[0];
-    const auto type = c->type();
     const auto portrait = gCharPortrait(res, c);
 
+    const int innerW = widgetWidth() - 2*fp;
     mContent = new eWidget(window());
-    mContent->setWidth(widgetWidth());
+    mContent->setNoPadding();
+    mContent->setWidth(innerW);
 
     mPortraitLabel = new eLabel(window());
+    mPortraitLabel->setNoPadding();
     mPortraitLabel->setTexture(portrait);
     mPortraitLabel->fitContent();
 
-    const int p = res.smallPadding();
-    const int remW = widgetWidth() - mPortraitLabel->width() - 2*p;
+    const int remW = innerW - mPortraitLabel->width() - 2*p;
 
     mTextWidget = new eWidget(window());
+    mTextWidget->setNoPadding();
     mTextWidget->setWidth(remW);
 
-    const int seedId = c->seedId();
-    const auto name = gCharName(type, seedId);
-
-    mNameLabel = new eLabel(name, window());
-    mNameLabel->setWrapWidth(remW);
+    mNameLabel = new eLabel(window());
+    mNameLabel->setNoPadding();
     mNameLabel->setHugeFontSize();
-    mNameLabel->setTinyPadding();
-    mNameLabel->fitContent();
+    mNameLabel->setWrapWidth(remW);
     mTextWidget->addWidget(mNameLabel);
 
-    const auto occupation = gCharOccupation(c);
-    mOccupationLabel = new eLabel(occupation, window());
+    mOccupationLabel = new eLabel(window());
+    mOccupationLabel->setNoPadding();
+    mOccupationLabel->setSmallFontSize();
     mOccupationLabel->setWrapWidth(remW);
-    mOccupationLabel->setTinyPadding();
-    mOccupationLabel->fitContent();
     mTextWidget->addWidget(mOccupationLabel);
 
-    const auto msg = gCharMessage(c);
     mMsgLabel = new eLabel(window());
-    mMsgLabel->setTinyPadding();
+    mMsgLabel->setNoPadding();
     mMsgLabel->setSmallFontSize();
     mMsgLabel->setWrapWidth(remW);
-    mMsgLabel->setText(msg.fText);
-    mMsgLabel->fitContent();
     mTextWidget->addWidget(mMsgLabel);
 
-    const auto speakButton = new eBasicButton(
+    mSpeakButton = new eBasicButton(
         &eInterfaceTextures::fSpeakButton, window());
-    speakButton->setPressAction([this]() {
+    mSpeakButton->setPressAction([this]() {
         if(mSpeakAction) mSpeakAction();
     });
-    mTextWidget->addWidget(speakButton);
-    speakButton->align(eAlignment::right);
-
-    mTextWidget->stackVertically(p);
+    mTextWidget->addWidget(mSpeakButton);
 
     mContent->addWidget(mPortraitLabel);
     mContent->addWidget(mTextWidget);
-    mContent->stackHorizontally(p);
-    mContent->fitContent();
-    addInfoWidget(mContent);
+    mPortraitLabel->move(0, 0);
+    mTextWidget->move(mPortraitLabel->width() + 2*p, 0);
+
+    // the panel is as tall as the tallest of the walkers on the spot
+    int contentH = std::round(100*m);
+    for(eCharacter* const cc : chars) {
+        fillTexts(cc, false);
+        contentH = std::max(contentH, mTextWidget->height());
+        const auto pt = gCharPortrait(res, cc);
+        if(pt) contentH = std::max(contentH, pt->height());
+    }
+    mContent->setHeight(contentH);
+    const auto panel = addFramedWidget(contentH + 2*fp);
+    panel->addWidget(mContent);
+    mContent->move(0, 0);
 
     mAdditionalInfo = new eLabel(window());
     mAdditionalInfo->setNoPadding();
     mAdditionalInfo->setSmallFontSize();
+    mAdditionalInfo->setTextAlignment(eAlignment::left | eAlignment::top);
+    mAdditionalInfo->setWrapWidth(widgetWidth());
+    mAdditionalInfo->setText(" ");
     mAdditionalInfo->fitContent();
-    addWidget(mAdditionalInfo);
+    addInfoWidget(mAdditionalInfo, 2*mAdditionalInfo->height());
 
     setCharacter(c);
 }
 
-void eCharacterInfoWidget::setCharacter(eCharacter * const c) {
+void eCharacterInfoWidget::fillTexts(eCharacter* const c, const bool sound) {
     const auto type = c->type();
     const auto res = resolution();
     const auto portrait = gCharPortrait(res, c);
@@ -1668,26 +1784,93 @@ void eCharacterInfoWidget::setCharacter(eCharacter * const c) {
     mPortraitLabel->fitContent();
 
     const int seedId = c->seedId();
-    const auto name = gCharName(type, seedId);
-    mNameLabel->setText(name);
+    mNameLabel->setText(gCharName(type, seedId));
     mNameLabel->fitContent();
 
-    const auto occupation = gCharOccupation(c);
-    mOccupationLabel->setText(occupation);
+    mOccupationLabel->setText(gCharOccupation(c));
     mOccupationLabel->fitContent();
 
     const auto msg = gCharMessage(c);
     mMsgLabel->setText(msg.fText);
-    msg.playSound();
-    mSpeakAction = [msg]() {
-        msg.playSound();
-    };
     mMsgLabel->fitContent();
+    if(sound) {
+        msg.playSound();
+        mSpeakAction = [msg]() {
+            msg.playSound();
+        };
+    }
 
     const int p = res.smallPadding();
-    mTextWidget->stackVertically(p);
-    mTextWidget->fitHeight();
-    mContent->fitHeight();
+    int y = 0;
+    mNameLabel->move(0, y);
+    y += mNameLabel->height();
+    mOccupationLabel->move(0, y);
+    y += mOccupationLabel->height() + p;
+
+    // a trade caravan: what its city buys and sells, as goods icons
+    // after "Buys" and "Sells" (47:1, 47:2), as in the original
+    if(mTradeWidget) {
+        mTextWidget->removeWidget(mTradeWidget);
+        mTradeWidget->deleteLater();
+        mTradeWidget = nullptr;
+    }
+    if(c->type() == eCharacterType::trader ||
+       c->type() == eCharacterType::tradeBoat) {
+        const auto& board = c->getBoard();
+        stdsptr<eWorldCity> wc;
+        for(const auto& cc : board.world().cities()) {
+            if(cc && cc->cityId() == c->cityId()) {
+                wc = cc;
+                break;
+            }
+        }
+        if(wc) {
+            mTradeWidget = new eWidget(window());
+            mTradeWidget->setNoPadding();
+            int ty = 0;
+            const auto addRow = [&](const std::string& name,
+                                    const std::vector<eResourceTrade>& ts) {
+                if(ts.empty()) return;
+                const auto l = new eLabel(window());
+                l->setNoPadding();
+                l->setSmallFontSize();
+                l->setText(name);
+                l->fitContent();
+                mTradeWidget->addWidget(l);
+                l->move(0, ty);
+                int x = l->width() + p;
+                int rowH = l->height();
+                for(const auto& t : ts) {
+                    const auto icon = new eLabel(window());
+                    icon->setNoPadding();
+                    icon->setTexture(eResourceTypeHelpers::icon(
+                                         res.uiScale(), t.fType));
+                    icon->fitContent();
+                    mTradeWidget->addWidget(icon);
+                    icon->move(x, ty);
+                    x += icon->width() + p/2;
+                    rowH = std::max(rowH, icon->height());
+                }
+                ty += rowH + p/2;
+            };
+            addRow(eLanguage::zeusText(47, 1), wc->buys());
+            addRow(eLanguage::zeusText(47, 2), wc->sells());
+            mTradeWidget->resize(mTextWidget->width(), ty);
+            mTextWidget->addWidget(mTradeWidget);
+            mTradeWidget->move(0, y);
+            y += ty + p;
+        }
+    }
+
+    mMsgLabel->move(0, y);
+    y += mMsgLabel->height() + p;
+    mSpeakButton->move(mTextWidget->width() - mSpeakButton->width(), y);
+    y += mSpeakButton->height();
+    mTextWidget->setHeight(y);
+}
+
+void eCharacterInfoWidget::setCharacter(eCharacter * const c) {
+    fillTexts(c, true);
 
     std::string additionalTxt;
     if(const auto cta = dynamic_cast<eCartTransporterAction*>(c->action())) {
@@ -1708,7 +1891,4 @@ void eCharacterInfoWidget::setCharacter(eCharacter * const c) {
         }
     }
     mAdditionalInfo->setText(additionalTxt);
-    mAdditionalInfo->fitContent();
-    const int hp = res.hugePadding();
-    mAdditionalInfo->move(hp, height() - hp - mAdditionalInfo->height());
 }

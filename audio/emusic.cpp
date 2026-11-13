@@ -1,4 +1,5 @@
 ﻿#include "emusic.h"
+#include "eaudiosettings.h"
 
 #include <fstream>
 
@@ -72,6 +73,8 @@ void eMusic::incTimeImpl() {
 }
 
 void eMusic::playMenuMusicImpl() {
+    // back in the menus: the narrator stops
+    stopCampaignVoiceImpl();
     const bool change = mMusicType != eMusicType::setup;
     mMusicType = eMusicType::setup;
     if(Mix_PlayingMusic()) {
@@ -123,19 +126,30 @@ void eMusic::playCampaignVictoryMusicImpl() {
 }
 
 bool eMusic::playCampaignVoiceImpl(const std::string &path) {
+    stopCampaignVoiceImpl();
+    if(!eAudioSettings::sOn(eSoundKind::speech)) return false; // speech is off
     std::ifstream file(path);
     if(!file.good()) return false;
-    Mix_HaltMusic();
-    const auto it = mCampaignVoice.find(path);
-    if(it == mCampaignVoice.end()) {
-        const auto voice = std::make_shared<eMusicVector>();
-        voice->addPath(path);
-        mCampaignVoice[path] = voice;
-        voice->playRandomSound();
-    } else {
-        it->second->playRandomSound();
+    mCampaignVoice = Mix_LoadWAV(path.c_str());
+    if(!mCampaignVoice) {
+        printf("Failed to load voice '%s'! SDL_mixer Error: %s\n",
+               path.c_str(), Mix_GetError());
+        return false;
     }
+    Mix_Volume(sVoiceChannel, eAudioSettings::sMixVolume(eSoundKind::speech));
+    Mix_PlayChannel(sVoiceChannel, mCampaignVoice, 0);
     return true;
+}
+
+void eMusic::stopCampaignVoice() {
+    sInstance->stopCampaignVoiceImpl();
+}
+
+void eMusic::stopCampaignVoiceImpl() {
+    if(!mCampaignVoice) return;
+    Mix_HaltChannel(sVoiceChannel);
+    Mix_FreeChunk(mCampaignVoice);
+    mCampaignVoice = nullptr;
 }
 
 void eMusic::loadImpl() {

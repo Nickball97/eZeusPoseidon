@@ -1,4 +1,5 @@
 #include "ewagechangeevent.h"
+#include "emessages.h"
 
 #include "engine/egameboard.h"
 #include "engine/eeventdata.h"
@@ -36,4 +37,11 @@ void eWageChangeEvent::trigger() {
 
 std::string eWageChangeEvent::longName() const {
     return eLanguage::text("wage_change");
+}
+
+bool eWageChangeEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    (void)ed;
+    oracleChooseCount();
+    msg = eMessages::oracleMessage("wage_change", count() > 0 ? "_I" : "_D");
+    return true;
 }

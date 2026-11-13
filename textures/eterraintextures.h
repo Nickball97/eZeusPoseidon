@@ -79,6 +79,8 @@ public:
     eTextureCollection fToBeachRoad;
     eTextureCollection fRoad;
     eTextureCollection fPrettyRoad;
+    eTextureCollection fRuttedRoad;
+    eTextureCollection fPlazaRoad;
 
     eTextureCollection fSanctuaryStairs;
 

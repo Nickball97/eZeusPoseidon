@@ -212,7 +212,7 @@ protected:
             textLabel->setYellowFontColor();
         });
         setMouseLeaveAction([textLabel]() {
-            textLabel->setLightFontColor();
+            textLabel->setDarkFontColor();
         });
 
         stackHorizontally();

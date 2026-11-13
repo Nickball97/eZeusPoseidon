@@ -39,6 +39,8 @@ struct eTradeBoatTextures {
     eTextureCollection fStand;
     std::vector<eTextureCollection> fSwim;
     std::vector<eTextureCollection> fDie;
+    // attack frames; only frigates have them
+    std::vector<eTextureCollection> fFight;
 };
 
 struct eResourceCollectorTextures : public eBasicCharacterTextures {
@@ -64,6 +66,20 @@ struct eShepherdTextures : public eBasicCharacterTextures {
     std::vector<eTextureCollection> fCarry;
     eTextureCollection fCollect;
     eTextureCollection fFight;
+};
+
+// the sanctuary priest (SprMain 8105-8427): walking, dying, lifting a goat
+// or a sheep and carrying it on his shoulders
+struct ePriestTextures : public eBasicCharacterTextures {
+    ePriestTextures(SDL_Renderer* const renderer) :
+        eBasicCharacterTextures(renderer),
+        fPickGoat(renderer),
+        fPickSheep(renderer) {}
+
+    eTextureCollection fPickGoat;
+    std::vector<eTextureCollection> fCarryGoat;
+    eTextureCollection fPickSheep;
+    std::vector<eTextureCollection> fCarrySheep;
 };
 
 struct eOrangeTenderTextures : public eBasicCharacterTextures {
@@ -228,6 +244,8 @@ public:
     void loadHorse();
     bool fShepherdLoaded = false;
     void loadShepherd();
+    bool fPriestLoaded = false;
+    void loadPriest();
     bool fMarbleMinerLoaded = false;
     void loadMarbleMiner();
     bool fSilverMinerLoaded = false;
@@ -350,6 +368,10 @@ public:
     void loadTrireme();
     bool fTriremeOverlayLoaded = false;
     void loadTriremeOverlay();
+    // Poseidon frigates (PoseidonImps bitmaps Frigate and FireFrigate),
+    // cut from the game files by tools/sgextract
+    bool fFrigateLoaded = false;
+    void loadFrigate();
     bool fEnemyBoatLoaded = false;
     void loadEnemyBoat();
     bool fDeerLoaded = false;
@@ -508,6 +530,7 @@ public:
     eResourceCollectorTextures fDeerHunter;
 
     eShepherdTextures fShepherd;
+    ePriestTextures fPriest;
     eShepherdTextures fGoatherd;
 
     eBasicCharacterTextures fFoodVendor;
@@ -622,6 +645,8 @@ public:
     eUrchinGathererTextures fUrchinGatherer;
     eTradeBoatTextures fTradeBoat;
     eTradeBoatTextures fTrireme;
+    eTradeBoatTextures fFrigate;
+    eTradeBoatTextures fFireFrigate;
     std::vector<eTextureCollection> fTriremeOverlay;
     std::vector<eTextureCollection> fTriremeFightOverlay;
     std::vector<eTextureCollection> fTriremeDieOverlay;

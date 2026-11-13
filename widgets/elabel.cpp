@@ -42,6 +42,11 @@ void eLabel::sizeHint(int& w, int& h) {
 void eLabel::paintEvent(ePainter& p) {
     const auto& tex = texture();
     if(tex) {
+        const bool wide = 3*tex->width() > 4*tex->height();
+        if(mCoverTexture && wide) {
+            p.drawTextureCover(rect(), tex);
+            return;
+        }
         p.drawTexture(rect(), tex, textAlignment());
         //p.drawRect(rect(), {0, 0, 0, 255}, 1);
     }

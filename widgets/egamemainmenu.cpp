@@ -10,6 +10,7 @@
 void eGameMainMenu::initialize(const eAction& resumeAct,
                                const eAction& saveAct,
                                const eAction& loadAct,
+                               const eAction& optionsAct,
                                const eAction& exitAct) {
     setType(eFrameType::message);
 
@@ -36,6 +37,15 @@ void eGameMainMenu::initialize(const eAction& resumeAct,
     loadButt->setPressAction(loadAct);
     addWidget(loadButt);
     loadButt->align(eAlignment::hcenter);
+
+    // the original's Options menu (text group 2)
+    const auto optButt = new eFramedButton(window());
+    optButt->setUnderline(false);
+    optButt->setText(eLanguage::zeusText(2, 0));
+    optButt->fitContent();
+    optButt->setPressAction(optionsAct);
+    addWidget(optButt);
+    optButt->align(eAlignment::hcenter);
 
     const auto exitButt = new eFramedButton(window());
     exitButt->setUnderline(false);

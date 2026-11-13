@@ -36,6 +36,12 @@ void ePlague::spreadFrom(eSmallHouse* const h) {
     }
 }
 
+void ePlague::addHouse(eSmallHouse* const h) {
+    if(!h || h->plague()) return;
+    mHouses.push_back(h);
+    h->setPlague(true);
+}
+
 void ePlague::healAll() {
     for(const auto& h : mHouses) {
         h->setPlague(false);

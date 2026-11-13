@@ -6,6 +6,9 @@
 #include "textures/egametextures.h"
 #include "engine/egameboard.h"
 #include "elanguage.h"
+#include "estringhelpers.h"
+#include "characters/heroes/ehero.h"
+#include "characters/monsters/emonster.h"
 
 void eHerosHallInfoWidget::initialize(eHerosHall* const b) {
     b->updateRequirementsStatus();
@@ -14,9 +17,50 @@ void eHerosHallInfoWidget::initialize(eHerosHall* const b) {
     eInfoWidget::initialize(title);
 
     const int p = padding();
+    const auto& reqs = b->requirements();
+    const auto heroName = eHero::sHeroName(ht);
+
+    {   // as in the original: where the hero stands, centred under the
+        // title (185:63-68), then "Theseus Requires ... Status" (185:59-60)
+        int metAll = 0;
+        for(const auto& r : reqs) if(r.met()) metAll++;
+        const auto stage = b->stage();
+        int string;
+        if(stage == eHeroSummoningStage::summoned) {
+            string = 65; // travelling to the city
+        } else if(stage == eHeroSummoningStage::arrived) {
+            string = b->heroOnQuest() ? 66 : 68; // away / in the city
+        } else {
+            string = metAll >= int(reqs.size()) ? 64 : 63;
+        }
+        auto txt = eLanguage::zeusText(185, string);
+        eStringHelpers::replace(txt, "[hero_name]", heroName);
+        const auto sub = new eLabel(window());
+        sub->setNoPadding();
+        sub->setSmallFontSize();
+        sub->setText(txt);
+        sub->fitContent();
+        const auto subW = addRegularWidget(sub->height());
+        subW->addWidget(sub);
+        sub->align(eAlignment::hcenter);
+
+        const auto reqL = new eLabel(window());
+        reqL->setNoPadding();
+        reqL->setSmallFontSize();
+        reqL->setText(heroName + " " + eLanguage::zeusText(185, 59));
+        reqL->fitContent();
+        const auto stL = new eLabel(window());
+        stL->setNoPadding();
+        stL->setSmallFontSize();
+        stL->setText(eLanguage::zeusText(185, 60));
+        stL->fitContent();
+        const auto head = addRegularWidget(reqL->height());
+        head->addWidget(reqL);
+        head->addWidget(stL);
+        stL->setX(head->width() - stL->width());
+    }
 
     int met = 0;
-    const auto& reqs = b->requirements();
     int y = 0;
     std::vector<eWidget*> wids;
     for(const auto& r : reqs) {
@@ -88,6 +132,48 @@ void eHerosHallInfoWidget::initialize(eHerosHall* const b) {
     const auto wid = addFramedWidget(y + p);
     for(const auto w : wids) {
         wid->addWidget(w);
+    }
+
+    {   // "Hercules is needed to do battle with the Hydra." (185:71-86)
+        // when one of the hero's monsters is in the city, as in the original
+        int string = -1;
+        auto& board = b->getBoard();
+        for(const auto m : board.monsters(b->cityId())) {
+            if(!m) continue;
+            bool valid = false;
+            const auto mt = eMonster::sCharacterToMonsterType(m->type(), &valid);
+            if(!valid || eMonster::sSlayer(mt) != ht) continue;
+            switch(mt) {
+            case eMonsterType::hector: string = 71; break;
+            case eMonsterType::maenads: string = 72; break;
+            case eMonsterType::cerberus: string = 73; break;
+            case eMonsterType::hydra: string = 74; break;
+            case eMonsterType::dragon: string = 75; break;
+            case eMonsterType::talos: string = 76; break;
+            case eMonsterType::cyclops: string = 77; break;
+            case eMonsterType::scylla: string = 78; break;
+            case eMonsterType::kraken: string = 79; break;
+            case eMonsterType::medusa: string = 80; break;
+            case eMonsterType::calydonianBoar: string = 81; break;
+            case eMonsterType::minotaur: string = 82; break;
+            case eMonsterType::sphinx: string = 83; break;
+            case eMonsterType::harpies: string = 84; break;
+            case eMonsterType::chimera: string = 85; break;
+            case eMonsterType::echidna: string = 86; break;
+            default: break;
+            }
+            if(string != -1) break;
+        }
+        if(string != -1) {
+            const auto l = new eLabel(window());
+            l->setNoPadding();
+            l->setSmallFontSize();
+            l->setText(eLanguage::zeusText(185, string));
+            l->fitContent();
+            const auto w = addRegularWidget(l->height());
+            w->addWidget(l);
+            l->align(eAlignment::hcenter);
+        }
     }
 
     const int reqC = reqs.size();

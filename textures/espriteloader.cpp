@@ -164,9 +164,17 @@ std::shared_ptr<eTexture> eSpriteLoader::load(
 void eSpriteLoader::loadTex(const int i) {
     const bool binary = true;
     std::shared_ptr<eTexture> tex;
-    if(binary) {
-        const auto path = mSize + "/" + mName + "_" + std::to_string(i) + ".png";
+    const auto path = mSize + "/" + mName + "_" + std::to_string(i) + ".png";
+    if(binary && eBinaryImageLoader::has(path)) {
         tex = eBinaryImageLoader::load(mRenderer, path);
+    } else if(binary) {
+        // sheets cut from the player's own game files by tools/sgextract
+        // (e.g. Poseidon frigates), installed next to the packed archives
+        tex = std::make_shared<eTexture>();
+        const auto file = eGameDir::texturesDir() + path;
+        if(!tex->load(mRenderer, file)) {
+            printf("Could not load '%s'\n", file.c_str());
+        }
     } else {
         tex = std::make_shared<eTexture>();
         const std::string dir = eGameDir::texturesDir() + mSize + "/";

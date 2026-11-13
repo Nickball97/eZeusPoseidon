@@ -4,6 +4,8 @@
 
 #include "widgets/eokbutton.h"
 
+#include <algorithm>
+
 eInfoWidget::eInfoWidget(eMainWindow* const window,
                          eMainWidget* const mw,
                          const bool narrow, const bool shrt) :
@@ -22,7 +24,13 @@ void eInfoWidget::initialize(const std::string& title) {
     resize(ww, hh);
     align(eAlignment::center);
 
-    mTitleLabel = new eLabel(title, window());
+    // the original's windows have a large title, wrapped and centred when
+    // long ("Artemis' Menagerie is under construction.")
+    mTitleLabel = new eLabel(window());
+    mTitleLabel->setHugeFontSize();
+    mTitleLabel->setWrapWidth(ww - 4*padding());
+    mTitleLabel->setWrapAlignment(eAlignment::hcenter);
+    mTitleLabel->setText(title);
     mTitleLabel->fitContent();
     addWidget(mTitleLabel);
     mTitleLabel->align(eAlignment::top | eAlignment::hcenter);
@@ -71,6 +79,11 @@ eWidget* eInfoWidget::addRegularWidget(const int height) {
 void eInfoWidget::addText(const std::string& text) {
     const auto wid = new eLabel(window());
     wid->setSmallFontSize();
+    // lines sit close together as in the original; addInfoWidget leaves
+    // a small gap between them
+    wid->setNoPadding();
+    // the original's window texts are left-aligned
+    wid->setTextAlignment(eAlignment::left | eAlignment::top);
     wid->setWrapWidth(widgetWidth());
     wid->setText(text);
     wid->fitContent();
@@ -104,6 +117,40 @@ void eInfoWidget::addInfoWidget(eWidget* const w, const int height) {
 int eInfoWidget::widgetWidth() const {
     const int p = padding();
     return width() - 4*p;
+}
+
+void eInfoWidget::fitHeightToContent() {
+    const int p = padding();
+    if(mCentralWidget) {
+        // shrink the central area to its content; content placed at its
+        // bottom (e.g. the sanctuary's prayer buttons) keeps it as it is
+        int contentH = 0;
+        for(const auto c : mCentralWidget->children()) {
+            contentH = std::max(contentH, c->y() + c->height());
+        }
+        const int delta = mCentralWidget->height() - contentH;
+        if(delta <= 0) return;
+        mCentralWidget->setHeight(contentH);
+        bool after = false;
+        for(const auto w : mWidgets) {
+            if(after) w->setY(w->y() - delta);
+            if(w == mCentralWidget) after = true;
+        }
+        setHeight(height() - delta);
+        mOk->align(eAlignment::bottom | eAlignment::right);
+        mOk->move(mOk->x() - 2*p, mOk->y() - 2*p);
+        return;
+    }
+    int y = mTitleLabel->y() + mTitleLabel->height();
+    for(const auto w : mWidgets) {
+        y += w->height() + p;
+    }
+    // room below the content for the OK button, as in the original
+    const int h = y + mOk->height() + 3*p;
+    if(h >= height()) return;
+    setHeight(h);
+    mOk->align(eAlignment::bottom | eAlignment::right);
+    mOk->move(mOk->x() - 2*p, mOk->y() - 2*p);
 }
 
 void eInfoWidget::setCloseAction(const eAction& closeAction) {

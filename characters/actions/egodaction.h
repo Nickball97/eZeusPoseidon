@@ -8,9 +8,21 @@
 #include "audio/esounds.h"
 #include "buildings/esmallhouse.h"
 #include "buildings/eresourcebuilding.h"
+#include "buildings/eresourcebuildingbase.h"
+#include "buildings/eartisansguild.h"
+#include "characters/efigurestats.h"
 
 class eDestructionTextures;
 enum class eGodSound;
+
+// The building a curse aimed at this one falls on (a sanctuary part or
+// palace tile stands for its sanctuary or palace); nullptr if none.
+eBuilding* eGodCurseTargetBuilding(eBuilding* const b);
+// The original's angry-god curse (zeus.exe 0x004ED2A0, 0x004ED350,
+// 0x004EDFC0): every building of the target's type in its city stops
+// working for the god's months, plus the god's extra.
+void eGodCurseBuildingType(eGameBoard& board, eBuilding* const target,
+                           const eGodType god);
 
 enum class eGodActType {
     lookForSoldierAttack,
@@ -29,7 +41,8 @@ enum class eGodActType {
     lookForPlague,
     lookForEvict,
     lookForTargetedBless,
-    lookForTargetedAttack
+    lookForTargetedAttack,
+    lookForWolf
 };
 
 class eGodAct {
@@ -236,6 +249,26 @@ public:
                 }
             }
             mTarget->setBlessed(mBless);
+            // A sanctified house instantly fills up to its maximum
+            // number of residents (never beyond it).
+            if(mBless > 0) {
+                if(const auto h = dynamic_cast<eHouseBase*>(mTarget.get())) {
+                    h->moveIn(h->vacancies());
+                }
+            } else if(mBless < 0) {
+                // Poseidon manual (Atlas): cursed marble workshops lose
+                // the marble on the premises; a cursed Artisans' Guild's
+                // artisan out working dies.
+                const auto bt = mTarget->type();
+                if(bt == eBuildingType::masonryShop ||
+                   bt == eBuildingType::blackMarbleWorkshop) {
+                    if(const auto rb = dynamic_cast<eResourceBuildingBase*>(mTarget.get())) {
+                        rb->take(rb->resourceType(), rb->resource());
+                    }
+                } else if(const auto g = dynamic_cast<eArtisansGuild*>(mTarget.get())) {
+                    g->killArtisan();
+                }
+            }
         }
     }
 
@@ -262,12 +295,28 @@ public:
         eLookForBlessGodActBase(board, eGodActType::lookForTargetedBless),
         mType(type) {
         mBless = bless;
+        // an angry Zeus picks one of lists 0-10 at random each time
+        // (zeus.exe 0x004ABBF0; list 10 is empty)
+        mCurseKind = eGod::sCurseKind(type);
+        if(mCurseKind == 10) mCurseKind = eRand::rand() % 11;
     }
     eLookForTargetedBlessGodAct(eGameBoard& board) :
         eLookForTargetedBlessGodAct(board, 0, eGodType::zeus) {}
 
     eMissileTarget find(eTile* const t) {
         const auto null = static_cast<eTile*>(nullptr);
+        if(mBless < 0) {
+            // the original's curse lists (see eGod::sCurseKindTarget)
+            const auto b = eGodCurseTargetBuilding(t->underBuilding());
+            if(!b || b->cursed()) return null;
+            if(mCurseKind < 0 || mCurseKind > 9) return null;
+            if(!eGod::sCurseKindTarget(mCurseKind, b->type())) return null;
+            if(const auto rb = dynamic_cast<eResourceBuilding*>(b)) {
+                if(rb->sanctuary()) return null;
+            }
+            mTarget = b;
+            return b->centerTile();
+        }
         const auto b = t->underBuilding();
         if(!b) {
             return null;
@@ -276,7 +325,10 @@ public:
         if(!eBuilding::sBlessable(type)) {
             return null;
         }
-        if(!eGod::sTarget(mType, type)) {
+        // blessings follow the blessing list, curses the angry-god list
+        const bool target = mBless < 0 ? eGod::sCurseTarget(mType, type) :
+                                    eGod::sTarget(mType, type);
+        if(!target) {
             return null;
         }
         if(b->blessed() || b->cursed()) {
@@ -287,6 +339,15 @@ public:
         }
         mTarget = b;
         return b->centerTile();
+    }
+
+    void act() {
+        if(mBless < 0) {
+            // the curse falls on every building of the target's type
+            if(mTarget) eGodCurseBuildingType(board(), mTarget, mType);
+            return;
+        }
+        eLookForBlessGodActBase::act();
     }
 
     void read(eReadStream& src) {
@@ -300,6 +361,7 @@ public:
     }
 private:
     eGodType mType;
+    int mCurseKind = -1; // not saved: only used while looking for a target
 };
 
 class eLookForBlessGodAct : public eLookForBlessGodActBase {
@@ -383,8 +445,11 @@ public:
         if(!b) return null;
         const auto type = b->type();
         if(!eBuilding::sAttackable(type)) return null;
-        const bool target = eGod::sTarget(mType, type);
+        const bool target = eGod::sAttackTarget(mType, type);
         if(!target) return null;
+        // remember it so act() can destroy it (was never stored, so
+        // Zeus' palace and Demeter's farm curses did nothing)
+        mBTarget = b;
         return b->centerTile();
     }
 
@@ -628,7 +693,9 @@ public:
     void call() override {
         if(!mTptr || !mCptr) return;
         const auto t = mTptr.get();
+        // back to his normal (figure file) speed after running
         mCptr->setSpeed(1.);
+        eFigureStats::sApply(mCptr.get(), false);
         if(!mAppear) {
             t->playDisappearSound();
             mCptr->kill();

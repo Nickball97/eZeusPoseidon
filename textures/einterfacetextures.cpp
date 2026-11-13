@@ -115,9 +115,34 @@
 #include "spriteData/poseidonPortraits45.h"
 #include "spriteData/poseidonPortraits60.h"
 
+#include "spriteData/gameLogos15.h"
+#include "spriteData/gameLogos30.h"
+#include "spriteData/gameLogos45.h"
+#include "spriteData/gameLogos60.h"
+
 #include "espriteloader.h"
 
 #include "egamedir.h"
+
+#include <filesystem>
+
+namespace {
+// The Steam release of Zeus ships widescreen (1920x1080) versions of the
+// full-screen pictures in its DATA folder. Use one when it is there and
+// wider than the old 4:3 picture; eZeus's own copy otherwise. They are
+// read from the player's game folder, never copied into eZeus.
+std::shared_ptr<eTexture> loadWideGameImage(SDL_Renderer* const r,
+                                            const std::string& name) {
+    const auto path = eGameDir::path("DATA/" + name);
+    std::error_code ec;
+    if(!std::filesystem::exists(path, ec)) return nullptr;
+    const auto tex = std::make_shared<eTexture>();
+    if(!tex->load(r, path)) return nullptr;
+    const bool wide = 3*tex->width() > 4*tex->height();
+    if(!wide) return nullptr;
+    return tex;
+}
+}
 
 eInterfaceTextures::eInterfaceTextures(const int tileW, const int tileH,
                                        SDL_Renderer* const renderer) :
@@ -1165,6 +1190,21 @@ void eInterfaceTextures::load() {
     }
 
     {
+        // the Zeus and Poseidon logos of the home page (PoseidonImps.sg3
+        // frames 8525-8537, cut by tools/sgextract): 8531 "ZEUS", 8528
+        // "POSEIDON"
+        const auto& sds = spriteData(fTileH,
+                                     eGameLogosSpriteData15,
+                                     eGameLogosSpriteData30,
+                                     eGameLogosSpriteData45,
+                                     eGameLogosSpriteData60);
+        eSpriteLoader loader(fTileH, "gameLogos", sds,
+                             nullptr, fRenderer);
+        fZeusLogo = loader.load(8525, 8531);
+        fPoseidonLogo = loader.load(8525, 8528);
+    }
+
+    {
         const auto& sds = spriteData(fTileH,
                                      eInterfaceRadarSpriteData15,
                                      eInterfaceRadarSpriteData30,
@@ -1182,21 +1222,48 @@ void eInterfaceTextures::load() {
         const bool binary = true;
         if(binary) {
             const auto dir = std::to_string(fTileH) + "/Zeus_Data_Images/";
-            fLoadImage1 = eBinaryImageLoader::load(fRenderer, dir + "Zeus_Load1.jpg");
-            fLoadImage2 = eBinaryImageLoader::load(fRenderer, dir + "Zeus_Load2.jpg");
-            fLoadImage3 = eBinaryImageLoader::load(fRenderer, dir + "Zeus_Load3.jpg");
-            fLoadImage4 = eBinaryImageLoader::load(fRenderer, dir + "Zeus_Load4.jpg");
-            fLoadImage5 = eBinaryImageLoader::load(fRenderer, dir + "Poseidon_Load1.jpg");
-            fLoadImage6 = eBinaryImageLoader::load(fRenderer, dir + "Poseidon_Load2.jpg");
-            fLoadImage7 = eBinaryImageLoader::load(fRenderer, dir + "Poseidon_Load3.jpg");
-            fLoadImage8 = eBinaryImageLoader::load(fRenderer, dir + "Poseidon_Load4.jpg");
-            fLoadImage9 = eBinaryImageLoader::load(fRenderer, dir + "Poseidon_Load5.jpg");
-            fLoadImage10 = eBinaryImageLoader::load(fRenderer, dir + "Poseidon_Load6.jpg");
-            fLoadImage11 = eBinaryImageLoader::load(fRenderer, dir + "Poseidon_Load7.jpg");
-            fLoadImage12 = eBinaryImageLoader::load(fRenderer, dir + "Poseidon_Load8.jpg");
-            fMainMenuImage = eBinaryImageLoader::load(fRenderer, dir + "Zeus_FE_Registry.jpg");
-            fIntroductionImage = eBinaryImageLoader::load(fRenderer, dir + "Zeus_FE_MissionIntroduction.jpg");
-            fDefeatImage = eBinaryImageLoader::load(fRenderer, dir + "Zeus_Defeat.jpg");
+            const auto img = [this, &dir](const std::string& name)
+                    -> std::shared_ptr<eTexture> {
+                const auto wide = loadWideGameImage(fRenderer, name);
+                if(wide) return wide;
+                return eBinaryImageLoader::load(fRenderer, dir + name);
+            };
+            fLoadImage1 = img("Zeus_Load1.jpg");
+            fLoadImage2 = img("Zeus_Load2.jpg");
+            fLoadImage3 = img("Zeus_Load3.jpg");
+            fLoadImage4 = img("Zeus_Load4.jpg");
+            fLoadImage5 = img("Poseidon_Load1.jpg");
+            fLoadImage6 = img("Poseidon_Load2.jpg");
+            fLoadImage7 = img("Poseidon_Load3.jpg");
+            fLoadImage8 = img("Poseidon_Load4.jpg");
+            fLoadImage9 = img("Poseidon_Load5.jpg");
+            fLoadImage10 = img("Poseidon_Load6.jpg");
+            fLoadImage11 = img("Poseidon_Load7.jpg");
+            fLoadImage12 = img("Poseidon_Load8.jpg");
+            fMainMenuImage = img("Zeus_FE_Registry.jpg");
+            fIntroductionImage = img("Zeus_FE_MissionIntroduction.jpg");
+            fDefeatImage = img("Zeus_Defeat.jpg");
+
+            // home page pictures: the game folder's widescreen ones (their
+            // framed panels are painted in), else eZeus's packed copies
+            const auto imgOr = [&](const std::string& name,
+                                   const std::string& fallback)
+                    -> std::shared_ptr<eTexture> {
+                const auto wide = loadWideGameImage(fRenderer, name);
+                if(wide) return wide;
+                if(eBinaryImageLoader::has(dir + name)) {
+                    return eBinaryImageLoader::load(fRenderer, dir + name);
+                }
+                return eBinaryImageLoader::load(fRenderer, dir + fallback);
+            };
+            fChooseGameImage = imgOr("Poseidon_FE_MainMenu.JPG",
+                                     "Zeus_FE_MainMenu.jpg");
+            fPlayerMenuImage = imgOr("Zeus_FE_ChooseGame.jpg",
+                                     "Zeus_FE_MainMenu.jpg");
+            fCampaignImage = imgOr("Zeus_FE_CampaignSelection.JPG",
+                                   "Zeus_FE_CampaignSelection.JPG");
+            fPoseidonRegistryImage = imgOr("Poseidon_FE_Registry.jpg",
+                                           "Zeus_FE_Registry.jpg");
         } else {
             const std::string basedir{eGameDir::texturesDir() + std::to_string(fTileH) + "/"};
             const auto dir = basedir + "/Zeus_Data_Images/";

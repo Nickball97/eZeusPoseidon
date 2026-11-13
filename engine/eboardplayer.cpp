@@ -5,6 +5,8 @@
 #include "eeventdata.h"
 #include "evectorhelpers.h"
 #include "egifthelpers.h"
+#include "erand.h"
+#include "gameEvents/egiftfromevent.h"
 
 #include <algorithm>
 
@@ -22,12 +24,19 @@ void eBoardPlayer::nextMonth() {
         mFinances.nextYear();
     }
     if(mDrachmas < 0) {
-        const bool sameMonth = date.month() == mInDebtSince.month();
-        const bool oneYear = date.year() - mInDebtSince.year() == 1;
-        if(sameMonth && oneYear) {
+        // Original (exe 0x00483B20, 0x00526990): a warning every full year
+        // in debt, and the episode is lost after 36 months in debt.
+        const int months = 12*(date.year() - mInDebtSince.year()) +
+                           static_cast<int>(date.month()) -
+                           static_cast<int>(mInDebtSince.month());
+        if(months > 0 && months % 12 == 0) {
             eEventData ed(mId);
             mBoard.event(eEvent::debtAnniversary, ed);
         }
+        if(months >= 36 && isPerson()) {
+            mBoard.setEpisodeLost();
+        }
+        if(isPerson()) rescueCash();
     } else if(!isPerson()) {
         giftAllies();
         bool built = false;
@@ -261,7 +270,7 @@ bool eBoardPlayer::askFor(const eResourceType type, const eCityId cid) {
     for(const auto cid : allyCids) {
         const auto c = wboard.cityWithId(cid);
         const int att = c->attitude(mId);
-        if(att >= 50) {
+        if(att >= 40) { // fair or better grants requests (attitude advice)
             city = c;
             break;
         }
@@ -275,4 +284,34 @@ bool eBoardPlayer::askForDrachmas() {
     const auto pCities =  mBoard.playerCities(mId);
     if(pCities.empty()) return false;
     return askFor(eResourceType::drachmas, pCities[0]);
+}
+
+// Original (exe 0x0047EE20, 0x0047F100, 0x0042D870): each month a city in
+// debt may be offered debt relief by one of its allies or its parent city
+// that likes it (attitude 50 or more) and hasn't helped before, picked at
+// random. The amount is (wealth + 1) x 200 x 5/4/3/2.5/2 by difficulty
+// (Beginner to Olympian). Each city helps once (0x00474A80).
+void eBoardPlayer::rescueCash() {
+    std::vector<stdsptr<eWorldCity>> cands;
+    for(const auto& c : mBoard.world().cities()) {
+        if(!c || c->isCurrentCity() || c->rescueGiven()) continue;
+        if(!c->active() || !c->visible()) continue;
+        if(!c->isAlly() && !c->isParentCity()) continue;
+        if(c->attitude(mId) < 50) continue;
+        cands.push_back(c);
+    }
+    if(cands.empty()) return;
+    const auto c = cands[eRand::rand() % cands.size()];
+    static const double sDiff[5] = {5., 4., 3., 2.5, 2.};
+    const int d = std::clamp(static_cast<int>(mDifficulty), 0, 4);
+    const int amount = static_cast<int>((c->wealth() + 1)*sDiff[d]*200);
+    c->setRescueGiven(true);
+    // offered with the original's "A helping hand from..." messages
+    const auto e = e::make_shared<eGiftFromEvent>(
+                       mBoard.currentCityId(),
+                       eGameEventBranch::root, mBoard);
+    e->initialize(true, eResourceType::drachmas, amount, c);
+    e->setRescue(true);
+    e->initializeDate(mBoard.date());
+    mBoard.addRootGameEvent(e);
 }

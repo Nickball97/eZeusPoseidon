@@ -2,8 +2,38 @@
 
 #include "engine/egameboard.h"
 #include "engine/eguidedmovepathtask.h"
+#include "characters/etaxcollector.h"
+#include "eavenue.h"
 
 #include <algorithm>
+
+// How many tiles a roaming walker walks before turning back, from
+// HeavenGames' "Walker Distances" table (zeus.heavengames.com/units/).
+// Other patrol buildings keep the general patroler_max_distance_i setting.
+int ePatrolBuildingBase::sMaxDistance(const eBuildingType type) {
+    switch(type) {
+    case eBuildingType::fountain: // water carrier
+    case eBuildingType::hospital: // healer
+        return 27;
+    case eBuildingType::taxOffice: // tax collector
+    case eBuildingType::gymnasium:
+    case eBuildingType::podium:
+    case eBuildingType::theater:
+    case eBuildingType::stadium:
+    case eBuildingType::bibliotheke:
+    case eBuildingType::laboratory:
+    case eBuildingType::observatory:
+    case eBuildingType::museum:
+        return 35;
+    case eBuildingType::commonAgora: // peddler
+    case eBuildingType::grandAgora:
+    case eBuildingType::maintenanceOffice: // superintendent
+    case eBuildingType::watchPost: // watchman
+        return 44;
+    default:
+        return eNumbers::sPatrolerMaxDistance;
+    }
+}
 
 ePatrolBuildingBase::ePatrolBuildingBase(
         eGameBoard& board,
@@ -15,7 +45,8 @@ ePatrolBuildingBase::ePatrolBuildingBase(
         const eCityId cid) :
     eEmployingBuilding(board, type, sw, sh, maxEmployees, cid),
     mCharGenerator(charGen),
-    mActGenerator(actGen) {
+    mActGenerator(actGen),
+    mMaxDistance(sMaxDistance(type)) {
 
 }
 
@@ -41,12 +72,74 @@ ePatrolBuildingBase::~ePatrolBuildingBase() {
     if(mChar) mChar->kill();
 }
 
+// Cycles (16 a month) a building waits, once its walker is back, before
+// sending the next, by staffing: full, 75%+, 50%+, 25%+, any (original exe
+// step 31, 0x0048CFB0). 0 where the original's rule isn't known.
+static int sSpawnWaitCycles(const eBuildingType type, const int step) {
+    static const int sService[5] = {1, 2, 4, 8, 16};
+    static const int sFountain[5] = {2, 4, 8, 16, 30};
+    static const int sVenue[5] = {4, 8, 16, 30, 45};
+    static const int sPodium[5] = {9, 16, 31, 51, 101};
+    static const int sGym[5] = {5, 6, 11, 18, 31};
+    // agora (0x0040D620): staffed by its stalls in the original; eZeus
+    // agoras have no staff of their own, so they count as full
+    static const int sAgora[5] = {3, 4, 5, 6, 11};
+    switch(type) {
+    case eBuildingType::taxOffice:
+    case eBuildingType::maintenanceOffice:
+    case eBuildingType::watchPost:
+        return sService[step];
+    case eBuildingType::fountain:
+        return sFountain[step];
+    case eBuildingType::hospital:
+    case eBuildingType::theater:
+    case eBuildingType::stadium:
+    case eBuildingType::laboratory: // 0x00432E60
+    case eBuildingType::museum: // 0x00433170
+        return sVenue[step];
+    case eBuildingType::podium:
+    case eBuildingType::observatory: // 0x00432B00
+        return sPodium[step];
+    case eBuildingType::gymnasium:
+    case eBuildingType::bibliotheke: // 0x00432960
+        return sGym[step];
+    case eBuildingType::commonAgora:
+    case eBuildingType::grandAgora:
+        return sAgora[step];
+    default:
+        return 0;
+    }
+}
+
 void ePatrolBuildingBase::timeChanged(const int by) {
     if(mSpawnPatrolers && enabled()) {
         if(!mChar) {
-            mSpawnTime += by*effectiveness();
-            if(mSpawnTime > mWaitTime) {
+            double waitTime = mWaitTime;
+            double rate = effectiveness();
+            const double filled = vacanciesFilledFraction();
+            if(filled > 0.) {
+                const int step = filled >= 1. ? 0 :
+                                 filled >= 0.75 ? 1 :
+                                 filled >= 0.5 ? 2 :
+                                 filled >= 0.25 ? 3 : 4;
+                const int cycles = sSpawnWaitCycles(type(), step);
+                if(cycles > 0) {
+                    const int cycle = (365*eNumbers::sDayLength)/(12*16);
+                    waitTime = cycles*cycle;
+                    // staffing is in the wait itself; a blessing still
+                    // speeds it up
+                    rate /= filled;
+                }
+            }
+            mSpawnTime += by*rate;
+            if(mSpawnTime > waitTime) {
                 mSpawnTime = 0;
+                // blessed: walkers come twice as often (sBlessMultiplier);
+                // two such walkers make one extra, which uses it up
+                // (a tax office instead spends it on one collector, in spawn)
+                if(blessed() && type() != eBuildingType::taxOffice) {
+                    spendBlessing(0.5);
+                }
                 const bool r = updatePathIfNeeded();
                 if(r) mSpawnOnPathSet = true;
                 else spawn();
@@ -76,6 +169,12 @@ bool ePatrolBuildingBase::spawn() {
     const auto chr = mCharGenerator();
     mChar = chr.get();
     if(!mChar) return false;
+    if(type() == eBuildingType::taxOffice && blessed()) {
+        if(const auto tc = dynamic_cast<eTaxCollector*>(chr.get())) {
+            tc->setBlessed(true);
+            spendBlessing(1.);
+        }
+    }
     chr->setBothCityIds(cityId());
     if(mPatrolGuides.empty()) {
         eTile* t = nullptr;
@@ -84,11 +183,30 @@ bool ePatrolBuildingBase::spawn() {
            bt == eBuildingType::grandAgora) {
             t = centerTile();
         } else {
-            const auto ts = surroundingRoad(false, true);
-            if(!ts.empty()) {
-                const int tss = ts.size();
-                if(++mSpawnRoadId >= tss) mSpawnRoadId = 0;
-                t = ts[mSpawnRoadId];
+            // the first road touching the building, searching clockwise
+            // from its north (top) corner, is always the exit (Citadel of
+            // Poseidon, walker distances: exit points)
+            const auto& board = getBoard();
+            const auto tr = tileRect();
+            std::vector<std::pair<int, int>> order;
+            for(int x = tr.x; x < tr.x + tr.w; x++) order.push_back({x, tr.y - 1});
+            for(int y = tr.y; y < tr.y + tr.h; y++) order.push_back({tr.x + tr.w, y});
+            for(int x = tr.x + tr.w - 1; x >= tr.x; x--) order.push_back({x, tr.y + tr.h});
+            for(int y = tr.y + tr.h - 1; y >= tr.y; y--) order.push_back({tr.x - 1, y});
+            for(const auto& xy : order) {
+                const auto tt = board.tile(xy.first, xy.second);
+                if(!tt) continue;
+                if(tt->hasRoad()) {
+                    t = tt;
+                    break;
+                }
+                if(tt->hasAvenue()) {
+                    const auto a = static_cast<eAvenue*>(tt->underBuilding());
+                    if(const auto r = a->road()) {
+                        t = r;
+                        break;
+                    }
+                }
             }
         }
         if(!t) return false;

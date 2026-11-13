@@ -5,6 +5,7 @@
 #include "eframedwidget.h"
 #include "eframedbutton.h"
 #include "eokbutton.h"
+#include "eswitchbutton.h"
 
 #include "elanguage.h"
 #include "egamedir.h"
@@ -19,13 +20,12 @@ eSettingsMenu::eSettingsMenu(const eSettings& iniSettings,
 
 }
 
-eWidget* createTextureBox(eMainWindow* const window,
-                          const bool checked,
-                          const eCheckAction& checkA,
-                          const std::string& text,
-                          const int p,
-                          const std::string& path) {
-    const bool missing = !std::filesystem::exists(path);
+eWidget* createCheckBoxRow(eMainWindow* const window,
+                           const bool checked,
+                           const eCheckAction& checkA,
+                           const std::string& text,
+                           const int p,
+                           const bool missing) {
     const auto w = new eWidget(window);
     w->setNoPadding();
 
@@ -48,6 +48,16 @@ eWidget* createTextureBox(eMainWindow* const window,
     w->fitContent();
 
     return w;
+}
+
+eWidget* createTextureBox(eMainWindow* const window,
+                          const bool checked,
+                          const eCheckAction& checkA,
+                          const std::string& text,
+                          const int p,
+                          const std::string& path) {
+    const bool missing = !std::filesystem::exists(path);
+    return createCheckBoxRow(window, checked, checkA, text, p, missing);
 }
 
 void eSettingsMenu::initialize(const eApplyAction& settingsA,
@@ -121,11 +131,12 @@ void eSettingsMenu::initialize(const eApplyAction& settingsA,
             b->align(eAlignment::hcenter);
             b->setPressAction([this, currentButton, b, r]() {
                 if(*currentButton) {
-                    (*currentButton)->setLightFontColor();
+                    (*currentButton)->setDarkFontColor();
                 }
                 *currentButton = b;
                 b->setYellowFontColor();
                 mSettings.fRes = r;
+                mSettings.applyInterfaceSize();
             });
             y += b->height() + p;
             if(col->height() - y < b->height()) {
@@ -147,13 +158,46 @@ void eSettingsMenu::initialize(const eApplyAction& settingsA,
         fs->setPressAction([this, fs, fullscreenA]() {
             const bool f = !mSettings.fFullscreen;
             mSettings.fFullscreen = f;
-            fullscreenA(f);
+            fullscreenA(f, mSettings.fBorderless);
             fs->setText(f ? eLanguage::zeusText(42, 2) : // windowed screen
                             eLanguage::zeusText(42, 1)); // full screen
             fs->fitContent();
             fs->align(eAlignment::hcenter);
         });
         fs->align(eAlignment::hcenter);
+    }
+
+    {
+        // eZeus addition: full screen without taking over the screen, so
+        // switching programs or taking a screenshot doesn't drop the game
+        const auto checkA = [this, fullscreenA](const bool c) {
+            mSettings.fBorderless = c;
+            if(mSettings.fFullscreen) fullscreenA(true, c);
+        };
+        const auto text = eLanguage::text("borderless_fullscreen");
+        const auto w = createCheckBoxRow(window(), mSettings.fBorderless,
+                                         checkA, text, p, false);
+        col1->addWidget(w);
+    }
+
+    {
+        // eZeus addition: interface size, independent of the resolution;
+        // a size too big for the screen height falls back to automatic
+        const auto sb = new eSwitchButton(window());
+        sb->setUnderline(false);
+        const auto name = eLanguage::text("interface_size") + ": ";
+        sb->addValue(name + eLanguage::text("interface_size_auto"));
+        sb->addValue(name + "1x");
+        sb->addValue(name + "1.5x");
+        sb->addValue(name + "2x");
+        sb->setValue(mSettings.fInterfaceSize);
+        sb->fitValidContent();
+        sb->setSwitchAction([this](const int v) {
+            mSettings.fInterfaceSize = v;
+            mSettings.applyInterfaceSize();
+        });
+        col1->addWidget(sb);
+        sb->align(eAlignment::hcenter);
     }
 
     {

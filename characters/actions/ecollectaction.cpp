@@ -7,6 +7,7 @@
 
 #include "engine/eregrowforestaction.h"
 #include "enumbers.h"
+#include "buildings/sanctuaries/esanctuary.h"
 
 eCollectAction::eCollectAction(eCharacter* const c,
                                const eTranformFunc tf) :
@@ -59,7 +60,9 @@ void eCollectAction::increment(const int by) {
     int period = 10000;
     if(cType == eCharacterType::marbleMiner) {
         period = eNumbers::sMarbleCollectTime;
-    } else if(cType == eCharacterType::bronzeMiner) {
+    } else if(cType == eCharacterType::bronzeMiner ||
+              cType == eCharacterType::orichalcMiner) {
+        // orichalc is mined exactly like bronze (Citadel of Poseidon)
         period = eNumbers::sBronzeCollectTime;
     } else if(cType == eCharacterType::silverMiner) {
         period = eNumbers::sSilverCollectTime;
@@ -69,6 +72,25 @@ void eCollectAction::increment(const int by) {
         period = eNumbers::sFishCollectTime;
     } else if(cType == eCharacterType::urchinGatherer) {
         period = eNumbers::sUrchinCollectTime;
+    }
+    if(cType == eCharacterType::marbleMiner) {
+        // With the Pillar of Atlas finished, quarrymen hew white and black
+        // marble faster (Citadel of Poseidon, industries.html); no number
+        // is known, so 3/4 of the time like Poseidon's fishing (Nicolás)
+        const auto s = c->getBoard().sanctuary(c->cityId(), eGodType::atlas);
+        if(s && s->active()) period = period*3/4;
+    }
+    if(cType == eCharacterType::fishingBoat ||
+       cType == eCharacterType::urchinGatherer) {
+        // With Poseidon's sanctuary finished, his Kraken convinces fish
+        // and urchins to be caught faster (Zeus manual). Fishing boats:
+        // 66% of the time (original exe 0x004B5F10); urchins: 3/4 (Nicolás,
+        // no number found for them)
+        const auto s = c->getBoard().sanctuary(c->cityId(), eGodType::poseidon);
+        if(s && s->active()) {
+            period = cType == eCharacterType::fishingBoat ?
+                     period*66/100 : period*3/4;
+        }
     }
     if(mTime > period) {
         mTile->decResource(1);

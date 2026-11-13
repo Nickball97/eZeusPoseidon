@@ -10,6 +10,7 @@ int eNumbers::sDayLength;
 
 double eNumbers::sEliteHousingTaxMultiplier;
 double eNumbers::sCommonHousingTaxMulitplier;
+double eNumbers::sVeryLowTaxCoverage;
 
 double eNumbers::sWageMultiplier;
 
@@ -168,6 +169,7 @@ int eNumbers::sAggressiveWaterMonsterMoveAroundPeriod;
 
 int eNumbers::sFriendlyGodVisitPeriod;
 int eNumbers::sGodHelpPeriod;
+int eNumbers::sSanctuaryActivePeriod;
 int eNumbers::sGodHelpAttackPeriod;
 int eNumbers::sGodHelpAttackPlayerPeriod;
 
@@ -331,12 +333,20 @@ void eNumbers::sLoad(const std::string& path) {
     loadD("elite_housing_tax_mult_d", sEliteHousingTaxMultiplier, 1, 0, 10);
     loadD("common_housing_tax_mult_d", sCommonHousingTaxMulitplier, 1, 0, 10);
     loadD("wage_mult_d", sWageMultiplier, 1, 0, 10);
+    // ModelTax_Sentiment_Model.txt: "If tax coverage is very low, the first
+    // tax rate numbers are used." The file does not say how low; 20% is a
+    // chosen value, not from the original.
+    // under 11% tax coverage the mood uses the "no taxes" row (original exe
+    // 0x00567120)
+    loadD("very_low_tax_coverage_d", sVeryLowTaxCoverage, 0.11, 0, 1);
 
     loadI("reinforcements_travel_time_i", sReinforcementsTravelTime, 50, 1, 1000);
     loadI("army_travel_time_i", sArmyTravelTime, 200, 1, 1000);
     loadI("ai_invasion_months_break_i", sAIInvasionMonthsBreak, 30, 0, 1000);
     loadI("invasion_appear_at_places_b", sInvasionAppearAtPlaces, 0, 0, 1);
-    loadD("army_strength_horseman_mult_d", sArmyStrengthHorsemanMult, 1.5, 0.1, 100.);
+    // horsemen are twice as strong as hoplites abroad (Citadel of Poseidon,
+    // Peloponnesian War ep. 3)
+    loadD("army_strength_horseman_mult_d", sArmyStrengthHorsemanMult, 2., 0.1, 100.);
 
     loadI("rabble_divisor_i", sRabbleDivisor, 6, 1, 100);
     loadI("soldiers_per_banner_i", sSoldiersPerBanner, 8, 2, 100);
@@ -345,18 +355,25 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("earthquake_progress_period_i", sEarthquakeProgressPeriod, 500, 1, 10000);
 
     loadI("boar_max_count_i", sBoarMaxCount, 8, 2, 100);
-    loadI("boar_spawn_period_i", sBoarSpawnPeriod, 4000, 1, 100000);
+    // "only one new boar/deer born a month after another one was killed"
+    // (Citadel of Poseidon)
+    loadI("boar_spawn_period_i", sBoarSpawnPeriod, (365*sDayLength)/12, 1, 100000);
     loadI("deer_max_count_i", sDeerMaxCount, 8, 2, 100);
-    loadI("deer_spawn_period_i", sDeerSpawnPeriod, 4000, 1, 100000);
+    loadI("deer_spawn_period_i", sDeerSpawnPeriod, (365*sDayLength)/12, 1, 100000);
     loadI("wolf_max_count_i", sWolfMaxCount, 8, 2, 100);
     loadI("wolf_spawn_period_i", sWolfSpawnPeriod, 4000, 1, 100000);
     loadI("wolf_hunt_wait_i", sWolfHuntWait, 20, 1, 1000);
     loadI("wolf_hunt_distance_i", sWolfHuntDistance, 60, 1, 1000);
 
-    loadI("olive_press_processing_period_i", sOlivePressProcessingPeriod, 20000, 1, 1000000);
-    loadI("winery_processing_period_i", sWineryProcessingPeriod, 20000, 1, 1000000);
-    loadI("armory_processing_period_i", sArmoryProcessingPeriod, 40000, 1, 1000000);
-    loadI("sculpture_studio_processing_period_i", sSculptureStudioProcessingPeriod, 100000, 1, 1000000);
+    // HeavenGames (gameinfo/industry-production): olive press, winery,
+    // sculpture studio and armory make 6 loads a year, the horse ranch
+    // 6 horses and the chariot factory 6 chariots. One year is
+    // 365 days.
+    const int sSixPerYear = (365*sDayLength)/6;
+    loadI("olive_press_processing_period_i", sOlivePressProcessingPeriod, sSixPerYear, 1, 1000000);
+    loadI("winery_processing_period_i", sWineryProcessingPeriod, sSixPerYear, 1, 1000000);
+    loadI("armory_processing_period_i", sArmoryProcessingPeriod, sSixPerYear, 1, 1000000);
+    loadI("sculpture_studio_processing_period_i", sSculptureStudioProcessingPeriod, sSixPerYear, 1, 1000000);
 
     loadI("farm_ripe_period_i", sFarmRipePeriod, 15000, 1, 1000000);
 
@@ -370,15 +387,22 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("goat_max_groom_i", sGoatMaxGroom, 10, 1, 1000);
     loadI("animal_move_range_i", sAnimalMoveRange, 5, 2, 100);
 
-    loadI("corral_processing_period_i", sCorralProcessingPeriod, 10000, 1, 1000000);
+    // original exe 0x004F9E90: slaughtering a cow takes 16 cycles (1 month);
+    // the next cow is taken from the pen once 8 cycles have passed and the
+    // slaughter is done
+    loadI("corral_processing_period_i", sCorralProcessingPeriod, (365*sDayLength)/12, 1, 1000000);
     loadI("corral_take_period_i", sCorralTakePeriod, 10000, 1, 1000000);
-    loadI("corral_kill_period_i", sCorralKillPeriod, 10000, 1, 1000000);
+    loadI("corral_kill_period_i", sCorralKillPeriod, (365*sDayLength)/24, 1, 1000000);
     loadI("corral_replace_period_i", sCorralReplacePeriod, 10000, 1, 1000000);
-    loadI("cattle_mature_period_i", sCattleMaturePeriod, 25000, 1, 1000000);
+    // placed cattle (one stage short) are ready after 6 months, calves (two
+    // stages short) after a year (Citadel of Poseidon): half a year a stage
+    loadI("cattle_mature_period_i", sCattleMaturePeriod, (365*sDayLength)/2, 1, 1000000);
 
     loadI("urchin_quay_unpack_time_i", sUrchinQuayUnpackTime, 10000, 1, 1000000);
     loadI("fishery_boat_build_time_i", sFisheryBoatBuildTime, 40000, 1, 1000000);
-    loadI("fishery_unpack_time_i", sFisheryUnpackTime, 10000, 1, 1000000);
+    // original fishing boat (exe 0x004B5F10), full staff: half a month to
+    // catch, a quarter to unload (816 walker ticks a month)
+    loadI("fishery_unpack_time_i", sFisheryUnpackTime, (365*sDayLength)/48, 1, 1000000);
 
     loadI("hunting_lodge_wait_period_i", sHuntingLodgeWaitPeriod, 5000, 1, 1000000);
 
@@ -395,9 +419,15 @@ void eNumbers::sLoad(const std::string& path) {
     loadD("collapse_risk_period_base_increment_d", sCollapseRiskPeriodBaseIncrement, 10, 1, 1000);
     loadD("collapse_risk_period_exponent_d", sCollapseRiskPeriodExponent, 4, 1, 9);
 
-    loadI("house_culture_decrement_period_i", sHouseCultureDecrementPeriod, 20000, 1, 1000000);
-    loadI("house_water_decrement_period_i", sHouseWaterDecrementPeriod, 7500, 1, 1000000);
-    loadI("house_hygiene_decrement_period_i", sHouseHygieneDecrementPeriod, 25000, 1, 1000000);
+    // a culture walker's visit lasts 96 cycles (6 months) in the original
+    // (exe 0x00484D20 counts down, walkers set 96): 8 steps of 12 cycles
+    loadI("house_culture_decrement_period_i", sHouseCultureDecrementPeriod, (365*sDayLength)/16, 1, 1000000);
+    // a water bearer's visit lasts 96 cycles (6 months) in the original
+    // (0x004A65A0 sets 96): 8 steps of 12 cycles
+    loadI("house_water_decrement_period_i", sHouseWaterDecrementPeriod, (365*sDayLength)/16, 1, 1000000);
+    // a healer's visit (hygiene 100) wears off by 1 a cycle, about 6
+    // months, as the original's 96-cycle healer counter (0x004A66B0)
+    loadI("house_hygiene_decrement_period_i", sHouseHygieneDecrementPeriod, (365*sDayLength)/(12*16), 1, 1000000);
     loadD("house_heal_plague_period_multiplier_d", sHouseHealPlaguePeriodMultiplier, 10, 1, 100);
     loadD("house_heal_plague_period_base_multiplier_d", sHouseHealPlaguePeriodBaseMultiplier, 1000, 1, 100000);
     loadD("house_heal_plague_period_exponent_d", sHouseHealPlaguePeriodExponent, 4, 1, 9);
@@ -418,8 +448,8 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("heros_hall_arrival_period_i", sHerosHallArrivalPeriod, 15000, 1, 1000000);
     loadI("heros_hall_spawn_period_i", sHerosHallSpawnPeriod, 5000, 1, 1000000);
 
-    loadI("horse_ranch_wheat_use_period_i", sHorseRanchWheatUsePeriod, 1000, 1, 1000000);
-    loadI("horse_ranch_horse_spawn_period_i", sHorseRanchHorseSpawnPeriod, 40000, 1, 1000000);
+    loadI("horse_ranch_wheat_use_period_i", sHorseRanchWheatUsePeriod, (365*sDayLength)/12, 1, 1000000);
+    loadI("horse_ranch_horse_spawn_period_i", sHorseRanchHorseSpawnPeriod, sSixPerYear, 1, 1000000);
 
     loadI("patroler_max_distance_i", sPatrolerMaxDistance, 40, 5, 1000);
     loadI("patroler_wait_time_i", sPatrolerWaitTime, 5000, 1, 1000000);
@@ -433,10 +463,13 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("trader_spawn_period_i", sTraderSpawnPeriod, 30000, 1, 1000000);
     loadI("two_way_trade_max_i", sTwoWayTradeMax, 4, 0, 100);
 
-    loadI("chariot_building_time_i", sChariotBuildingTime, 20000, 1, 1000000);
+    loadI("chariot_building_time_i", sChariotBuildingTime, sSixPerYear, 1, 1000000);
 
-    loadI("olive_tree_ripe_period_i", sOliveTreeRipePeriod, 40000, 1, 1000000);
-    loadI("vine_ripe_period_i", sVineRipePeriod, 40000, 1, 1000000);
+    // "When the trees are planted early enough in the growing season, they
+    // reach the maximum of 100% at harvest time" (Citadel of Poseidon): the
+    // 5 growth stages fill the 9 months between harvest seasons
+    loadI("olive_tree_ripe_period_i", sOliveTreeRipePeriod, (365*sDayLength*3/4)/5, 1, 1000000);
+    loadI("vine_ripe_period_i", sVineRipePeriod, (365*sDayLength*3/4)/5, 1, 1000000);
     loadI("orange_tree_ripe_period_i", sOrangeTreeRipePeriod, 40000, 1, 1000000);
 
     loadD("tree_vine_fully_ripe_period_multiplier_d", sTreeVineFullyRipePeriodMultiplier, 2., 1, 9);
@@ -446,12 +479,19 @@ void eNumbers::sLoad(const std::string& path) {
     loadD("tree_vine_cursed_fully_ripe_period_multiplier_d", sTreeVineCursedFullyRipePeriodMultiplier, 0.333, 0.1, 1.);
     loadD("tree_vine_cursed_ripe_period_multiplier_d", sTreeVineCursedRipePeriodMultiplier, 3., 1, 9);
 
-    loadI("marble_collect_period_i", sMarbleCollectTime, 10000, 1, 1000000);
-    loadI("bronze_collect_period_i", sBronzeCollectTime, 10000, 1, 1000000);
-    loadI("silver_collect_period_i", sSilverCollectTime, 10000, 1, 1000000);
-    loadI("wood_collect_period_i", sWoodCollectTime, 10000, 1, 1000000);
-    loadI("fish_collect_period_i", sFishCollectTime, 10000, 1, 1000000);
-    loadI("urchin_collect_period_i", sUrchinCollectTime, 10000, 1, 1000000);
+    // Citadel of Poseidon: a quarryman needs 2 months to hew a block.
+    loadI("marble_collect_period_i", sMarbleCollectTime, (365*sDayLength)/6, 1, 1000000);
+    // Wood, copper and orichalc: 3 workers bring 25 units per trip and a
+    // mill or foundry makes at most 12-13 loads a year (Citadel of
+    // Poseidon, about 3/4 month per tree). 6000 ticks of work plus the
+    // short wait and walk gives about that when the resource is close.
+    loadI("bronze_collect_period_i", sBronzeCollectTime, 6000, 1, 1000000);
+    // silver is mined like bronze (Citadel of Poseidon)
+    loadI("silver_collect_period_i", sSilverCollectTime, 6000, 1, 1000000);
+    loadI("wood_collect_period_i", sWoodCollectTime, 6000, 1, 1000000);
+    loadI("fish_collect_period_i", sFishCollectTime, (365*sDayLength)/24, 1, 1000000);
+    // urchin gatherer: half a month per trip (exe 0x004302D0)
+    loadI("urchin_collect_period_i", sUrchinCollectTime, (365*sDayLength)/24, 1, 1000000);
 
     loadI("grower_max_distance_i", sGrowerMaxDistance, 40, 5, 1000);
     loadI("grower_max_groom_i", sGrowerMaxGroom, 5, 1, 1000);
@@ -488,6 +528,9 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("god_help_period_i", sGodHelpPeriod, 250000, 1, 1000000);
     loadI("god_help_attack_period_i", sGodHelpAttackPeriod, 500000, 1, 1000000);
     loadI("god_help_attack_player_period_i", sGodHelpAttackPlayerPeriod, 250000, 1, 1000000);
+    // Nicolás's mod rule (mod feature 1B): one sacrifice keeps a sanctuary
+    // active for a month
+    loadI("sanctuary_active_period_i", sSanctuaryActivePeriod, (365*sDayLength)/12, 1, 100000000);
 
     loadI("god_attack_curse_period_i", sGodAttackCursePeriod, 6000, 1, 1000000);
     loadI("god_attack_curse_range_i", sGodAttackCurseRange, 10, 1, 20);
@@ -561,11 +604,15 @@ void eNumbers::sLoad(const std::string& path) {
     loadI("attack_city_ares_max_killed_i", sAttackCityAresMaxKilled, 8, 1, 100);
 
     loadI("basic_vendor_max_resource_take_distance_i", sBasicVendorMaxResourceTakeDistance, 60, 5, 1000);
-    loadI("horse_vendor_max_resource_take_distance_i", sHorseVendorMaxResourceTakeDistance, 200, 5, 1000);
+    // horse ranches and chariot factories must be within 40 tiles of the
+    // building that uses their goods (Citadel of Poseidon, industries.html)
+    loadI("horse_vendor_max_resource_take_distance_i", sHorseVendorMaxResourceTakeDistance, 40, 5, 1000);
 
     loadI("resource_building_max_resource_give_distance_i", sResourceBuildingMaxResourceGiveDistance, 60, 5, 1000);
     loadI("processing_building_max_resource_take_distance_i", sProcessingBuildingMaxResourceTakeDistance, 60, 5, 1000);
     loadI("trireme_wharf_max_resource_take_distance_i", sTriremeWharfMaxResourceTakeDistance, 60, 5, 1000);
-    loadI("trireme_wharf_build_time_i", sTriremeWharfBuildTime, 100000, 1, 1000000);
-    loadI("trireme_wharf_build_stages_i", sTriremeWharfBuildStages, 3, 1, 10);
+    // one ship = 2 wood + 2 armor in 2 stages; the original builds it in
+    // 32 cycles at full staff, 2 months (exe 0x0048CFB0, trireme wharf)
+    loadI("trireme_wharf_build_time_i", sTriremeWharfBuildTime, (365*sDayLength)/12, 1, 1000000);
+    loadI("trireme_wharf_build_stages_i", sTriremeWharfBuildStages, 2, 1, 10);
 }

@@ -1,4 +1,5 @@
 #include "etradeshutdownevent.h"
+#include "emessages.h"
 
 #include "engine/egameboard.h"
 #include "engine/eeventdata.h"
@@ -37,4 +38,12 @@ void eTradeShutDownEvent::write(eWriteStream &dst) const {
 void eTradeShutDownEvent::read(eReadStream &src) {
     eGameEvent::read(src);
     eCityEventValue::read(src, *gameBoard());
+}
+
+bool eTradeShutDownEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    oracleChooseCity();
+    if(!mCity) return false;
+    ed.fCity = mCity;
+    msg = eMessages::oracleMessage("trade_shuts_down");
+    return true;
 }

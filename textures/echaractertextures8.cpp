@@ -1,5 +1,13 @@
 #include "echaractertextures.h"
 
+#include "spriteData/frigate15.h"
+#include "spriteData/frigate30.h"
+#include "spriteData/frigate45.h"
+#include "spriteData/frigate60.h"
+#include "spriteData/fireFrigate15.h"
+#include "spriteData/fireFrigate30.h"
+#include "spriteData/fireFrigate45.h"
+#include "spriteData/fireFrigate60.h"
 #include "espriteloader.h"
 
 #include "spriteData/scholar15.h"
@@ -512,5 +520,38 @@ void eCharacterTextures::loadRacingHorses() {
         for(int i = 6945; i < 6954; i++) {
             loader.load(6577, i, fRacingHorse4.fDie);
         }
+    }
+}
+
+// Frigate frames per direction (8, the 3 mirrored ones flipped): sailing
+// 7, sinking 9, bobbing at rest 4, standing 1, attacking 9.
+void eCharacterTextures::loadFrigate() {
+    if(fFrigateLoaded) return;
+    fFrigateLoaded = true;
+    {
+        const auto& sds = spriteData(fTileH,
+                                     eFrigateSpriteData15,
+                                     eFrigateSpriteData30,
+                                     eFrigateSpriteData45,
+                                     eFrigateSpriteData60);
+        eSpriteLoader loader(fTileH, "frigate", sds,
+                             &ePoseidonImpsOffset, fRenderer);
+        loader.loadSkipFlipped(7516, 7516, 7572, fFrigate.fSwim);
+        loader.loadSkipFlipped(7516, 7572, 7644, fFrigate.fDie);
+        loader.loadSkipFlipped(7516, 7676, 7684, fFrigate.fStand);
+        loader.loadSkipFlipped(7516, 7684, 7756, fFrigate.fFight);
+    }
+    {
+        const auto& sds = spriteData(fTileH,
+                                     eFireFrigateSpriteData15,
+                                     eFireFrigateSpriteData30,
+                                     eFireFrigateSpriteData45,
+                                     eFireFrigateSpriteData60);
+        eSpriteLoader loader(fTileH, "fireFrigate", sds,
+                             &ePoseidonImpsOffset, fRenderer);
+        loader.loadSkipFlipped(7988, 7988, 8044, fFireFrigate.fSwim);
+        loader.loadSkipFlipped(7988, 8044, 8116, fFireFrigate.fDie);
+        loader.loadSkipFlipped(7988, 8148, 8156, fFireFrigate.fStand);
+        loader.loadSkipFlipped(7988, 8156, 8228, fFireFrigate.fFight);
     }
 }

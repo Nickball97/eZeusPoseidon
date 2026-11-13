@@ -32,7 +32,7 @@ void eSoldier::setBanner(eSoldierBanner* const b) {
 }
 
 void eSoldier::beingKilled() {
-    if(mBanner) mBanner->decCount();
+    if(mBanner) mBanner->soldierKilled(); // lowers morale, then the count
     setBanner(nullptr);
     const auto cid = cityId();
     const auto ocid = onCityId();

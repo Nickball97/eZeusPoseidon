@@ -7,6 +7,14 @@
 #include "characters/actions/ewaitaction.h"
 #include "buildings/epalace.h"
 #include "enumbers.h"
+#include "buildings/ehousebase.h"
+#include "engine/eboardcity.h"
+#include "engine/eworldcity.h"
+#include "einvasionhandler.h"
+#include "fileIO/efileformat.h"
+
+#include <algorithm>
+#include <cmath>
 
 eGodAttackAction::eGodAttackAction(eCharacter* const c) :
     eGodAction(c, eCharActionType::godAttackAction) {}
@@ -20,8 +28,6 @@ void eGodAttackAction::increment(const int by) {
     const auto type = this->type();
     const auto at = c->actionType();
     if(at == eCharacterActionType::walk) {
-        const int cursePeriod = eNumbers::sGodAttackCursePeriod;
-        const int curseRange = eNumbers::sGodAttackCurseRange;
         const int lookForGodCheck = 1000;
         int attackPeriod;
         switch(type) {
@@ -53,28 +59,25 @@ void eGodAttackAction::increment(const int by) {
         const int targetedCurseRange = eNumbers::sGodAttackTargetedCurseRange;
         const int godFightRange = eNumbers::sGodAttackGodFightRange;
 
-        bool r = lookForBlessCurse(by, mLookForCurse, cursePeriod, curseRange, -1);
-        if(!r) r = lookForAttack(by, mLookForAttack, attackPeriod, attackRange);
+        // Curses follow the original (eGodCurseBuildingType): each god
+        // curses from its own list, Zeus from a random list, at most 10
+        // times a visit (zeus.exe +0x8BA). Only some gods smash and kill
+        // at random (eGod::sGeneralAttack).
+        bool r = false;
+        if(eGod::sGeneralAttack(type)) {
+            r = lookForAttack(by, mLookForAttack, attackPeriod, attackRange);
+        }
         if(!r) r = lookForTargetedAttack(by, mLookForTargetedAttack,
                                          targetedAttackPeriod, targetedAttackRange);
-        if(!r) r = lookForTargetedBlessCurse(by, mLookForTargetedCurse,
-                                             targetedCursePeriod, targetedCurseRange, -1);
+        if(!r && mCursesLeft > 0 && eGod::sCurseKind(type) >= 0) {
+            r = lookForTargetedBlessCurse(by, mLookForTargetedCurse,
+                                          targetedCursePeriod, targetedCurseRange, -1);
+            if(r) mCursesLeft--;
+        }
         if(!r) lookForGodAttack(by, mLookForGod, lookForGodCheck, godFightRange);
         if(!r) {
-            if(type == eGodType::apollo) {
-                auto& board = this->board();
-                using eLFPG = eLookForPlagueGodAct;
-                const auto act = std::make_shared<eLFPG>(board);
-                const auto at = eCharacterActionType::curse;
-                const auto s = eGodSound::curse;
-                const auto c = character();
-                const auto chart = c->type();
-                const int plaguePeriod = eNumbers::sGodAttackApolloPlaguePeriod;
-                const int plagueRange = eNumbers::sGodAttackApolloPlagueRange;
-                lookForRangeAction(by, mLookForSpecial,
-                                   plaguePeriod, plagueRange,
-                                   at, act, chart, s);
-            } else if(type == eGodType::aphrodite) {
+            // (Apollo's plague now comes with each of his curses)
+            if(type == eGodType::aphrodite) {
                 auto& board = this->board();
                 using eLFEG = eLookForEvictGodAct;
                 const auto act = std::make_shared<eLFEG>(board);
@@ -222,6 +225,9 @@ void eGodAttackAction::read(eReadStream& src) {
     src >> mLookForTargetedAttack;
     src >> mLookForGod;
     src >> mLookForSpecial;
+    if(src.formatVersion() >= eFileFormat::godCurseCount) {
+        src >> mCursesLeft;
+    }
     auto& board = this->board();
     src.readBuilding(&board, [this](eBuilding* const b) {
         mSanctuary = static_cast<eSanctuary*>(b);
@@ -237,6 +243,7 @@ void eGodAttackAction::write(eWriteStream& dst) const {
     dst << mLookForTargetedAttack;
     dst << mLookForGod;
     dst << mLookForSpecial;
+    dst << mCursesLeft;
     dst.writeBuilding(mSanctuary);
 }
 
@@ -267,13 +274,92 @@ void eGodAttackAction::initialize() {
     } else if(type == eGodType::hades) {
         const auto p = board.palace(cid);
         if(p) p->setBlessed(-1.);
-        const auto& chars = board.characters();
-        for(const auto c : chars) {
-            const auto cType = c->type();
-            const bool r = eDionysusFollowAction::sShouldFollow(cType);
-            if(!r) continue;
-            if(c->dead()) continue;
-            c->killWithCorpse();
-        }
+        // (the walkers die with each of his curses, eGodCurseBuildingType)
     }
+    applyArrivalEffects();
+}
+
+// One-time effects when an angry god arrives. The behavior is from the
+// Zeus and Poseidon manuals; the amounts were given by Nicolás from the
+// original game (the manuals only say "some").
+void eGodAttackAction::applyArrivalEffects() {
+    auto& board = this->board();
+    const auto cid = cityId();
+    const auto pid = board.cityIdToPlayerId(cid);
+    const auto type = this->type();
+
+    const auto inCity = [cid](eCharacter* const ch) {
+        if(!ch || ch->dead()) return false;
+        const auto t = ch->tile();
+        return t && t->cityId() == cid;
+    };
+    // kills every n-th character of the given types in this city
+    const auto killShare = [&](const std::vector<eCharacterType>& types,
+                               const int everyNth) {
+        int i = 0;
+        const auto chars = board.characters();
+        for(const auto ch : chars) {
+            if(!inCity(ch)) continue;
+            const auto ct = ch->type();
+            if(std::find(types.begin(), types.end(), ct) == types.end()) continue;
+            if(i++ % everyNth == 0) ch->killWithCorpse();
+        }
+    };
+
+    switch(type) {
+    case eGodType::hermes: { // steals 33% of the treasury
+        const int d = board.drachmas(pid);
+        if(d > 0) board.setDrachmas(pid, d - (33*d)/100);
+    } break;
+    case eGodType::aphrodite: { // 25% of the people leave with her
+        const auto bc = board.boardCityWithId(cid);
+        if(bc) {
+            const auto houses = bc->houses();
+            for(const auto h : houses) {
+                h->emigrate(int(std::round(0.25*h->people())));
+            }
+        }
+        // all walkers on the street follow her out of the city
+        const auto chars = board.characters();
+        for(const auto ch : chars) {
+            if(!inCity(ch)) continue;
+            if(!eDionysusFollowAction::sShouldFollow(ch->type())) continue;
+            ch->kill();
+        }
+    } break;
+    case eGodType::ares: // "marches into your city with an army of Sparti"
+        spawnArmy(ePlayerSoldierType::aresWarrior);
+        break;
+    case eGodType::artemis: { // kills all hunters, wolves twice as strong
+        // "she and her Amazons launch a full-scale attack on your city"
+        spawnArmy(ePlayerSoldierType::amazon);
+        killShare({eCharacterType::hunter}, 1);
+        const auto chars = board.characters();
+        for(const auto ch : chars) {
+            if(!inCity(ch)) continue;
+            if(ch->type() != eCharacterType::wolf) continue;
+            ch->setHP(2*ch->hp());
+            ch->setAttack(2*ch->attack());
+        }
+    } break;
+    default: break;
+    }
+}
+
+// An angry Ares or Artemis brings an army hostile to the city. zeus.exe
+// (arrival 0x004EC410 Artemis, 0x004EC560 Ares, both calling 0x00504650):
+// one company of 8 soldiers, Amazons (nation 4) or Ares' warriors (nation
+// 10), at the map's entry point, or the exit point when there is none;
+// with neither, no army comes. The invasion uses the spare event slot 140.
+void eGodAttackAction::spawnArmy(const ePlayerSoldierType type) {
+    auto& board = this->board();
+    const auto cid = cityId();
+    auto tile = board.entryPoint(cid);
+    if(!tile) tile = board.exitPoint(cid);
+    if(!tile) return;
+    const int count = 8;
+    // the handler registers itself with the city, saves with it and
+    // deletes itself when the army is gone
+    const auto h = new eInvasionHandler(board, cityId(), nullptr, nullptr);
+    h->initializeGodArmy(tile, type, count);
 }

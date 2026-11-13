@@ -1,4 +1,7 @@
 #include "egodattackevent.h"
+#include "fileIO/efileformat.h"
+#include "erand.h"
+#include "emessages.h"
 
 #include "engine/egameboard.h"
 #include "engine/eevent.h"
@@ -40,7 +43,12 @@ void eGodAttackEvent::trigger() {
     int tid;
     const int nTypes = mTypes.size();
     if(mRandom) {
-        tid = eRand::rand() % mTypes.size();
+        if(mOracleGod >= 0 && mOracleGod < nTypes) {
+            tid = mOracleGod; // the god the Oracle predicted
+        } else {
+            tid = eRand::rand() % mTypes.size();
+        }
+        mOracleGod = -1;
     } else {
         tid = mNextId;
         if(++mNextId >= nTypes) mNextId = 0;
@@ -105,6 +113,7 @@ void eGodAttackEvent::write(eWriteStream& dst) const {
     dst << mRandom;
     dst << mNextId;
     dst.writeBuilding(mSanctuary);
+    dst << mOracleGod;
 }
 
 void eGodAttackEvent::read(eReadStream& src) {
@@ -122,4 +131,25 @@ void eGodAttackEvent::read(eReadStream& src) {
     src.readBuilding(board, [this](eBuilding* const b) {
         mSanctuary = static_cast<eSanctuary*>(b);
     });
+    if(src.formatVersion() >= eFileFormat::oracleTimer) {
+        src >> mOracleGod;
+    }
+}
+
+bool eGodAttackEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    const int nTypes = mTypes.size();
+    if(nTypes == 0) return false;
+    int tid;
+    if(mRandom) {
+        if(mOracleGod < 0 || mOracleGod >= nTypes) {
+            mOracleGod = eRand::rand() % nTypes;
+        }
+        tid = mOracleGod;
+    } else {
+        tid = mNextId < nTypes ? mNextId : 0;
+    }
+    const auto t = mTypes.at(tid);
+    ed.fGod = t;
+    msg = eMessages::oracleMessage(eMessages::godKey(t) + "_invades");
+    return true;
 }

@@ -24,6 +24,7 @@ void eDataWidget::initialize() {
 
     const auto frame = new eFramedWidget(window());
     frame->setType(eFrameType::inner);
+    frame->setTextColor(eFontColor::panel); // pale text, as in the original
     frame->setHeight(height() - h + pp);
     frame->setWidth(width());
     frame->setTinyPadding();
@@ -77,6 +78,11 @@ int eDataWidget::spacing() const {
     const auto res = resolution();
     const double m = res.multiplier();
     return 3*m;
+}
+
+void eDataWidget::openMoreInfo() {
+    if(!mMoreInfo || !mMoreInfo->visible()) return;
+    openMoreInfoWiget();
 }
 
 void eDataWidget::showMoreInfoButton() {

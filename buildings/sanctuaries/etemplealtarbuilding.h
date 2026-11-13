@@ -20,16 +20,17 @@ public:
     std::vector<eOverlay>
     getOverlays(const eTileSize size) const override;
 
-    void timeChanged(const int by) override;
-
     void read(eReadStream& src) override;
     void write(eWriteStream& dst) const override;
 
-    void startSacrifice(const eSacrifice s);
-    bool sacrificing() const { return mSacrifice != eSacrifice::none; }
+    // the kind of the last sacrifice; the sanctuary priests set it and
+    // the sanctuary says whether it is still being shown (eSanctuary)
+    void setSacrifice(const eSacrifice s) { mSacrifice = s; }
+    eSacrifice sacrifice() const { return mSacrifice; }
+    bool sacrificing() const;
 private:
     eSacrifice mSacrifice = eSacrifice::none;
-    int mSacrificeTime = 600000;
+    int mSacrificeTime = 600000; // not used any more, kept in saves
 };
 
 #endif // ETEMPLEALTARBUILDING_H

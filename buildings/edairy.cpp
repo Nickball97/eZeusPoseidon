@@ -21,6 +21,8 @@ eDairy::eDairy(eGameBoard& board, const eCityId cid) :
                          2, 2, 8, cid),
     mTextures(eGameTextures::buildings())  {
     eGameTextures::loadDairy();
+    // holds at most 5 loads before it stops (original exe 0x004F8050)
+    setMaxResource(5);
 }
 
 std::vector<eOverlay> eDairy::getOverlays(const eTileSize size) const {

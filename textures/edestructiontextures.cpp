@@ -3,6 +3,10 @@
 #include "offsets/SprAmbient.h"
 #include "offsets/destruction.h"
 #include "offsets/PoseidonImps.h"
+#include "spriteData/atlanteanFire15.h"
+#include "spriteData/atlanteanFire30.h"
+#include "spriteData/atlanteanFire45.h"
+#include "spriteData/atlanteanFire60.h"
 
 #include "spriteData/fire115.h"
 #include "spriteData/fire130.h"
@@ -652,4 +656,18 @@ void eDestructionTextures::loadDust() {
             loader.load(1, i, coll);
         }
     }
+}
+
+void eDestructionTextures::loadAtlanteanFire() {
+    if(fAtlanteanFireLoaded) return;
+    fAtlanteanFireLoaded = true;
+
+    const auto& sds = spriteData(fTileH,
+                                 eAtlanteanFireSpriteData15,
+                                 eAtlanteanFireSpriteData30,
+                                 eAtlanteanFireSpriteData45,
+                                 eAtlanteanFireSpriteData60);
+    eSpriteLoader loader(fTileH, "atlanteanFire", sds,
+                         &ePoseidonImpsOffset, fRenderer);
+    loader.loadSkipFlipped(4718, 4718, 4758, fAtlanteanFire);
 }

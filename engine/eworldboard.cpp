@@ -333,3 +333,19 @@ eCityId eWorldBoard::currentCityId() const {
     if(!c) return eCityId::neutralFriendly;
     return c->cityId();
 }
+
+bool eWorldBoard::breakSymphoniaIthikos(const eTeamId playerTeam) {
+    bool any = false;
+    const auto itid = static_cast<int>(playerTeam);
+    const auto rivalTeam = static_cast<eTeamId>(itid + 1);
+    for(const auto& c : mCities) {
+        if(c->type() != eCityType::foreignCity) continue;
+        if(c->nationality() != eNationality::atlantean) continue;
+        if(c->relationship() != eForeignCityRelationship::ally) continue;
+        // same change as the "city becomes rival" event
+        c->setRelationship(eForeignCityRelationship::rival);
+        setPlayerTeam(c->playerId(), rivalTeam);
+        any = true;
+    }
+    return any;
+}

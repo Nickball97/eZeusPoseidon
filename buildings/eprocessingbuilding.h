@@ -29,6 +29,9 @@ public:
     std::vector<eOverlay> getOverlays(const eTileSize size) const override;
 
     void timeChanged(const int by) override;
+    // a blessing lasts until used and multiplies the next output once
+    bool blessingLastsUntilUsed() const override { return true; }
+    bool blessingBoostsSpeed() const override { return false; }
 
     int add(const eResourceType type, const int count) override;
 
@@ -41,6 +44,10 @@ public:
     void write(eWriteStream& dst) const override;
 
     int rawCount() const { return mRawCount; }
+    // for the info window: progress of the current batch (0-1)
+    double progress() const;
+    // raw material it accepts (original exe 0x0048A880)
+    void setMaxRaw(const int m) { mMaxRaw = m; }
 private:
     const std::vector<eBuildingTextures>& mTextures;
 
@@ -53,7 +60,7 @@ private:
 
     stdptr<eCartTransporter> mTakeCart;
 
-    const int mMaxRaw = 4;
+    int mMaxRaw = 4;
     const int mRawUse;
     int mRawCount{0};
 

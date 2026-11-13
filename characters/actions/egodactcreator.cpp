@@ -6,6 +6,7 @@
 #include "godHelp/eherahelpaction.h"
 #include "godHelp/eapollohelpaction.h"
 #include "godHelp/eaphroditehelpaction.h"
+#include "godHelp/eartemishuntaction.h"
 
 stdsptr<eGodAct> eGodAct::sCreate(
         eGameBoard& board, const eGodActType t) {
@@ -42,6 +43,8 @@ stdsptr<eGodAct> eGodAct::sCreate(
         return std::make_shared<eLookForTargetedBlessGodAct>(board);
     case eGodActType::lookForTargetedAttack:
         return std::make_shared<eLookForTargetedAttackGodAct>(board);
+    case eGodActType::lookForWolf:
+        return std::make_shared<eLookForWolfGodAct>(board);
     }
     return nullptr;
 }

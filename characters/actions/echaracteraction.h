@@ -73,7 +73,13 @@ enum class eCharActionType {
     dionysusFollowAction,
 
     triremeAction,
-    wolfAction
+    wolfAction,
+    krakenDefenderAction,
+    outlawAction,
+    guardianDefenderAction,
+    artemisHuntAction,
+    enemyWarshipAction,
+    priestAction
 };
 
 class eCharacterAction : public eStdSelfRef {

@@ -18,6 +18,8 @@ public:
     void clear();
 
     bool building() const;
+    eCharacter* character() const { return mC.get(); }
+    eBuilding* buildingPtr() const;
 
     double absX() const;
     double absY() const;
@@ -65,8 +67,17 @@ public:
 
     void setOverwrittableAction(const bool o)
     { mOverwrittableAction = o; }
+
+    // the character being attacked right now, if any
+    eCharacter* attackTargetCharacter() const
+    { return mAttack ? mAttackTarget.character() : nullptr; }
 protected:
     bool isAttacking() const { return mAttack; }
+    // starts an attack on cc, with missiles when range is true
+    void startAttack(eCharacter* const cc, const bool range);
+    // true for fighters that choose their own targets (enemy warships):
+    // lookForEnemy then only carries on an attack already started
+    virtual bool ownTargeting() const { return false; }
 private:
     virtual stdsptr<eObsticleHandler> obsticleHandler() { return nullptr; }
     bool attackBuilding(eTile* const t, const bool range);

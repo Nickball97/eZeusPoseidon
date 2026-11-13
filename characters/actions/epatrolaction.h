@@ -20,6 +20,8 @@ public:
                   const eCharActionType at = eCharActionType::patrolAction);
 
     bool decide() override;
+    // the patrol is over and the walker is heading home
+    bool returning() const { return mDone; }
 
     void read(eReadStream& src) override;
     void write(eWriteStream& dst) const override;

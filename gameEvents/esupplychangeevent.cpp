@@ -1,4 +1,5 @@
 #include "esupplychangeevent.h"
+#include "emessages.h"
 
 #include "engine/egameboard.h"
 #include "engine/eeventdata.h"
@@ -23,7 +24,7 @@ void eSupplyChangeEvent::trigger() {
     auto& sells = city->sells();
     for(auto& s : sells) {
         if(s.fType != type) continue;
-        s.fMax += by;
+        s.changeMax(by);
         break;
     }
     const auto board = gameBoard();
@@ -41,4 +42,15 @@ std::string eSupplyChangeEvent::longName() const {
     longNameReplaceResource("%1", tmpl);
     longNameReplaceCity("%2", tmpl);
     return tmpl;
+}
+
+bool eSupplyChangeEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    oracleChooseCity();
+    if(!mCity) return false;
+    oracleChooseType();
+    oracleChooseCount();
+    ed.fCity = mCity;
+    ed.fResourceType = resourceType();
+    msg = eMessages::oracleMessage("supply_change", count() > 0 ? "_I" : "_D");
+    return true;
 }

@@ -25,11 +25,12 @@ void eLoadingWidget::initialize() {
         const auto label = new eFramedLabel("Waiting...", window());
         mLabelW = label;
         mLabel = label;
-        mLabel->setLightFontColor();
+        mLabel->setDarkFontColor();
     } else {
         const auto label = new eLabel("Waiting...", window());
         mLabelW = label;
         mLabel = label;
+        mLabel->setLightFontColor(); // drawn on black at start-up
     }
     mLabelW->fitContent();
     addWidget(mLabelW);
@@ -85,8 +86,15 @@ void eLoadingWidget::setLoadImage(const int id) {
         tex = texs.fLoadImage12;
     }
     mImageLabel->setTexture(tex);
-    mImageLabel->fitContent();
-    mImageLabel->align(eAlignment::center);
+    const bool wide = tex && 3*tex->width() > 4*tex->height();
+    if(wide) { // widescreen picture from the game folder: fill the screen
+        mImageLabel->setCoverTexture(true);
+        mImageLabel->move(0, 0);
+        mImageLabel->resize(width(), height());
+    } else {
+        mImageLabel->fitContent();
+        mImageLabel->align(eAlignment::center);
+    }
 }
 
 void eLoadingWidget::paintEvent(ePainter& p) {

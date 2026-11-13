@@ -1,4 +1,6 @@
 ﻿
+#include "buildings/sanctuaries/etempleobeliskbuilding.h"
+#include "buildings/sanctuaries/etemplegrandstatuebuilding.h"
 #include "egameboard.h"
 
 #include "buildings/eagorabase.h"
@@ -10,6 +12,8 @@
 
 #include "characters/esoldier.h"
 #include "characters/esoldierbanner.h"
+#include "characters/esheep.h"
+#include "characters/egoat.h"
 
 #include "buildings/etradepost.h"
 
@@ -19,6 +23,7 @@
 #include "buildings/epalacetile.h"
 
 #include "buildings/ehorseranch.h"
+#include "buildings/eavenue.h"
 
 #include "engine/boardData/eheatmaptask.h"
 
@@ -100,6 +105,7 @@
 #include "buildings/pyramids/epyramid.h"
 
 #include <algorithm>
+#include <set>
 
 #ifndef uint
 #define uint unsigned int
@@ -379,6 +385,11 @@ void eGameBoard::bannersGoHome() {
 
 void eGameBoard::bannersBackFromHome() {
     for(const auto b : mSelectedBanners) {
+        if(b->fleeing()) {
+            // Company's morale too low to respond!
+            showTip(b->cityId(), eLanguage::zeusText(19, 34));
+            continue;
+        }
         b->backFromHome();
     }
 }
@@ -1298,7 +1309,14 @@ eEnlistedForces eGameBoard::getEnlistableForces(const ePlayerId pid) const {
                        (type == eCityType::foreignCity &&
                         (rel == eForeignCityRelationship::ally ||
                          rel == eForeignCityRelationship::vassal));
-        if(e && c->attitude(pid) > 50) {
+        // Zeus attitude advice.txt: only an ally whose opinion of you is
+        // very high (the top tier, 80+) sends troops; vassals and colonies
+        // keep eZeus's rule
+        const bool ally = type == eCityType::foreignCity &&
+                          rel == eForeignCityRelationship::ally;
+        const double att = c->attitude(pid);
+        const bool willing = ally ? att >= 80 : att > 50;
+        if(e && willing) {
             result.fAllies.push_back(c);
         }
     }
@@ -1680,9 +1698,8 @@ void eGameBoard::handleGamesBegin(const eGames game) {
     for(const auto cid : pcids) {
         const auto c = boardCityWithId(cid);
         if(c->atlantean()) continue;
-        const double chance = c->winningChance(game);
         eEventData ed(cid);
-        if(chance > 0) {
+        if(c->canTakePartInGames(game)) {
             showMessage(ed, msgs->fBegin);
         } else {
             showMessage(ed, msgs->fNoPart);
@@ -1707,20 +1724,23 @@ void eGameBoard::handleGamesEnd(const eGames game) {
         break;
     }
 
-    using eCityChance = std::pair<eCityId, double>;
+    // zeus.exe (0x00565E90): a roll of 0-99 below the score wins; otherwise
+    // a score of 30 or more places second and a lower one loses
+    using eCityChance = std::pair<eCityId, int>;
     std::vector<eCityChance> chances;
     for(const auto c : mActiveCitiesOnBoard) {
         if(c->atlantean()) continue;
         const auto id = c->id();
-        const double chance = c->winningChance(game);
-        chances.push_back(eCityChance{id, chance});
+        const int score = c->canTakePartInGames(game) ?
+                              c->gamesScore(game, true) : 0;
+        chances.push_back(eCityChance{id, score});
     }
     if(chances.empty()) return;
     eRand::randomShuffle(chances);
 
     eCityId winner = eCityId::neutralFriendly;
     for(const auto& c : chances) {
-        const bool won = eRand::rand() % 101 < 100*c.second;
+        const bool won = eRand::rand() % 100 < c.second;
         if(!won) continue;
         const auto cid = c.first;
         const auto city = boardCityWithId(cid);
@@ -1757,7 +1777,7 @@ void eGameBoard::handleGamesEnd(const eGames game) {
     for(const auto& c : chances) {
         const auto cid = c.first;
         if(cid == winner) continue;
-        const bool second = eRand::rand() % 101 < 200*c.second;
+        const bool second = c.second >= 30;
         eEventData ed(cid);
         if(second && secondCid == eCityId::neutralFriendly) {
             secondCid = cid;
@@ -2413,6 +2433,12 @@ void eGameBoard::incTime(const int by) {
         }
     }
 
+    // cheat "Ambrosia": the episode is won when the next month starts
+    if(nextMonth && mCheatVictory) {
+        mCheatVictory = false;
+        mGoalsFulfilled = true;
+        mGoalsCheckTime = 5050;
+    }
     if(nextMonth) {
         mWorld.nextMonth(this);
     }
@@ -3699,6 +3725,197 @@ bool eGameBoard::canBuildAvenue(eTile* const t, const eCityId cid,
     return hr;
 }
 
+// Avenue and Boulevard pieces, after the original game (zeus.exe):
+// - Boulevard (0x0041BBA0, 0x0041B250, piece 0x0041AFB0): the drag must
+//   start on a road; each road tile along the drag gets trees on both
+//   sides, across the road's direction
+// - Avenue (0x0041AEA0, 0x00419F90, piece 0x00419C90): trees on one side
+//   only. Starting on the road puts them on its top-left side (x - 1) for
+//   a road running along y, or its top-right side (y - 1) for one running
+//   along x; starting next to a road puts them on the tile clicked
+// - the drag runs along its longer direction from the start tile; the
+//   side keeps to the same edge (lower or higher coordinate) if the drag
+//   turns across the road's direction; a click without a drag builds
+//   nothing
+// - each piece needs a road tile and free tiles for the trees
+// - a piece with no Avenue or Boulevard next to it along the line is taken
+//   back and not charged (0x004195D0), so the shortest is two pieces
+// Kept from eZeus: the trees can't go over another road (the original
+// allows it), and a drag that doesn't start on or next to a road builds
+// nothing (the original then picks a side by the drag direction).
+std::vector<eGameBoard::eAvenuePiece> eGameBoard::avenuePieces(
+        const int sx, const int sy, const int ex, const int ey,
+        const eBuildingType type, const eCityId cid,
+        const ePlayerId pid, const bool forestAllowed,
+        const bool startOnly) const {
+    std::vector<eAvenuePiece> result;
+    const auto road = [&](const int x, const int y) {
+        const auto t = tile(x, y);
+        return t && t->hasRoad();
+    };
+    const bool boulevard = type == eBuildingType::boulevard;
+    // o: 0 trees at x - 1, 1 at y - 1, 2 at x + 1, 3 at y + 1 of the road
+    // tile; a Boulevard (0 or 1) has them on both sides
+    int o = 0;
+    int rx = sx; // the start piece's road tile
+    int ry = sy;
+    if(road(sx, sy)) {
+        const bool e = road(sx + 1, sy);
+        const bool w = road(sx - 1, sy);
+        const bool n = road(sx, sy - 1);
+        const bool s = road(sx, sy + 1);
+        if(e && w) o = 1;
+        else if(n && s) o = 0;
+        else if(!e && !w) {
+            if(!n && !s) return result;
+            o = 0;
+        } else o = 1;
+    } else if(boulevard) {
+        return result;
+    } else if(road(sx - 1, sy)) {
+        o = 2;
+        rx = sx - 1;
+    } else if(road(sx, sy - 1)) {
+        o = 3;
+        ry = sy - 1;
+    } else if(road(sx + 1, sy)) {
+        o = 0;
+        rx = sx + 1;
+    } else if(road(sx, sy + 1)) {
+        o = 1;
+        ry = sy + 1;
+    } else {
+        return result;
+    }
+
+    // the original measures the drag from the piece's own tile: the road
+    // tile, or the trees for an Avenue started beside a road to its
+    // top-left or top-right
+    const bool treesStart = o == 2 || o == 3;
+    const int dx = std::abs(ex - (treesStart ? sx : rx));
+    const int dy = std::abs(ey - (treesStart ? sy : ry));
+    if(!startOnly && dx < 1 && dy < 1) return result;
+    // the cursor preview keeps the start's own direction
+    const bool alongX = startOnly ? (o == 1 || o == 3) : dy < dx;
+    if(!startOnly) {
+        if(alongX) {
+            if(o == 0) o = 1;
+            else if(o == 2) o = 3;
+        } else {
+            if(o == 1) o = 0;
+            else if(o == 3) o = 2;
+        }
+    }
+
+    std::vector<std::pair<int, int>> sides;
+    switch(o) {
+    case 0: sides.push_back({-1, 0}); break;
+    case 1: sides.push_back({0, -1}); break;
+    case 2: sides.push_back({1, 0}); break;
+    case 3: sides.push_back({0, 1}); break;
+    }
+    if(boulevard) {
+        sides.push_back({-sides[0].first, -sides[0].second});
+    }
+
+    const int from = startOnly ? (alongX ? rx : ry) :
+                     alongX ? std::min(rx, ex) : std::min(ry, ey);
+    const int to = startOnly ? from :
+                   alongX ? std::max(rx, ex) : std::max(ry, ey);
+    // In the original a piece takes its road tile too: it is built only
+    // where the road tile and the tree tiles have no building yet
+    // (0x00419F90). eZeus keeps the road tile a road, so a road tile that
+    // already has Avenue or Boulevard trees beside it, on either side
+    // across the road, counts as taken: a road gets one Avenue or one
+    // Boulevard, never two Avenues facing each other.
+    const auto taken = [&](const int x, const int y) {
+        const int ax = sides[0].first;
+        const int ay = sides[0].second;
+        for(const int d : {-1, 1}) {
+            const auto t = tile(x + d*ax, y + d*ay);
+            if(t && eAvenue::sAvenueType(t->underBuildingType())) return true;
+        }
+        return false;
+    };
+    for(int i = from; i <= to; i++) {
+        const int x = alongX ? i : rx;
+        const int y = alongX ? ry : i;
+        if(!road(x, y)) continue;
+        if(taken(x, y)) continue;
+        eAvenuePiece p;
+        p.fRoad = tile(x, y);
+        bool ok = true;
+        for(const auto& s : sides) {
+            const int tx = x + s.first;
+            const int ty = y + s.second;
+            const auto t = tile(tx, ty);
+            if(!t || !canBuildBase(tx, tx + 1, ty, ty + 1, forestAllowed,
+                                   cid, pid, false, true)) {
+                ok = false;
+                break;
+            }
+            p.fTrees.push_back(t);
+        }
+        if(ok) result.push_back(p);
+    }
+
+    if(startOnly) return result;
+
+    // take back pieces with nothing beside them along the line
+    std::set<eTile*> newTrees;
+    for(const auto& p : result) {
+        for(const auto t : p.fTrees) newTrees.insert(t);
+    }
+    const int lx = alongX ? 1 : 0;
+    const int ly = alongX ? 0 : 1;
+    const auto joined = [&](eTile* const t) {
+        for(const int d : {-1, 1}) {
+            const auto n = tile(t->x() + d*lx, t->y() + d*ly);
+            if(!n) continue;
+            if(newTrees.count(n)) return true;
+            if(eAvenue::sAvenueType(n->underBuildingType())) return true;
+        }
+        return false;
+    };
+    std::vector<eAvenuePiece> kept;
+    for(const auto& p : result) {
+        bool j = false;
+        for(const auto t : p.fTrees) {
+            if(joined(t)) {
+                j = true;
+                break;
+            }
+        }
+        if(j) kept.push_back(p);
+    }
+    return kept;
+}
+
+bool eGameBoard::buildAvenuePiece(const eAvenuePiece& p,
+                                  const eBuildingType type,
+                                  const eCityId cid, const ePlayerId pid,
+                                  const bool editorDisplay) {
+    for(const auto t : p.fTrees) {
+        const int tx = t->x();
+        const int ty = t->y();
+        if(!canBuildBase(tx, tx + 1, ty, ty + 1, editorDisplay,
+                         cid, pid, false, true)) {
+            return false;
+        }
+    }
+    bool first = true;
+    for(const auto t : p.fTrees) {
+        const int tx = t->x();
+        const int ty = t->y();
+        // one charge for the whole piece (zeus.exe counts pieces)
+        buildBase(tx, ty, tx, ty, [this, cid, type]() {
+            return e::make_shared<eAvenue>(*this, cid, type);
+        }, pid, cid, editorDisplay || !first, false, true);
+        first = false;
+    }
+    return true;
+}
+
 bool eGameBoard::canBuildBase(const int minX, const int maxX,
                               const int minY, const int maxY,
                               const bool forestAllowed,
@@ -3706,7 +3923,8 @@ bool eGameBoard::canBuildBase(const int minX, const int maxX,
                               const ePlayerId pid,
                               const bool fertile,
                               const bool flat,
-                              const int allowedWater) const {
+                              const int allowedWater,
+                              const bool animalsMove) const {
     if(pid != cityIdToPlayerId(cid) && !mEditorMode) return false;
     int waterCount = 0;
     bool fertileFound = false;
@@ -3715,7 +3933,12 @@ bool eGameBoard::canBuildBase(const int minX, const int maxX,
             const auto t = tile(x, y);
             if(!t) return false;
             if(t->cityId() != cid) return false;
-            if(t->underBuilding()) return false;
+            if(const auto ub = t->underBuilding()) {
+                const auto ubt = ub->type();
+                const bool animal = ubt == eBuildingType::sheep ||
+                                    ubt == eBuildingType::goat;
+                if(!animal || !animalsMove) return false;
+            }
             const auto& banners = t->banners();
             for(const auto& b : banners) {
                 if(!b->buildable()) return false;
@@ -3765,6 +3988,47 @@ bool eGameBoard::canBuild(const int tx, const int ty,
 }
 
 
+bool eGameBoard::canBuildTowerOnWalls(const int tx, const int ty,
+                                      const eCityId cid,
+                                      const ePlayerId pid) const {
+    if(pid != cityIdToPlayerId(cid) && !mEditorMode) return false;
+    int minX;
+    int minY;
+    int maxX;
+    int maxY;
+    sBuildTiles(minX, minY, maxX, maxY, tx, ty, 2, 2);
+    for(int x = minX; x < maxX; x++) {
+        for(int y = minY; y < maxY; y++) {
+            const auto t = tile(x, y);
+            if(!t) return false;
+            if(t->cityId() != cid) return false;
+            if(t->isElevationTile()) return false;
+            const auto ub = t->underBuilding();
+            if(!ub) return false;
+            if(ub->type() != eBuildingType::wall) return false;
+            if(ub->isOnFire()) return false;
+        }
+    }
+    return true;
+}
+
+void eGameBoard::eraseWallsUnderTower(const int tx, const int ty) {
+    int minX;
+    int minY;
+    int maxX;
+    int maxY;
+    sBuildTiles(minX, minY, maxX, maxY, tx, ty, 2, 2);
+    for(int x = minX; x < maxX; x++) {
+        for(int y = minY; y < maxY; y++) {
+            const auto t = tile(x, y);
+            if(!t) continue;
+            const auto ub = t->underBuilding();
+            if(!ub || ub->type() != eBuildingType::wall) continue;
+            ub->erase();
+        }
+    }
+}
+
 bool eGameBoard::buildBase(const int minX, const int minY,
                            const int maxX, const int maxY,
                            const eBuildingCreator& bc,
@@ -3779,7 +4043,7 @@ bool eGameBoard::buildBase(const int minX, const int minY,
     const bool cb = canBuildBase(minX, maxX + 1, minY, maxY + 1,
                                  editorDisplay,
                                  cid, pid, fertile, flat,
-                                 allowWater);
+                                 allowWater, true);
     if(!cb) return false;
     if(!bc) return false;
     const auto b = bc();
@@ -3799,6 +4063,23 @@ bool eGameBoard::buildBase(const int minX, const int minY,
     centerTile(minX, minY, sw, sh, tx, ty);
     const auto tile = this->tile(tx, ty);
     if(!tile) return false;
+    // sheep and goats in the way wander off (eZeus issue 4)
+    struct eMovedAnimal { eBuildingType fType; int fX; int fY; };
+    std::vector<eMovedAnimal> movedAnimals;
+    for(int x = minX; x <= maxX; x++) {
+        for(int y = minY; y <= maxY; y++) {
+            const auto t = this->tile(x, y);
+            if(!t) continue;
+            const auto ub = t->underBuilding();
+            if(!ub) continue;
+            const auto ubt = ub->type();
+            if(ubt != eBuildingType::sheep &&
+               ubt != eBuildingType::goat) continue;
+            const auto& r = ub->tileRect();
+            movedAnimals.push_back({ubt, r.x, r.y});
+            ub->erase();
+        }
+    }
     b->setCenterTile(tile);
     b->setTileRect({minX, minY, sw, sh});
     for(int x = minX; x <= maxX; x++) {
@@ -3809,6 +4090,9 @@ bool eGameBoard::buildBase(const int minX, const int minY,
                 b->addUnderBuilding(t);
             }
         }
+    }
+    for(const auto& m : movedAnimals) {
+        rebuildAnimalNear(m.fType, m.fX, m.fY, pid, cid, editorDisplay);
     }
 
     if(!editorDisplay) {
@@ -3847,6 +4131,19 @@ bool eGameBoard::buildAnimal(eTile* const tile,
                              const bool editorDisplay) {
     const int tx = tile->x();
     const int ty = tile->y();
+    {   // an animal never pushes another animal away
+        int minX;
+        int minY;
+        int maxX;
+        int maxY;
+        sBuildTiles(minX, minY, maxX, maxY, tx, ty, 1, 2);
+        for(int x = minX; x < maxX; x++) {
+            for(int y = minY; y < maxY; y++) {
+                const auto t = this->tile(x, y);
+                if(t && t->underBuilding()) return false;
+            }
+        }
+    }
     const bool cb = canBuild(tx, ty, 1, 2, editorDisplay, cid, pid, true, true);
     if(!cb) return false;
     const auto sh = creator(*this);
@@ -3922,7 +4219,12 @@ bool eGameBoard::buildSanctuary(const int minX, const int maxX,
                                  editorDisplay, cid, pid);
     if(!cb) return false;
 
-    const auto h = eSanctBlueprints::sSanctuaryBlueprint(type, rotate);
+    // Atlantean cities build the Citadel of Poseidon (HeavenGames:
+    // Promontory in Greek adventures, Citadel in Atlantean ones)
+    const bool citadel = type == eBuildingType::templePoseidon &&
+                         atlantean(cid);
+    const auto h = eSanctBlueprints::sSanctuaryBlueprint(type, rotate,
+                                                         citadel);
 
     const int sw = h->fW;
     const int sh = h->fH;
@@ -3933,9 +4235,11 @@ bool eGameBoard::buildSanctuary(const int minX, const int maxX,
 
     if(!editorDisplay) {
         const auto diff = difficulty(pid);
-        const int cost = eDifficultyHelpers::buildingCost(diff, type);
+        const int cost = citadel ? eSanctuary::sCitadelCost :
+                                   eDifficultyHelpers::buildingCost(diff, type);
         incDrachmas(pid, -cost, eFinanceTarget::construction);
-        const int m = eBuilding::sInitialMarbleCost(type);
+        const int m = citadel ? eSanctuary::sCitadelInitialMarble :
+                                eBuilding::sInitialMarbleCost(type);
         takeResource(cid, eResourceType::marble, m);
     }
 
@@ -4042,6 +4346,20 @@ bool eGameBoard::buildSanctuary(const int minX, const int maxX,
                 this->build(tx - d, ty + d, 2, 2, cid, pid, editorDisplay, [tt]() { return tt; });
                 b->registerElement(tt);
             } break;
+            case eSanctEleType::obelisk: {
+                const auto tt = e::make_shared<eTempleObeliskBuilding>(
+                                    t.fId, *this, cid);
+                tt->setMonument(b.get());
+                this->build(tx, ty, 1, 1, cid, pid, editorDisplay, [tt]() { return tt; });
+                b->registerElement(tt);
+            } break;
+            case eSanctEleType::grandStatue: {
+                const auto tt = e::make_shared<eTempleGrandStatueBuilding>(
+                                    *this, cid);
+                tt->setMonument(b.get());
+                this->build(tx, ty, 6, 6, cid, pid, editorDisplay, [tt]() { return tt; });
+                b->registerElement(tt);
+            } break;
             case eSanctEleType::altar: {
                 const auto tt = e::make_shared<eTempleAltarBuilding>(
                                     *this, cid);
@@ -4094,6 +4412,7 @@ bool eGameBoard::buildSanctuary(const int minX, const int maxX,
         }
     }
 
+    if(!editorDisplay) b->applyOriginalMaterialTotals();
     b->buildingProgressed();
 
     return true;
@@ -4115,4 +4434,29 @@ eDistrictIdTmp::eDistrictIdTmp(eGameBoard& board) :
 
 eDistrictIdTmp::~eDistrictIdTmp() {
     mBoard.setCurrentDistrictId(mTmpId);
+}
+
+void eGameBoard::rebuildAnimalNear(const eBuildingType type,
+                                   const int x, const int y,
+                                   const ePlayerId pid, const eCityId cid,
+                                   const bool editorDisplay) {
+    const auto creator = [type](eGameBoard& board) -> stdsptr<eCharacter> {
+        if(type == eBuildingType::goat) return e::make_shared<eGoat>(board);
+        return e::make_shared<eSheep>(board);
+    };
+    bool found = false;
+    for(int k = 1; k < 12 && !found; k++) {
+        eIterateSquare::iterateSquare(k, [&](const int dx, const int dy) {
+            const auto t = tile(x + dx, y + dy);
+            if(!t) return false;
+            found = buildAnimal(t, type, creator, cid, pid, editorDisplay);
+            return found;
+        });
+    }
+    // moving an animal is free
+    if(found && !editorDisplay) {
+        const auto diff = difficulty(pid);
+        const int cost = eDifficultyHelpers::buildingCost(diff, type);
+        incDrachmas(pid, cost, eFinanceTarget::construction);
+    }
 }

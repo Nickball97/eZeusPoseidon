@@ -35,6 +35,7 @@
 
 #include "godHelp/eaphroditehelpaction.h"
 #include "godHelp/eartemishelpaction.h"
+#include "godHelp/eartemishuntaction.h"
 #include "godHelp/eathenahelpaction.h"
 #include "godHelp/eatlashelpaction.h"
 #include "godHelp/edemeterhelpaction.h"
@@ -52,6 +53,11 @@
 #include "eattackcityaction.h"
 
 #include "etriremeaction.h"
+#include "eenemywarshipaction.h"
+#include "epriestaction.h"
+#include "ekrakendefenderaction.h"
+#include "eguardiandefenderaction.h"
+#include "eoutlawaction.h"
 
 stdsptr<eCharacterAction> eCharacterAction::sCreate(
         eCharacter* const c, const eCharActionType type) {
@@ -129,6 +135,8 @@ stdsptr<eCharacterAction> eCharacterAction::sCreate(
         return e::make_shared<eAresHelpAction>(c);
     case eCharActionType::artemisHelpAction:
         return e::make_shared<eArtemisHelpAction>(c);
+    case eCharActionType::artemisHuntAction:
+        return e::make_shared<eArtemisHuntAction>(c);
     case eCharActionType::athenaHelpAction:
         return e::make_shared<eAthenaHelpAction>(c);
     case eCharActionType::atlasHelpAction:
@@ -162,6 +170,16 @@ stdsptr<eCharacterAction> eCharacterAction::sCreate(
 
     case eCharActionType::triremeAction:
         return e::make_shared<eTriremeAction>(nullptr, c);
+    case eCharActionType::enemyWarshipAction:
+        return e::make_shared<eEnemyWarshipAction>(c);
+    case eCharActionType::priestAction:
+        return e::make_shared<ePriestAction>(c);
+    case eCharActionType::krakenDefenderAction:
+        return e::make_shared<eKrakenDefenderAction>(c);
+    case eCharActionType::guardianDefenderAction:
+        return e::make_shared<eGuardianDefenderAction>(c);
+    case eCharActionType::outlawAction:
+        return e::make_shared<eOutlawAction>(c, nullptr);
     }
     return nullptr;
 }

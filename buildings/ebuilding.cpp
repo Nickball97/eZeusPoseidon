@@ -1,4 +1,5 @@
 #include "ebuilding.h"
+#include "buildings/etower.h"
 
 #include "engine/egameboard.h"
 #include "engine/eevent.h"
@@ -7,6 +8,7 @@
 #include "eruins.h"
 
 #include "buildings/esmallhouse.h"
+#include "fileIO/efileformat.h"
 #include "buildings/eelitehousing.h"
 #include "buildings/eaestheticsbuilding.h"
 
@@ -47,9 +49,14 @@ eTextureSpace eBuilding::getTextureSpace(const int tx, const int ty,
 int eBuilding::provide(const eProvide p, const int n) {
     (void)n;
     if(p == eProvide::maintanance) {
-        const int nn = 100 - mMaintance;
-        mMaintance += nn;
-        return nn;
+        // the original maintenance walker lowers both counters by the
+        // maintenance office's risk reducer (Model row 121 column j = 50)
+        // for buildings within 2 tiles (exe 0x004A5D90)
+        mDamageCounter = std::max(0, mDamageCounter - 50);
+        mFireCounter = std::max(0, mFireCounter - 50);
+        const int old = mMaintance;
+        mMaintance = std::clamp(100 - std::max(mDamageCounter, mFireCounter)/10, 0, 100);
+        return std::max(0, mMaintance - old);
     }
     return 0;
 }
@@ -63,13 +70,16 @@ bool eBuilding::sWalkableBuilding(const eBuildingType t) {
     if(t == eBuildingType::vine) return true;
     if(t == eBuildingType::park) return true;
     if(t == eBuildingType::avenue) return true;
+    if(t == eBuildingType::boulevard) return true;
     if(t == eBuildingType::oliveTree) return true;
     if(t == eBuildingType::orangeTree) return true;
     if(t == eBuildingType::sheep) return true;
     if(t == eBuildingType::goat) return true;
     if(t == eBuildingType::cattle) return true;
     if(t == eBuildingType::templeTile) return true;
-    if(t == eBuildingType::palaceTile) return true;
+    // the palace grounds aren't walkable: in the original walkers go
+    // around the palace (upstream #53, with a video of the original);
+    // only the player's soldiers go there (eWalkableObject::sCreateSoldier)
     if(t == eBuildingType::godMonumentTile) return true;
     const int min = static_cast<int>(eBuildingType::templeAphrodite);
     const int max = static_cast<int>(eBuildingType::templeZeus);
@@ -91,6 +101,7 @@ bool eBuilding::sFlatBuilding(const eBuildingType bt) {
            bt == eBuildingType::vine ||
            bt == eBuildingType::park ||
            bt == eBuildingType::avenue ||
+           bt == eBuildingType::boulevard ||
            bt == eBuildingType::oliveTree ||
            bt == eBuildingType::orangeTree ||
            bt == eBuildingType::cattle ||
@@ -173,6 +184,8 @@ bool eBuilding::sTimedBuilding(const eBuildingType bt) {
     if(bt == eBuildingType::placeholder) return false;
     if(bt == eBuildingType::templeTile) return false;
     if(bt == eBuildingType::templeMonument) return false;
+    if(bt == eBuildingType::templeGrandStatue) return false;
+    if(bt == eBuildingType::templeObelisk) return false;
     if(bt == eBuildingType::templeStatue) return false;
     if(bt == eBuildingType::wall) return false;
     if(bt == eBuildingType::gatehouse) return false;
@@ -221,6 +234,7 @@ bool eBuilding::sAttackable(const eBuildingType bt) {
     if(bt == eBuildingType::placeholder) return false;
     if(bt == eBuildingType::park) return false;
     if(bt == eBuildingType::avenue) return false;
+    if(bt == eBuildingType::boulevard) return false;
     if(bt == eBuildingType::palaceTile) return false;
     if(bt == eBuildingType::godMonumentTile) return false;
     if(bt == eBuildingType::bridge) return false;
@@ -294,6 +308,18 @@ std::string eBuilding::sNameForBuilding(eBuilding* const b) {
         }
         return eLanguage::zeusText(group, string);
     } break;
+    case eBuildingType::templePoseidon:
+        // Atlantean cities build the Citadel of Poseidon
+        if(b->getBoard().atlantean(b->cityId())) {
+            return eLanguage::zeusText(28, 98);
+        }
+        break;
+    case eBuildingType::triremeWharf:
+        // Atlantean cities build a Frigate Wharf (Poseidon manual)
+        if(b->getBoard().atlantean(b->cityId())) {
+            return eLanguage::zeusText(28, 164);
+        }
+        break;
     default:
         break;
     }
@@ -726,6 +752,9 @@ std::string eBuilding::sNameForBuilding(const eBuildingType type) {
     case eBuildingType::avenue:
         string = 118;
         break;
+    case eBuildingType::boulevard:
+        string = 126;
+        break;
 
     case eBuildingType::bench:
         string = 127;
@@ -794,6 +823,8 @@ std::string eBuilding::sNameForBuilding(const eBuildingType type) {
     case eBuildingType::godMonumentTile:
     case eBuildingType::temple:
     case eBuildingType::templeTile:
+    case eBuildingType::templeGrandStatue:
+    case eBuildingType::templeObelisk:
     case eBuildingType::templeStatue:
     case eBuildingType::templeMonument:
     case eBuildingType::templeAltar:
@@ -818,7 +849,8 @@ void eBuilding::sInfoText(eBuilding* const b,
                           std::string& title,
                           std::string& info,
                           std::string& employmentInfo,
-                          std::string& additionalInfo) {
+                          std::string& additionalInfo,
+                          int* const textGroup) {
     if(!b) return;
     auto& board = b->getBoard();
     const auto cid = b->cityId();
@@ -1897,6 +1929,9 @@ void eBuilding::sInfoText(eBuilding* const b,
     case eBuildingType::avenue:
         group = 135;
         break;
+    case eBuildingType::boulevard:
+        group = 136;
+        break;
     case eBuildingType::bench:
         group = 137;
         titleString = 0;
@@ -2080,6 +2115,19 @@ void eBuilding::sInfoText(eBuilding* const b,
         } else {
             employmentInfoString = 3;
         }
+        // Atlantean Tower: Atlantean Fire status (original texts)
+        auto& board = b->getBoard();
+        const auto cid = b->cityId();
+        if(board.atlantean(cid)) {
+            const auto t = static_cast<eTower*>(b);
+            if(t->atlanteanFire()) {
+                additionalInfoString = 15; // equipped
+            } else if(board.resourceCount(cid, eResourceType::orichalc) > 0) {
+                additionalInfoString = 14; // waiting for a delivery
+            } else {
+                additionalInfoString = 12; // mine and refine orichalc
+            }
+        }
     } break;
     case eBuildingType::artisansGuild: {
         group = 171;
@@ -2132,6 +2180,12 @@ void eBuilding::sInfoText(eBuilding* const b,
             infoString = 15;
         }
         additionalInfoString = 1;
+        if(t->getBoard().atlantean(t->cityId())) {
+            // the Frigate Wharf texts follow the trireme ones, 21 later
+            employmentInfoString += 21;
+            infoString += 21;
+            additionalInfoString += 21;
+        }
     } break;
     case eBuildingType::growersLodge: {
         const auto gl = static_cast<eGrowersLodge*>(b);
@@ -2275,6 +2329,7 @@ void eBuilding::sInfoText(eBuilding* const b,
     const int g = employmentInfoGroup == -1 ? group : employmentInfoGroup;
     employmentInfo = eLanguage::zeusText(g, employmentInfoString);
     additionalInfo = eLanguage::zeusText(group, additionalInfoString);
+    if(textGroup) *textGroup = group;
 }
 
 eTile* eBuilding::tileNeighbour(const eMoveDirection o,
@@ -2342,7 +2397,7 @@ void eBuilding::incTime(const int by) {
     if(dead()) return;
     auto& b = getBoard();
     mTime += by;
-    if(mBlessTime > 0) {
+    if(mBlessTime > 0 && !(blessed() && blessingLastsUntilUsed())) {
         mBlessTime -= by;
         if(mBlessTime <= 0) {
             mBlessed = 0;
@@ -2368,42 +2423,8 @@ void eBuilding::incTime(const int by) {
                 setOnFire(false);
             }
         }
-    } else if(eRand::rand() % (eNumbers::sMaintenanceDecrementPeriod/by) == 0) {
-        if(!isEmptyHome()) {
-            mMaintance = std::max(0, mMaintance - 1);
-        }
-    } else if(!isEmptyHome()) {
-        const auto pid = playerId();
-        const auto diff = b.difficulty(pid);
-        const int fireRisk = eDifficultyHelpers::fireRisk(diff, mType);
-        if(fireRisk && by && sFlammable(type())) {
-            const double pm = eNumbers::sFireRiskPeriodMultiplier;
-            const double pbi = eNumbers::sFireRiskPeriodBaseIncrement;
-            const double pe = eNumbers::sFireRiskPeriodExponent;
-            const int m4 = pm*pow(pbi + mMaintance, pe);
-            const int firePeriod = m4/(by*fireRisk);
-            if(firePeriod && eRand::rand() % firePeriod == 0) {
-                setOnFire(true);
-                eEventData ed(cityId());
-                ed.fTile = centerTile();
-                b.event(eEvent::fire, ed);
-            }
-        }
-        const int damageRisk = eDifficultyHelpers::damageRisk(diff, mType);
-        if(damageRisk && by) {
-            const double pm = eNumbers::sCollapseRiskPeriodMultiplier;
-            const double pbi = eNumbers::sCollapseRiskPeriodBaseIncrement;
-            const double pe = eNumbers::sCollapseRiskPeriodExponent;
-            const int m4 = pm*pow(pbi + mMaintance, pe);
-            const int damagePeriod = m4/(by*damageRisk);
-            if(damagePeriod && eRand::rand() % damagePeriod == 0) {
-                eEventData ed(cityId());
-                ed.fTile = centerTile();
-                b.event(eEvent::collapse, ed);
-                collapse();
-                return;
-            }
-        }
+    } else {
+        if(riskCycle(by)) return;
     }
     timeChanged(by);
 }
@@ -2591,7 +2612,11 @@ std::vector<eTile*> eBuilding::neighbours() const {
 }
 
 void eBuilding::setBlessed(const double b) {
-    mBlessTime = 30000;
+    setBlessed(b, 30000);
+}
+
+void eBuilding::setBlessed(const double b, const int time) {
+    mBlessTime = time;
     mBlessed = b;
 }
 
@@ -2653,6 +2678,11 @@ void eBuilding::read(eReadStream& src) {
     src >> mBlessed;
     src >> mBlessTime;
     src >> mOnFire;
+    if(src.formatVersion() >= eFileFormat::buildingRiskCounters) {
+        src >> mDamageCounter;
+        src >> mFireCounter;
+        src >> mRiskCycle;
+    }
 }
 
 void eBuilding::write(eWriteStream& dst) const {
@@ -2677,6 +2707,9 @@ void eBuilding::write(eWriteStream& dst) const {
     dst << mBlessed;
     dst << mBlessTime;
     dst << mOnFire;
+    dst << mDamageCounter;
+    dst << mFireCounter;
+    dst << mRiskCycle;
 }
 
 void eBuilding::setIOID(const int id) {
@@ -2687,15 +2720,106 @@ void eBuilding::setHP(const int hp) {
     mHp = hp;
 }
 
+// A building's appeal is the highest appeal over its footprint (original
+// exe 0x004842A0, documented by zeus-poseidon-arm64 docs/engine/terrain.md
+// 7.4, "verified"), plus 10 when a tile sharing an edge with the footprint
+// is water: the building creator 0x00493E70 sets +0xD0 from 0x004A4500,
+// which checks tile flag 4 (water) on the ring in table 0x005F1680.
 double eBuilding::appeal() const {
     const auto& b = getBoard();
     const auto& tiles = tilesUnder();
     if(tiles.empty()) return 0;
-    double sum = 0;
+    double best = -1e9;
+    bool water = false;
     for(const auto t : tiles) {
         const int dx = t->dx();
         const int dy = t->dy();
-        sum += b.appeal(dx ,dy);
+        best = std::max(best, b.appeal(dx ,dy));
+        if(water) continue;
+        for(const auto n : {t->topLeft<eTile>(), t->topRight<eTile>(),
+                            t->bottomLeft<eTile>(), t->bottomRight<eTile>()}) {
+            if(n && n->hasWater()) {
+                water = true;
+                break;
+            }
+        }
     }
-    return sum/tiles.size();
+    if(water) best += 10;
+    return best;
+}
+
+void eBuilding::spendBlessing(const double amount) {
+    if(!blessed()) return;
+    mBlessed -= amount;
+    if(mBlessed <= 0.01) {
+        mBlessed = 0;
+        mBlessTime = 0;
+    }
+}
+
+// Original fire and collapse (exe 0x00492260, step 44, every cycle):
+// - the damage counter grows by the Model damage risk (column h); at 1000
+//   the building collapses;
+// - on a 1-in-8 draw the fire counter grows by the fire risk (column g)
+//   times 1-5; at 1000 the building catches fire;
+// - houses with at most one resident keep no damage, empty houses no fire;
+//   maintenance walkers lower both by 50 (see provide).
+// Returns true when the building collapsed.
+bool eBuilding::riskCycle(const int by) {
+    auto& b = getBoard();
+    const int cycle = (365*eNumbers::sDayLength)/(12*16);
+    mRiskCycle += by;
+    while(mRiskCycle >= cycle) {
+        mRiskCycle -= cycle;
+        const bool house = mType == eBuildingType::commonHouse ||
+                           mType == eBuildingType::eliteHousing;
+        const int people = house ? static_cast<const eHouseBase*>(this)->people() : 0;
+        const auto pid = playerId();
+        const auto diff = b.difficulty(pid);
+
+        const int damageRisk = eDifficultyHelpers::damageRisk(diff, mType);
+        mDamageCounter += damageRisk;
+        if(house && people <= 1) mDamageCounter = 0;
+        if(mDamageCounter >= 1000) {
+            mDamageCounter = 0;
+            eEventData ed(cityId());
+            ed.fTile = centerTile();
+            b.event(eEvent::collapse, ed);
+            collapse();
+            return true;
+        }
+
+        int fireRisk = eDifficultyHelpers::fireRisk(diff, mType);
+        if(mType == eBuildingType::eliteHousing) {
+            // manors and estates burn less (Model FRI by elite level)
+            const auto h = static_cast<const eHouseBase*>(this);
+            const int d = static_cast<int>(diff);
+            static const int sManor[5] = {5, 10, 10, 12, 15};
+            static const int sEstate[5] = {2, 5, 5, 8, 10};
+            if(h->level() == 3) fireRisk = sManor[d];
+            else if(h->level() >= 4) fireRisk = sEstate[d];
+        }
+        {
+            // Forge of Hephaestus finished: no risk of fire (exe 0x00433D50)
+            const auto s = b.sanctuary(cityId(), eGodType::hephaestus);
+            if(s && s->active()) fireRisk = 0;
+        }
+        if(!sFlammable(mType)) fireRisk = 0;
+        if(eRand::rand() % 8 == 0) {
+            if((house && people <= 0) || fireRisk == 0) {
+                mFireCounter = 0;
+            } else {
+                mFireCounter += fireRisk*(1 + eRand::rand() % 5);
+            }
+        }
+        if(mFireCounter >= 1000) {
+            mFireCounter = 0;
+            setOnFire(true);
+            eEventData ed(cityId());
+            ed.fTile = centerTile();
+            b.event(eEvent::fire, ed);
+        }
+        mMaintance = std::clamp(100 - std::max(mDamageCounter, mFireCounter)/10, 0, 100);
+    }
+    return false;
 }

@@ -56,3 +56,7 @@ std::shared_ptr<eTexture> eBinaryImageLoader::load(SDL_Renderer* const r,
 
     return tex;
 }
+
+bool eBinaryImageLoader::has(const std::string& path) {
+    return eBinaryDataMap.find(path) != eBinaryDataMap.end();
+}

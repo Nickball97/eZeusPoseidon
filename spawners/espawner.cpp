@@ -29,6 +29,14 @@ void eSpawner::write(eWriteStream& dst) const {
 }
 
 void eSpawner::incTime(const int by) {
+    // boar and deer: a new one is born a month after one was killed, so
+    // the clock only runs while the herd is short (Citadel of Poseidon)
+    const bool game = type() == eBannerTypeS::boar ||
+                      type() == eBannerTypeS::deer;
+    if(game && mCount >= mMaxCount) {
+        mTime = 0;
+        return;
+    }
     mTime += by;
     if(mTime >= mSpawnPeriod && mCount < mMaxCount) {
         spawn(tile());

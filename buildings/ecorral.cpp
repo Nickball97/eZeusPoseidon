@@ -16,6 +16,8 @@ eCorral::eCorral(eGameBoard& board,
                           4, 4, 25, eResourceType::meat,
                           cid) {
     eGameTextures::loadCorral();
+    // holds at most 6 loads before it stops (original exe 0x004F9E90)
+    setMaxResource(6);
 }
 
 std::shared_ptr<eTexture> eCorral::getTexture(const eTileSize size) const {
@@ -115,23 +117,38 @@ void eCorral::timeChanged(const int by) {
     const double eff = effectiveness();
     const double newP = std::max(0., mProcessing - by*eff);
     if(newP == 0. && mProcessing > 0) {
-        addProduced(eResourceType::meat, 3);
+        // each cow gives 2 loads of meat (Citadel of Poseidon)
+        addProduced(eResourceType::meat, useBlessing(2));
     }
 
     mProcessing = newP;
 
-    if(mNCattle < 3) {
-        mTakeWait += by*eff;
-        if(mTakeWait > eNumbers::sCorralTakePeriod) {
+    // original exe 0x004F9960: a fetcher leaves every 1/4/8/16/32 cycles
+    // by staffing (full, 75%+, 50%+, 25%+, any), at most 2 out at once and
+    // never more cattle held and on the way than 3
+    mFetchers.erase(std::remove_if(mFetchers.begin(), mFetchers.end(),
+                                   [](const stdptr<eCharacter>& c) {
+        return !c || c->dead();
+    }), mFetchers.end());
+    const int out = static_cast<int>(mFetchers.size());
+    const double filled = vacanciesFilledFraction();
+    if(eff > 0. && filled > 0. && out < 2 && mNCattle + out < 3) {
+        const int cycles = filled >= 1. ? 1 :
+                           filled >= 0.75 ? 4 :
+                           filled >= 0.5 ? 8 :
+                           filled >= 0.25 ? 16 : 32;
+        const int cycle = (365*eNumbers::sDayLength)/(12*16);
+        mTakeWait += by;
+        if(mTakeWait > cycles*cycle) {
             mTakeWait = 0;
             takeCattle();
         }
     }
     if(mNCattle > 0) {
         mKillWait += by*eff;
-        if(mKillWait > eNumbers::sCorralKillPeriod) {
+        // waits until the slaughter in progress is done (original)
+        if(mKillWait > eNumbers::sCorralKillPeriod && killCattle()) {
             mKillWait = 0;
-            killCattle();
         }
     }
     mReplaceWait += by*eff;
@@ -164,6 +181,7 @@ bool eCorral::takeCattle() {
     if(mNCattle >= 3) return false;
     auto& board = getBoard();
     const auto c = e::make_shared<eButcher>(board);
+    mFetchers.push_back(c.get());
     const auto cid = cityId();
     c->setBothCityIds(cid);
     const auto tile = centerTile();

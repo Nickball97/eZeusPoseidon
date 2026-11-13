@@ -42,3 +42,15 @@ void eMonsterUnleashedEvent::trigger() {
 std::string eMonsterUnleashedEvent::longName() const {
     return eLanguage::zeusText(182, 1);
 }
+
+bool eMonsterUnleashedEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    chooseMonster();
+    if(!valid()) return false;
+    bool validGod = false;
+    const auto god = eMonster::sMonsterSender(mMonster, &validGod);
+    if(!validGod) return false;
+    ed.fGod = god;
+    ed.fMonster = mMonster;
+    msg = eMessages::oracleMessage(eMessages::godKey(god) + "_unleashes_monster");
+    return true;
+}

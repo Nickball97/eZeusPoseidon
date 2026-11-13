@@ -7,6 +7,11 @@
 struct eHeat {
     int fValue;
     int fRange;
+    // Original Zeus desirability falloff (Model data columns STP and SZE):
+    // the value changes by fStepSize every fStep tiles of distance.
+    // fStep == 0 keeps eZeus's older smooth fade.
+    int fStep = 0;
+    int fStepSize = 0;
 };
 
 class eHeatMap {

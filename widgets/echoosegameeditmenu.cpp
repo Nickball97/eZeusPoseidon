@@ -15,6 +15,9 @@
 #include "estringhelpers.h"
 #include "elanguage.h"
 #include "egamedir.h"
+#include "textures/egametextures.h"
+
+#include <cmath>
 
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -38,6 +41,7 @@ bool readPakGlossary(const std::string& filename,
     in.readVersion();
     const auto version = in.version();
     const bool poseidon = version == eZeusFileVersion::poseidon_2_0;
+    glossary.fPoseidon = poseidon;
     uint8_t bitmapId;
     if(poseidon) {
         in.seek(836249);
@@ -75,8 +79,13 @@ bool readPakGlossary(const std::string& filename,
     return true;
 }
 
-void eChooseGameEditMenu::initialize(const bool editor) {
-    eMainMenuBase::initialize();
+void eChooseGameEditMenu::initialize(const bool editor, const bool custom) {
+    const auto& texs = eGameTextures::interface()[
+        static_cast<int>(resolution().uiScale())];
+    // the adventure lists use the original's tree-and-sea picture, whose
+    // frames for the adventure's picture and description are painted in
+    if(editor) eMainMenuBase::initialize();
+    else eMainMenuBase::initialize(texs.fCampaignImage);
 
     std::vector<eCampaignGlossary> glossaries;
     {
@@ -94,25 +103,41 @@ void eChooseGameEditMenu::initialize(const bool editor) {
         }
     }
     {
-        std::function<void(std::string)> procesFolder;
-        procesFolder = [&](const std::string& folder) {
+        // adventures in subfolders are the player's own (the original lists
+        // them under Custom Adventures); the game's are at the top level
+        std::function<void(std::string, bool)> procesFolder;
+        procesFolder = [&](const std::string& folder, const bool nested) {
             for(const auto& entry : fs::directory_iterator(folder)) {
                 const bool dir = entry.is_directory();
                 const auto path = entry.path();
                 const std::string pathStr = path.u8string();
                 if(dir) {
-                    procesFolder(pathStr);
+                    procesFolder(pathStr, true);
                     continue;
                 }
                 const auto ext = pathStr.substr(pathStr.size() - 3);
                 if(ext != "pak") continue;
                 eCampaignGlossary glossary;
                 const bool r = readPakGlossary(pathStr, glossary);
+                glossary.fCustom = nested;
                 if(r) glossaries.push_back(glossary);
             }
         };
         const auto folder = eGameDir::pakAdventuresDir();
-        procesFolder(folder);
+        procesFolder(folder, false);
+    }
+    if(!editor) {
+        // Adventures: the original game's, for the game picked on the first
+        // screen (Zeus or Poseidon); Custom Adventures: eZeus's own
+        const bool poseidon = window()->poseidon();
+        std::vector<eCampaignGlossary> kept;
+        for(const auto& g : glossaries) {
+            const bool own = !g.fIsPak || g.fCustom;
+            const bool sameGame = !g.fIsPak || g.fPoseidon == poseidon;
+            const bool keep = sameGame && (custom ? own : !own);
+            if(keep) kept.push_back(g);
+        }
+        glossaries = kept;
     }
 
     const auto iww = new eWidget(window());
@@ -138,10 +163,21 @@ void eChooseGameEditMenu::initialize(const bool editor) {
     title->setHugeFontSize();
     title->setSmallPadding();
     title->setText(editor ? eLanguage::zeusText(287, 3) :
+                   custom ? eLanguage::zeusText(293, 5) :
                             eLanguage::zeusText(293, 9));
+    if(!editor) title->setLightFontColor(); // white titles on the home page
     title->fitContent();
     iw->addWidget(title);
     title->align(eAlignment::hcenter);
+    if(!editor) { // "Choose an Adventure" under the title, as in the original
+        const auto sub = new eLabel(window());
+        sub->setTinyFontSize();
+        sub->setNoPadding();
+        sub->setText(eLanguage::zeusText(287, 5));
+        sub->setLightFontColor();
+        sub->fitContent();
+        iw->addWidget(sub);
+    }
 
     const auto scrollCont = new eScrollWidgetComplete(window());
     iw->addWidget(scrollCont);
@@ -278,8 +314,10 @@ void eChooseGameEditMenu::initialize(const bool editor) {
 
     const auto cButton = new eCancelButton(window());
     buttons2W->addWidget(cButton);
-    cButton->setPressAction([this]() {
-        window()->showMainMenu();
+    cButton->setPressAction([this, editor]() {
+        // back to where the list was opened from
+        if(editor) window()->showGameChooser();
+        else window()->showMainMenu();
     });
 
     const auto proceedW = new eWidget(window());
@@ -290,6 +328,7 @@ void eChooseGameEditMenu::initialize(const bool editor) {
     proceedLabel->setSmallPadding();
     proceedLabel->setText(editor ? eLanguage::zeusText(287, 2) :
                                    eLanguage::zeusText(287, 6));
+    if(!editor) proceedLabel->setLightFontColor();
     proceedLabel->fitContent();
     proceedW->addWidget(proceedLabel);
 
@@ -389,6 +428,42 @@ void eChooseGameEditMenu::initialize(const bool editor) {
     addWidget(iww);
     iww->align(eAlignment::center);
 
+    if(!editor && wideBackground()) {
+        // Lay the list window and the adventure's picture and description
+        // into the original's picture: the list on the left, the picture
+        // and the text inside the two frames painted on the right
+        // (Zeus_FE_CampaignSelection, 1920x1080: picture frame 896-1672 x
+        // 142-585, description frame 896-1672 x 615-934).
+        iww->removeWidget(chooseW);
+        addWidget(chooseW);
+        const int gapX = picX(880) - picX(860);
+        chooseW->move(picX(880) - chooseW->width() - gapX,
+                      picY(540) - chooseW->height()/2);
+
+        bitmapWW->removeWidget(mBitmap);
+        addWidget(mBitmap);
+        // the adventure's picture fills the red area inside the frame
+        // (x 910-1658, y 154-573, almost exactly 16:9 like the pictures)
+        mBitmap->setFill(true);
+        mBitmap->resize(picX(1658) - picX(910), picY(573) - picY(154));
+        mBitmap->move(picX(910), picY(154));
+
+        descW->removeWidget(descIW);
+        addWidget(descIW);
+        const int dx0 = picX(896 + 40);
+        const int dx1 = picX(1672 - 40);
+        const int dy0 = picY(615 + 28);
+        const int dy1 = picY(934 - 28);
+        descIW->resize(dx1 - dx0, dy1 - dy0);
+        descIW->move(dx0, dy0);
+        mDesc->setWrapWidth(descIW->width());
+        // pale text in the painted dark box, as in the original
+        mDesc->setFontColor(eFontColor::panel);
+
+        removeWidget(iww);
+        iww->deleteLater();
+    }
+
     {
         const auto scrollArea = new eWidget(window());
 
@@ -399,24 +474,27 @@ void eChooseGameEditMenu::initialize(const bool editor) {
             w->setTinyFontSize();
             w->setNoPadding();
             w->setText(g.fTitle);
+            // pale in the dark list box, as in the original
+            w->setFontColor(eFontColor::panel);
             w->fitContent();
+            // white marks the item under the mouse or selected, as in the original
             w->setMouseEnterAction([w]() {
-                w->setYellowFontColor();
+                w->setLightFontColor();
             });
             w->setMouseLeaveAction([w, selected]() {
                 const auto s = *selected;
-                if(s != w) w->setLightFontColor();
+                if(s != w) w->setFontColor(eFontColor::panel);
             });
             w->setPressAction([selected, w, g, this]() {
                 const auto s = *selected;
-                if(s) s->setLightFontColor();
+                if(s) s->setFontColor(eFontColor::panel);
                 setGlossary(g);
-                w->setYellowFontColor();
+                w->setLightFontColor();
                 *selected = w;
             });
             if(first) {
                 setGlossary(g);
-                w->setYellowFontColor();
+                w->setLightFontColor();
                 *selected = w;
                 first = false;
             }

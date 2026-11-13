@@ -57,6 +57,7 @@ public:
     static void loadSheep();
     static void loadHorse();
     static void loadShepherd();
+    static void loadPriest();
     static void loadMarbleMiner();
     static void loadSilverMiner();
     static void loadArcher();
@@ -170,6 +171,7 @@ public:
     static void loadSpear();
     static void loadBlackArrow();
     static void loadArrow();
+    static void loadAtlanteanFire();
 
     static void loadBless();
     static void loadCurse();
@@ -230,6 +232,7 @@ public:
     static void loadWatchpost();
     static void loadRoadblock();
     static void loadBridge();
+    static void loadPoseidonBridge();
     static void loadPalace();
     static void loadPalaceTiles();
     static void loadSanctuary();
@@ -331,6 +334,7 @@ public:
 
     static void loadZeusSanctuary();
     static void loadPoseidonSanctuary();
+    static void loadPoseidonGrandStatue();
     static void loadPoseidonHerosHall();
 
     static void loadHoplitePoseidon();

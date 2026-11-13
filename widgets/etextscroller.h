@@ -2,6 +2,7 @@
 #define ETEXTSCROLLER_H
 
 #include "ewidget.h"
+#include "efontcolor.h"
 
 class eLabel;
 class eFramedWidget;
@@ -17,6 +18,8 @@ public:
     void setTinyTextFontSize();
     void setSmallTextFontSize();
     void setTinyTextPadding();
+    // colour of the text (pale in the darker boxes of the mission screens)
+    void setTextColor(const eFontColor c);
 private:
     eFramedWidget* mBg = nullptr;
     eLabel* mTextLabel = nullptr;

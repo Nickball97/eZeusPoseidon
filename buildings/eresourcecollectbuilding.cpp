@@ -5,6 +5,7 @@
 #include "textures/egametextures.h"
 #include "engine/egameboard.h"
 #include "enumbers.h"
+#include "fileIO/efileformat.h"
 
 #include <algorithm>
 
@@ -37,7 +38,9 @@ eResourceCollectBuilding::eResourceCollectBuilding(
 }
 
 eResourceCollectBuilding::~eResourceCollectBuilding() {
-    if(mCollector) mCollector->kill();
+    for(const auto& c : mCollectors) {
+        if(c) c->kill();
+    }
 }
 
 std::shared_ptr<eTexture> eResourceCollectBuilding::getTexture(const eTileSize size) const {
@@ -129,7 +132,7 @@ std::vector<eOverlay> eResourceCollectBuilding::
 void eResourceCollectBuilding::timeChanged(const int by) {
     eResourceBuildingBase::timeChanged(by);
     if(enabled()) {
-        if(mRawCount > 0) {
+        if(mRawCount >= mRawPerLoad) {
             mProcessTime += by*effectiveness();
             if(mProcessTime > mProcessDuration) {
                 mProcessTime -= mProcessDuration;
@@ -137,18 +140,22 @@ void eResourceCollectBuilding::timeChanged(const int by) {
                 if(type == eResourceType::silver) {
                     auto& brd = getBoard();
                     const auto pid = playerId();
-                    brd.incDrachmas(pid, eNumbers::sMintDrachmasPerSilver,
-                                    eFinanceTarget::minedSilver);
-                    mRawCount--;
+                    // blessed: "400 drachmas once instead of only 100"
+                    const bool blessedLoad = useBlessing(1) > 1;
+                    const int dr = eNumbers::sMintDrachmasPerSilver +
+                                   (blessedLoad ? 300 : 0);
+                    brd.incDrachmas(pid, dr, eFinanceTarget::minedSilver);
+                    mRawCount -= mRawPerLoad;
                 } else {
-                    const int c = addProduced(type, 1);
-                    mRawCount -= c;
+                    // a blessed building turns this load into several
+                    const int c = addProduced(type, useBlessing(1));
+                    if(c > 0) mRawCount -= mRawPerLoad;
                 }
                 if(mRawCount <= mRawCountCollect) enableSpawn();
             }
         }
 
-        if(!mCollector && mSpawnEnabled) {
+        if(collectorCount() < mMaxCollectors && mSpawnEnabled) {
             mSpawnTime += by*effectiveness();
             if(mSpawnTime > mWaitTime) {
                 mSpawnTime -= mWaitTime;
@@ -161,9 +168,18 @@ void eResourceCollectBuilding::timeChanged(const int by) {
 void eResourceCollectBuilding::read(eReadStream& src) {
     eResourceCollectBuildingBase::read(src);
     src >> mCollectedAction;
-    src.readCharacter(&getBoard(), [this](eCharacter* const c) {
-        mCollector = static_cast<eResourceCollectorBase*>(c);
-    });
+    const bool multi = src.formatVersion() >= eFileFormat::multiCollectors;
+    int nc = 1;
+    if(multi) src >> nc;
+    mCollectors.clear();
+    for(int i = 0; i < nc; i++) {
+        src.readCharacter(&getBoard(), [this](eCharacter* const c) {
+            if(!c) return;
+            mCollectors.push_back(static_cast<eResourceCollectorBase*>(c));
+        });
+    }
+    const int rawCountCollect = mRawCountCollect;
+    const int waitTime = mWaitTime;
     src >> mSpawnEnabled;
     src >> mAddResource;
     src >> mRawCount;
@@ -173,12 +189,26 @@ void eResourceCollectBuilding::read(eReadStream& src) {
     src >> mProcessTime;
     src >> mWaitTime;
     src >> mSpawnTime;
+    if(!multi) {
+        // Older saves counted whole loads and used the old timings.
+        mRawCount *= mRawPerLoad;
+        mRawCountCollect = rawCountCollect;
+        mWaitTime = waitTime;
+        mSpawnTime = std::min(mSpawnTime, double(mWaitTime));
+    }
 }
 
 void eResourceCollectBuilding::write(eWriteStream& dst) const {
     eResourceCollectBuildingBase::write(dst);
     dst << mCollectedAction;
-    dst.writeCharacter(mCollector);
+    {
+        std::vector<eResourceCollectorBase*> cs;
+        for(const auto& c : mCollectors) {
+            if(c) cs.push_back(c.get());
+        }
+        dst << static_cast<int>(cs.size());
+        for(const auto c : cs) dst.writeCharacter(c);
+    }
     dst << mSpawnEnabled;
     dst << mAddResource;
     dst << mRawCount;
@@ -196,7 +226,7 @@ bool eResourceCollectBuilding::spawn() {
     const auto t = centerTile();
     const auto c = mCharGenerator();
     c->setBothCityIds(cityId());
-    mCollector = c.get();
+    mCollectors.push_back(c.get());
     c->changeTile(t);
 
     const auto a = e::make_shared<eCollectResourceAction>(
@@ -211,6 +241,14 @@ bool eResourceCollectBuilding::spawn() {
     }
     c->setAction(a);
     return true;
+}
+
+int eResourceCollectBuilding::collectorCount() {
+    mCollectors.erase(std::remove_if(mCollectors.begin(), mCollectors.end(),
+                                     [](const stdptr<eResourceCollectorBase>& c) {
+        return !c;
+    }), mCollectors.end());
+    return mCollectors.size();
 }
 
 void eResourceCollectBuilding::addRaw() {

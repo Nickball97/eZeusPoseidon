@@ -7,6 +7,7 @@
 #include "widgets/elabel.h"
 
 #include "elanguage.h"
+#include "textures/egametextures.h"
 
 #include <algorithm>
 
@@ -103,6 +104,8 @@ void eCommonHouseInfoWidget::initialize(eHouseBase* const house) {
     const auto cw = centralWidget();
     const auto msgLabel = new eLabel(window());
     msgLabel->setSmallFontSize();
+    msgLabel->setNoPadding();
+    msgLabel->setTextAlignment(eAlignment::left | eAlignment::top);
     msgLabel->setWidth(cw->width() - 2*p);
     msgLabel->setWrapWidth(msgLabel->width());
     msgLabel->setText(msg);
@@ -146,36 +149,60 @@ void eCommonHouseInfoWidget::initialize(eHouseBase* const house) {
             w->addWidget(wid);
         }
 
-        w->setWidth(cw->width());
-        w->layoutHorizontally();
+        // the original lines its goods up in columns of a quarter of the
+        // width, starting from the left
+        const int colW = cw->width()/4;
+        int x = 0;
+        for(const auto wid : wids) {
+            wid->setX(x);
+            x += colW;
+        }
         w->fitContent();
         cw->addWidget(w);
         return w;
     };
 
     {
+        // as in the original: food, fleece, oil (and wine) on the first
+        // row, armor and horses under them in an elite house
         const auto food = generateSupply(eResourceType::food, house->food());
         const auto fleece = generateSupply(eResourceType::fleece, house->fleece());
         const auto oil = generateSupply(eResourceType::oliveOil, house->oil());
-
-        const auto w = generateSupplyWidget({food, fleece, oil});
-        w->setY(msgLabel->y() + msgLabel->height() + p);
 
         if(house->type() == eBuildingType::eliteHousing) {
             const auto eh = static_cast<eEliteHousing*>(house);
 
             const auto wine = generateSupply(eResourceType::wine, eh->wine());
+            const auto w = generateSupplyWidget({food, fleece, oil, wine});
+            w->setY(msgLabel->y() + msgLabel->height() + p);
+
             const auto arms = generateSupply(eResourceType::armor, eh->arms());
             const auto horse = generateSupply(eResourceType::horse, eh->horses());
-
-            const auto ww = generateSupplyWidget({wine, arms, horse});
-            ww->setY(w->y() + 3*p);
+            const auto ww = generateSupplyWidget({arms, horse});
+            ww->setY(w->y() + w->height());
+        } else {
+            const auto w = generateSupplyWidget({food, fleece, oil});
+            w->setY(msgLabel->y() + msgLabel->height() + p);
         }
     }
 
+    // the original's panel: a resident figure on the left, the lines
+    // beside it left-aligned
+    int iRes;
+    int mult;
+    iResAndMult(iRes, mult);
+    const auto& coll = eGameTextures::interface()[iRes];
+    const auto pIcon = new eLabel(window());
+    pIcon->setNoPadding();
+    pIcon->setTexture(coll.fPopulationTopMenu);
+    pIcon->fitContent();
+    fw->addWidget(pIcon);
+    const int textX = pIcon->width() + p;
+    const int textW = fw->width() - textX;
+
     const auto occ = new eLabel(window());
     occ->setSmallFontSize();
-    occ->setSmallPadding();
+    occ->setNoPadding();
     auto occstr = std::to_string(house->people()) + " " +
                   eLanguage::zeusText(127, 15);
     const int vacs = house->vacancies();
@@ -186,15 +213,16 @@ void eCommonHouseInfoWidget::initialize(eHouseBase* const house) {
     occ->setText(occstr);
     occ->fitContent();
     fw->addWidget(occ);
-    occ->align(eAlignment::hcenter);
+    occ->setX(textX);
 
     const auto taxLabel = new eLabel(window());
     {
         const int paid = house->paidTaxes();
         taxLabel->setSmallFontSize();
         taxLabel->setTinyPadding();
-        taxLabel->setWidth(fw->width());
-        taxLabel->setWrapWidth(taxLabel->width());
+        taxLabel->setWidth(textW);
+        taxLabel->setWrapWidth(textW);
+        taxLabel->setTextAlignment(eAlignment::left | eAlignment::top);
         std::string taxStr;
         if(paid) {
             taxStr = eLanguage::zeusText(127, 19);
@@ -207,6 +235,7 @@ void eCommonHouseInfoWidget::initialize(eHouseBase* const house) {
         taxLabel->setText(taxStr);
         taxLabel->fitContent();
         fw->addWidget(taxLabel);
+        taxLabel->setX(textX);
         taxLabel->setY(occ->y() + occ->height());
     }
 
@@ -214,8 +243,9 @@ void eCommonHouseInfoWidget::initialize(eHouseBase* const house) {
     {
         satLabel->setSmallFontSize();
         satLabel->setTinyPadding();
-        satLabel->setWidth(fw->width());
-        satLabel->setWrapWidth(satLabel->width());
+        satLabel->setWidth(textW);
+        satLabel->setWrapWidth(textW);
+        satLabel->setTextAlignment(eAlignment::left | eAlignment::top);
         std::string satstr;
         if(type == eBuildingType::commonHouse) {
             const auto ch = static_cast<eSmallHouse*>(house);
@@ -229,6 +259,7 @@ void eCommonHouseInfoWidget::initialize(eHouseBase* const house) {
         satLabel->setText(satstr);
         satLabel->fitContent();
         fw->addWidget(satLabel);
+        satLabel->setX(textX);
         satLabel->setY(taxLabel->y() + taxLabel->height());
     }
 
@@ -236,11 +267,13 @@ void eCommonHouseInfoWidget::initialize(eHouseBase* const house) {
         const auto foodLabel = new eLabel(window());
         foodLabel->setSmallFontSize();
         foodLabel->setTinyPadding();
-        foodLabel->setWidth(fw->width());
-        foodLabel->setWrapWidth(foodLabel->width());
+        foodLabel->setWidth(textW);
+        foodLabel->setWrapWidth(textW);
+        foodLabel->setTextAlignment(eAlignment::left | eAlignment::top);
         foodLabel->setText(eLanguage::zeusText(127, 28));
         foodLabel->fitContent();
         fw->addWidget(foodLabel);
+        foodLabel->setX(textX);
         foodLabel->setY(satLabel->y() + satLabel->height());
     }
 }

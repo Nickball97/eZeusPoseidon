@@ -27,7 +27,8 @@ eMasonryShop::eMasonryShop(eGameBoard& board, const eCityId cid) :
     eGameTextures::loadMasonryShop();
     setAddResource(false);
     setRawInc(8);
-    setRawCountCollect(0);
+    // The hewer sets out when only 3 slabs are left (Citadel of Poseidon).
+    setRawCountCollect(3);
 }
 
 std::vector<eOverlay>

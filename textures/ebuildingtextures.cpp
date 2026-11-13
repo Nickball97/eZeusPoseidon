@@ -621,6 +621,8 @@
 
 #include "textures/espriteloader.h"
 
+#include <cmath>
+
 eBuildingTextures::eBuildingTextures(const int tileW, const int tileH,
                                      SDL_Renderer* const renderer) :
     fTileW(tileW), fTileH(tileH),
@@ -840,6 +842,8 @@ eBuildingTextures::eBuildingTextures(const int tileW, const int tileH,
     fAtlasMonuments(renderer),
 
     fPoseidonSanctuary(renderer),
+    fPoseidonGrandStatue(renderer),
+    fPoseidonGrandStatueWater(renderer),
     fPyramid(renderer),
     fPyramid2(renderer),
 
@@ -1981,6 +1985,14 @@ void eBuildingTextures::loadBridge() {
     for(int i = 77; i < 89; i++) {
         loader.load(77, i, fBridge);
     }
+    // Large Water Crossing pieces (0-7) are drawn on a 2x2-tile canvas;
+    // shift them so their own tile sits on the crossing tile
+    for(int i = 0; i < 8; i++) {
+        fBridge.getTexture(i)->setOffset(30, -20);
+    }
+    // lower ends are drawn from the last tile: one tile further up
+    fBridge.getTexture(3)->setOffset(59, -5);
+    fBridge.getTexture(4)->setOffset(1, -5);
 }
 
 void eBuildingTextures::loadPalaceTiles() {

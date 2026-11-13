@@ -26,6 +26,8 @@ public:
     bool hasHouse(eSmallHouse* const h) const;
     void removeHouse(eSmallHouse* const h);
     int houseCount() const { return mHouses.size(); }
+    // adds one house to this outbreak without spreading
+    void addHouse(eSmallHouse* const h);
     using eHouses = std::vector<eSmallHouse*>;
     const eHouses& houses() const { return mHouses; }
 

@@ -6,9 +6,13 @@
 #include "emovearoundaction.h"
 
 eSickDisgruntledAction::eSickDisgruntledAction(eCharacter* const c,
-                                               eSmallHouse* const ch) :
-    eActionWithComeback(c, ch ? ch->centerTile() : nullptr,
-                        eCharActionType::sickDisgruntledAction),
+                                               eBuilding* const ch) :
+    eSickDisgruntledAction(c, ch, eCharActionType::sickDisgruntledAction) {}
+
+eSickDisgruntledAction::eSickDisgruntledAction(eCharacter* const c,
+                                               eBuilding* const ch,
+                                               const eCharActionType type) :
+    eActionWithComeback(c, ch ? ch->centerTile() : nullptr, type),
     mBuilding(ch) {
     setFinishOnComeback(true);
 }
@@ -29,7 +33,7 @@ void eSickDisgruntledAction::read(eReadStream& src) {
     eActionWithComeback::read(src);
 
     src.readBuilding(&board(), [this](eBuilding* const b) {
-        mBuilding = static_cast<eSmallHouse*>(b);
+        mBuilding = b;
     });
     src >> mGoBackNext;
 }

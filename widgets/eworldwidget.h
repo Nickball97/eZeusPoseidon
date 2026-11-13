@@ -37,6 +37,7 @@ public:
     void openDialog(eWidget* const d) override;
 protected:
     bool keyPressEvent(const eKeyPressEvent& e) override;
+    void paintEvent(ePainter& p) override;
 private:
     void openRequestDialog();
     void openFulfillDialog();

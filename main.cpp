@@ -15,8 +15,20 @@
 
 #include "audio/emusic.h"
 #include "audio/esounds.h"
+#include "widgets/ecursors.h"
+
+#ifdef EZEUS_DEV_CHEATS
+void eInstallDevCrashHandler(); // edevcrash.cpp
+#endif
 
 bool init() {
+#ifdef EZEUS_DEV_CHEATS
+    eInstallDevCrashHandler();
+#endif
+    // Draw at the screen's real pixels when Windows enlarges programs
+    // (e.g. 125% display scaling); otherwise Windows stretches eZeus's
+    // picture and a 1920x1080 game no longer fits a 1920x1080 screen.
+    SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         printf("SDL could not initialize! SDL Error: %s\n",
                SDL_GetError());
@@ -39,6 +51,8 @@ bool init() {
                Mix_GetError());
         return false;
     }
+    // keep one channel for the mission narrator so game sounds never take it
+    Mix_ReserveChannels(1);
 
     if(TTF_Init()) {
         printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n",
@@ -153,6 +167,7 @@ int main() {
     eNumbers::sLoad();
     eSettings settings;
     settings.read();
+    settings.applyAudio();
     bool found = false;
     const auto checkTextureSize = [&found](const std::string& path,
                                            bool& setting) {
@@ -178,6 +193,7 @@ int main() {
         eMainWindow w;
         const bool i = w.initialize(settings);
         if(!i) return 1;
+        eCursors::load(); // the original's pointers, from zeus.exe
         const bool e = eGameTextures::initialize(w.renderer());
 
         if(e) r = w.exec();

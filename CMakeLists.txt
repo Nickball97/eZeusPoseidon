@@ -13,11 +13,18 @@ endif()
 
 include(FetchContent)
 
+# CMake 4 (e.g. the one bundled with Visual Studio 2026) refuses projects that
+# declare compatibility with CMake < 3.5, which the vendored freetype does.
+if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+endif()
+
 # Disable unnecessary SDL components (optional but recommended)
 set(SDL_SHARED ON CACHE BOOL "" FORCE)
 set(SDL_STATIC OFF CACHE BOOL "" FORCE)
 set(SDL_TEST OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_AVIF OFF)
+# AVIF is unused; the vendored decoder (dav1d) would need the NASM assembler.
+set(SDL2IMAGE_AVIF OFF CACHE BOOL "" FORCE)
 set(SDLTTF_VENDORED ON CACHE BOOL "" FORCE)
 if(MINGW)
     add_compile_options(-Wa,-mbig-obj)
@@ -74,6 +81,7 @@ add_executable(eZeus
     audio/esounds.h
     audio/esoundvector.cpp
     audio/esoundvector.h
+    audio/eaudiosettings.h
     buildings/allbuildings.h
     buildings/eaestheticsbuilding.cpp
     buildings/eaestheticsbuilding.h
@@ -239,6 +247,7 @@ add_executable(eZeus
     buildings/eshepherbuildingbase.h
     buildings/esmallhouse.cpp
     buildings/esmallhouse.h
+    buildings/ehousemodel.h
     buildings/estadium.cpp
     buildings/estadium.h
     buildings/estadiumrenderer.cpp
@@ -317,7 +326,11 @@ add_executable(eZeus
     buildings/sanctuaries/etemplealtarbuilding.h
     buildings/sanctuaries/etemplebuilding.cpp
     buildings/sanctuaries/etemplebuilding.h
+    buildings/sanctuaries/etemplegrandstatuebuilding.cpp
+    buildings/sanctuaries/etempleobeliskbuilding.cpp
     buildings/sanctuaries/etemplemonumentbuilding.cpp
+    buildings/sanctuaries/etemplegrandstatuebuilding.h
+    buildings/sanctuaries/etempleobeliskbuilding.h
     buildings/sanctuaries/etemplemonumentbuilding.h
     buildings/sanctuaries/etemplestatuebuilding.cpp
     buildings/sanctuaries/etemplestatuebuilding.h
@@ -417,6 +430,16 @@ add_executable(eZeus
     characters/actions/etraderaction.h
     characters/actions/etriremeaction.cpp
     characters/actions/etriremeaction.h
+    characters/actions/eenemywarshipaction.cpp
+    characters/actions/eenemywarshipaction.h
+    characters/actions/epriestaction.cpp
+    characters/actions/epriestaction.h
+    characters/actions/ekrakendefenderaction.cpp
+    characters/actions/ekrakendefenderaction.h
+    characters/actions/eguardiandefenderaction.cpp
+    characters/actions/eguardiandefenderaction.h
+    characters/actions/eoutlawaction.cpp
+    characters/actions/eoutlawaction.h
     characters/actions/ewaitaction.cpp
     characters/actions/ewaitaction.h
     characters/actions/ewolfaction.cpp
@@ -429,6 +452,8 @@ add_executable(eZeus
     characters/actions/godHelp/eareshelpaction.h
     characters/actions/godHelp/eartemishelpaction.cpp
     characters/actions/godHelp/eartemishelpaction.h
+    characters/actions/godHelp/eartemishuntaction.cpp
+    characters/actions/godHelp/eartemishuntaction.h
     characters/actions/godHelp/eathenahelpaction.cpp
     characters/actions/godHelp/eathenahelpaction.h
     characters/actions/godHelp/eatlashelpaction.cpp
@@ -466,6 +491,7 @@ add_executable(eZeus
     characters/eactor.cpp
     characters/eactor.h
     characters/eamazon.cpp
+    characters/efigurestats.cpp
     characters/eamazon.h
     characters/eanimal.cpp
     characters/eanimal.h
@@ -538,6 +564,10 @@ add_executable(eZeus
     characters/eelitecitizen.h
     characters/eenemyboat.cpp
     characters/eenemyboat.h
+    characters/eenemywarship.cpp
+    characters/eenemywarship.h
+    characters/epriest.cpp
+    characters/epriest.h
     characters/eenlistedforces.cpp
     characters/eenlistedforces.h
     characters/efightingcharacter.cpp
@@ -699,6 +729,7 @@ add_executable(eZeus
     characters/monsters/ecalydonianboar.h
     characters/monsters/emonster.cpp
     characters/monsters/emonster.h
+    characters/monsters/emonstertarget.h
     characters/monsters/emonstertype.h
     characters/monsters/ewatermonster.cpp
     characters/monsters/ewatermonster.h
@@ -761,6 +792,8 @@ add_executable(eZeus
     engine/ecolonymonumentaction.cpp
     engine/ecolonymonumentaction.h
     engine/edate.cpp
+    engine/emessagehistory.cpp
+    engine/emessagehistory.h
     engine/edate.h
     engine/edifficulty.cpp
     engine/edifficulty.h
@@ -903,6 +936,8 @@ add_executable(eZeus
     gameEvents/eearthquakeevent.h
     gameEvents/eeconomicchangeevent.cpp
     gameEvents/eeconomicchangeevent.h
+    gameEvents/efavorchangeevent.cpp
+    gameEvents/efavorchangeevent.h
     gameEvents/eeconomicmilitarychangeeventbase.cpp
     gameEvents/eeconomicmilitarychangeeventbase.h
     gameEvents/eeventtrigger.cpp
@@ -1004,7 +1039,9 @@ add_executable(eZeus
     gameEvents/ewarning.cpp
     gameEvents/ewarning.h
     main.cpp
+    missiles/eatlanteanfiremissile.cpp
     missiles/earrowmissile.cpp
+    missiles/eatlanteanfiremissile.h
     missiles/earrowmissile.h
     missiles/earrowspearbase.cpp
     missiles/earrowspearbase.h
@@ -2770,6 +2807,12 @@ add_executable(eZeus
     widgets/egameloadingwidget.h
     widgets/egamemainmenu.cpp
     widgets/egamemainmenu.h
+    widgets/egameoptions.cpp
+    widgets/egameoptions.h
+    widgets/emessageswidget.cpp
+    widgets/emessageswidget.h
+    widgets/ecursors.cpp
+    widgets/ecursors.h
     widgets/egamemenu.cpp
     widgets/egamemenu.h
     widgets/egamemenubase.cpp
@@ -2808,6 +2851,8 @@ add_executable(eZeus
     widgets/eloadingwidget.h
     widgets/emainmenu.cpp
     widgets/emainmenu.h
+    widgets/egamechooser.cpp
+    widgets/egamechooser.h
     widgets/emainmenubase.cpp
     widgets/emainmenubase.h
     widgets/emainwidget.cpp
@@ -2836,6 +2881,8 @@ add_executable(eZeus
     widgets/emultipleselectionwidget.h
     widgets/enamewidget.cpp
     widgets/enamewidget.h
+    widgets/echeatwidget.cpp
+    widgets/echeatwidget.h
     widgets/enumlineedit.cpp
     widgets/enumlineedit.h
     widgets/enumlineeditwidget.cpp
@@ -3344,9 +3391,34 @@ add_executable(eZeus
     textureTemplates/zeusTrees
 )
 
+# The code includes <SDL2/SDL_image.h> etc. (the Linux system layout), but the
+# fetched SDL_image/SDL_mixer/SDL_ttf sources keep those headers without an
+# SDL2/ folder. Copy them into one inside the build directory.
+set(EZEUS_SDL2_COMPAT_INCLUDE ${CMAKE_BINARY_DIR}/sdl2_compat_include)
+file(COPY
+    ${sdl2_ttf_SOURCE_DIR}/SDL_ttf.h
+    ${sdl2_image_SOURCE_DIR}/include/SDL_image.h
+    ${sdl2_mixer_SOURCE_DIR}/include/SDL_mixer.h
+    DESTINATION ${EZEUS_SDL2_COMPAT_INCLUDE}/SDL2
+)
+
 target_include_directories(eZeus PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${EZEUS_SDL2_COMPAT_INCLUDE}
 )
+
+# Testing shortcuts (Ctrl+Shift+M: +10000 drachmas). Never on by default.
+option(EZEUS_DEV_CHEATS "Enable developer test shortcuts" OFF)
+if(EZEUS_DEV_CHEATS)
+    target_compile_definitions(eZeus PRIVATE EZEUS_DEV_CHEATS)
+    # crash reporter that prints the call stack (edevcrash.cpp)
+    target_sources(eZeus PRIVATE edevcrash.cpp)
+    if(MSVC)
+        target_link_libraries(eZeus PRIVATE dbghelp)
+        target_compile_options(eZeus PRIVATE /Zi)
+        target_link_options(eZeus PRIVATE /DEBUG /OPT:REF /OPT:ICF)
+    endif()
+endif()
 
 include(GNUInstallDirs)
 install(TARGETS eZeus

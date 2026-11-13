@@ -1,4 +1,6 @@
 #include "efightingaction.h"
+#include "characters/efigurestats.h"
+#include "characters/etrireme.h"
 
 #include <math.h>
 
@@ -164,7 +166,11 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                     ct == eCharacterType::atlanteanArcher ||
                     ct == eCharacterType::phoenicianArcher ||
                     ct == eCharacterType::persianArcher ||
-                    ct == eCharacterType::trireme) {
+                    ct == eCharacterType::archerPoseidon ||
+                    ct == eCharacterType::mayanArcher ||
+                    ct == eCharacterType::archer ||
+                    ct == eCharacterType::trireme ||
+                    ct == eCharacterType::enemyWarship) {
                     eMissile::sCreate<eArrowMissile>(brd, tx, ty, 0.5,
                                                      ttx, tty, 0.5, 0.25*dist);
                 } else if(ct == eCharacterType::trojanSpearthrower ||
@@ -182,7 +188,25 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                             mAttackTarget.dead() ||
                             (mAttackTime > 1000 && !mAttackTarget.building());
         if(mAttackTarget.valid() && !mAttackTarget.dead()) {
-            const double att = by*c->attack();
+            // ranged when shooting (as for the missiles above)
+            const bool ranged = range > 0 &&
+                                c->actionType() == eCharacterActionType::fight2;
+            double att = eFigureStats::sDamage(
+                             c, mAttackTarget.character(), ranged, by);
+            if(c->type() == eCharacterType::trireme &&
+               static_cast<const eTrireme*>(c)->atlanteanFire()) {
+                // Atlantean Fire (Poseidon manual): stronger, and sets
+                // the target ablaze. Strength per Nicolas: 1.5x damage,
+                // and the target burns for two game days at half the
+                // frigate's damage rate.
+                att *= 1.5;
+                if(const auto tc = mAttackTarget.character()) {
+                    tc->setBurning(by > 0 ? 0.5*att/(1.5*by) : 0.,
+                                   2*eNumbers::sDayLength);
+                } else if(const auto tb = mAttackTarget.buildingPtr()) {
+                    tb->setOnFire(true);
+                }
+            }
             const bool d = mAttackTarget.defend(att);
             if(d) finishAttack = true;
         }
@@ -198,22 +222,23 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
             return eLookForEnemyState::attacking;
         }
     }
+    if(ownTargeting()) return eLookForEnemyState::none;
+    // Poseidon's Kraken guards the city's waters (Zeus manual): it only
+    // goes after enemies on water, and it is the one defender that can
+    // attack Oceanids while they are under water (Poseidon manual)
+    const bool kraken = c->type() == eCharacterType::kraken;
+    const auto canTarget = [kraken](const stdsptr<eCharacter>& cc) {
+        if(kraken) {
+            const auto cct = cc->tile();
+            return cct && cct->hasWater();
+        }
+        return !cc->hiddenUnderwater();
+    };
     const vec2d cpos{c->absX(), c->absY()};
 
     const auto setAttackTarget = [&](const stdsptr<eCharacter>& cc,
                                      const bool range) {
-        const vec2d ccpos{cc->absX(), cc->absY()};
-        const vec2d posdif = ccpos - cpos;
-        mAttackTarget = eAttackTarget(cc.get());
-        mAttack = true;
-        c->setPlayFightSound(true);
-        mAttackTime = 0;
-        mSavedAction = c->actionType();
-        c->setActionType(range ? eCharacterActionType::fight2 :
-                             eCharacterActionType::fight);
-        mAngle = posdif.angle();
-        const auto o = sAngleOrientation(mAngle);
-        c->setOrientation(o);
+        startAttack(cc.get(), range);
     };
 
     mBuildingAttack += by;
@@ -232,15 +257,19 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                 const auto cctype = cc->type();
                 const auto cctid = cc->teamId();
                 if(!eTeamIdHelpers::isEnemy(cctid, tid)) continue;
+                if(!canTarget(cc)) continue;
                 if(cc->dead()) continue;
                 const vec2d ccpos{cc->absX(), cc->absY()};
                 const vec2d posdif = ccpos - cpos;
                 const double dist = posdif.length();
                 if(dist > 1.) continue;
-                if(!cc->isSoldier()) {
+                // soldiers fight wolves too (upstream #52)
+                const bool wolf = cctype == eCharacterType::wolf;
+                if(!cc->isSoldier() && !wolf) {
                     if(cc->isImmortal()) {
                         thirdOption = cc;
                     } else if(cctype == eCharacterType::enemyBoat ||
+                              cctype == eCharacterType::enemyWarship ||
                               cctype == eCharacterType::trireme) {
                         secondOption = cc;
                     }
@@ -277,11 +306,14 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                         const auto cctype = cc->type();
                         const auto cctid = cc->teamId();
                         if(!eTeamIdHelpers::isEnemy(cctid, tid)) continue;
+                        if(!canTarget(cc)) continue;
                         if(cc->dead()) continue;
-                        if(!cc->isSoldier()) {
+                        if(!cc->isSoldier() &&
+                           cctype != eCharacterType::wolf) {
                             if(cc->isImmortal()) {
                                 thirdOption = cc;
                             } else if(cctype == eCharacterType::enemyBoat ||
+                                      cctype == eCharacterType::enemyWarship ||
                                       cctype == eCharacterType::trireme) {
                                 secondOption = cc;
                             }
@@ -322,9 +354,11 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
                     if(!t) continue;
                     const auto& chars = t->characters();
                     for(const auto& cc : chars) {
-                        if(!cc->isFighter()) continue;
+                        if(!cc->isFighter() &&
+                           cc->type() != eCharacterType::wolf) continue;
                         const auto cctid = cc->teamId();
                         if(!eTeamIdHelpers::isEnemy(cctid, tid)) continue;
+                        if(!canTarget(cc)) continue;
                         if(cc->dead()) continue;
                         setOverwrittableAction(false);
                         goTo(ttx, tty, range);
@@ -336,6 +370,23 @@ eLookForEnemyState eFightingAction::lookForEnemy(const int by) {
     }
 
     return eLookForEnemyState::none;
+}
+
+void eFightingAction::startAttack(eCharacter* const cc, const bool range) {
+    const auto c = character();
+    const vec2d cpos{c->absX(), c->absY()};
+    const vec2d ccpos{cc->absX(), cc->absY()};
+    const vec2d posdif = ccpos - cpos;
+    mAttackTarget = eAttackTarget(cc);
+    mAttack = true;
+    c->setPlayFightSound(true);
+    mAttackTime = 0;
+    mSavedAction = c->actionType();
+    c->setActionType(range ? eCharacterActionType::fight2 :
+                         eCharacterActionType::fight);
+    mAngle = posdif.angle();
+    const auto o = sAngleOrientation(mAngle);
+    c->setOrientation(o);
 }
 
 bool eFightingAction::attackBuilding(eTile* const t, const bool range) {
@@ -386,7 +437,7 @@ void eFightingAction::goTo(const int fx, const int fy,
     const bool attackBuildings = eTeamIdHelpers::isEnemy(tid, ttid);
     stdsptr<eWalkableObject> pathFindWalkable;
     stdsptr<eWalkableObject> moveWalkable;
-    if(c->isBoat()) {
+    if(c->isBoat() || c->type() == eCharacterType::kraken) {
         pathFindWalkable =
             eWalkableObject::sCreateDeepWater();
     } else {
@@ -395,7 +446,7 @@ void eFightingAction::goTo(const int fx, const int fy,
             moveWalkable = eWalkableObject::sCreateDefault();
         } else {
             pathFindWalkable =
-                eWalkableObject::sCreateDefault();
+                eWalkableObject::sCreateSoldier();
         }
     }
 
@@ -475,4 +526,8 @@ void eFightingAction::waitAndGoHome(const int w) {
     a->setFinishAction(finish);
     a->setTime(w);
     setCurrentAction(a);
+}
+
+eBuilding* eAttackTarget::buildingPtr() const {
+    return mB.get();
 }

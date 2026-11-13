@@ -85,6 +85,17 @@ public:
     bool stationary() const;
     bool fighting() const;
 
+    // Morale (Zeus manual, Morale): losses in combat lower it; when it
+    // runs out the company flees to the Palace and can't be remustered
+    // until it recovers. Loaned soldiers never lose morale. Numbers are
+    // Nicolas's: flee after losing two thirds of the men it had at full
+    // morale, full recovery in about a month away from combat.
+    bool hasMorale() const;
+    double morale() const { return mMorale; } // 0 to 1
+    bool fleeing() const { return mFleeing; }
+    void soldierKilled();
+    void incTime(const int by);
+
     const std::string& name() const { return mName; }
     void setName(const std::string& n) { mName = n; }
 
@@ -135,6 +146,10 @@ private:
     eTile* mTile = nullptr;
 
     int mCount = 0;
+
+    double mMorale = 1;
+    int mMoraleBase = 0; // men in the company when morale was last full
+    bool mFleeing = false;
 
     eCityId mCityId = eCityId::neutralFriendly;
     eCityId mOnCityId = eCityId::neutralFriendly;

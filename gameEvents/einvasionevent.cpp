@@ -1,4 +1,5 @@
 #include "einvasionevent.h"
+#include "emessages.h"
 
 #include "engine/egameboard.h"
 #include "engine/eevent.h"
@@ -11,6 +12,9 @@
 #include "eplayerconquestevent.h"
 #include "engine/epathfinder.h"
 #include "eiteratesquare.h"
+#include "characters/eenemywarship.h"
+#include "fileIO/efileformat.h"
+#include "engine/edifficulty.h"
 
 eInvasionEvent::eInvasionEvent(
         const eCityId cid,
@@ -189,6 +193,14 @@ void eInvasionEvent::trigger() {
                 eh->initializeSeaInvasion(tile, mDisembarkTile, mShoreTile,
                                           infantry, cavalry, archers);
             }
+            // the event's warships set off from the same point; Oceanids
+            // bring none (exe 0x00503FD0)
+            if(mCity->nationality() != eNationality::oceanid) {
+                for(int i = 0; i < mWarships; i++) {
+                    eEnemyWarship::sSpawn(*board, invadingCid, tile,
+                                          mDisembarkTile, i);
+                }
+            }
             } else {
             eh = new eInvasionHandler(*board, cid, mCity, this);
             if(invadingC) {
@@ -216,7 +228,17 @@ void eInvasionEvent::trigger() {
         board->incDrachmas(pid, -bribe, eFinanceTarget::bribesTributePaid);
         eEventData ed(cid);
         ed.fCity = city;
-        board->event(eEvent::invasionBribed, ed);
+        // The original game has a "paid off ... You can now build a
+        // Commemorative Monument" message (Model/Zeus eventmsg.txt) next to
+        // the plain one (upstream #63). When it's used isn't known, so use
+        // the same chance and monument as a won defence (invadersDefeated).
+        const bool monn = eRand::rand() % 2;
+        if(monn) {
+            board->allow(cid, eBuildingType::commemorative, 1);
+            board->event(eEvent::invasionBribedMonn, ed);
+        } else {
+            board->event(eEvent::invasionBribed, ed);
+        }
         board->updateMusic();
         if(mConquestEvent) {
             mConquestEvent->planArmyReturn();
@@ -268,6 +290,7 @@ void eInvasionEvent::write(eWriteStream& dst) const {
 
     dst << mWarned;
     mFirstWarning.write(dst);
+    dst << mWarships;
 }
 
 void eInvasionEvent::read(eReadStream& src) {
@@ -287,6 +310,9 @@ void eInvasionEvent::read(eReadStream& src) {
 
     src >> mWarned;
     mFirstWarning.read(src);
+    if(src.formatVersion() >= eFileFormat::invasionWarships) {
+        src >> mWarships;
+    }
     if(mWarned) {
         board->addInvasion(this);
         updateDisembarkAndShoreTile();
@@ -413,7 +439,15 @@ int eInvasionEvent::bribeCost() const {
         soldiersByType(infantry, cavalry, archers);
     }
 
-    const int bribe = rt*archers + ht*infantry + hm*cavalry;
+    int bribe = rt*archers + ht*infantry + hm*cavalry;
+    // sea invasions: extra for each warship (Citadel of Poseidon, bribes)
+    const auto tile = invasionTile();
+    if(!mConquestEvent && tile && tile->hasWater() && mCity &&
+       mCity->nationality() != eNationality::oceanid) {
+        const int ws = eDifficultyHelpers::soliderBribe(
+                           diff, eCharacterType::enemyWarship);
+        bribe += ws*mWarships;
+    }
     return bribe;
 }
 
@@ -524,4 +558,12 @@ void eInvasionEvent::invadersDefeated() {
             }
         }
     }
+}
+
+bool eInvasionEvent::oraclePrediction(eEventData& ed, eMessageType& msg) {
+    if(!mWarned) oracleChooseCity();
+    if(!mCity) return false;
+    ed.fCity = mCity;
+    msg = eMessages::oracleMessage("invasion");
+    return true;
 }

@@ -14,5 +14,13 @@ eMint::eMint(eGameBoard& board, const eCityId cid) :
                              eHasResourceObject::sCreate(eHasResourceObjectType::silver),
                              2, 2, 15, eResourceType::silver, cid) {
     eGameTextures::loadMint();
-    setRawCountCollect(4);
+    // holds at most 3 loads before it stops (original exe 0x0048A880)
+    setMaxResource(3);
+    // Mints work like foundries: 3 miners, 25 units each, 100 units = 1
+    // load; 200 silver makes 100 drachmas, up to 600-700 a year
+    // (Citadel of Poseidon)
+    setMaxCollectors(3);
+    setRawPerLoad(4);
+    setRawCountCollect(16);
+    setWaitTime(1000);
 }

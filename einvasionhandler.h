@@ -69,6 +69,12 @@ public:
                                 const eEnlistedForces& forces,
                                 ePlayerConquestEvent* const conquestEvent);
 
+    // An angry Ares or Artemis' army (no world city behind it): soldiers
+    // hostile to everyone that march on the palace.
+    void initializeGodArmy(eTile* const tile,
+                           const ePlayerSoldierType type,
+                           const int count);
+
     void incTime(const int by);
 
     void read(eReadStream& src);
@@ -87,6 +93,8 @@ public:
     void setIOID(const int id) { mIOID = id; }
     int ioID() const { return mIOID; }
 private:
+    eCityId invadingCityId() const;
+
     void initializeBoats(eTile* const tile, const int troops);
     void spawnBoat();
 

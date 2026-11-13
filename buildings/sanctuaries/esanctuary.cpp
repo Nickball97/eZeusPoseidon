@@ -1,17 +1,25 @@
 #include "esanctuary.h"
 
+#include <cmath>
+
 #include "engine/egameboard.h"
 #include "characters/gods/egod.h"
 #include "characters/actions/egodworshippedaction.h"
 #include "etilehelper.h"
 #include "engine/eevent.h"
 #include "engine/eeventdata.h"
+#include "fileIO/efileformat.h"
+#include "engine/egameevents.h"
+#include "emessages.h"
+#include <functional>
+#include <algorithm>
 #include "gameEvents/eplayerconquesteventbase.h"
 
 #include "characters/actions/godHelp/eaphroditehelpaction.h"
 #include "characters/actions/godHelp/eapollohelpaction.h"
 #include "characters/actions/godHelp/eareshelpaction.h"
 #include "characters/actions/godHelp/eartemishelpaction.h"
+#include "characters/actions/godHelp/eartemishuntaction.h"
 #include "characters/actions/godHelp/eathenahelpaction.h"
 #include "characters/actions/godHelp/eatlashelpaction.h"
 #include "characters/actions/godHelp/edemeterhelpaction.h"
@@ -25,6 +33,10 @@
 
 #include "gameEvents/egodattackevent.h"
 #include "characters/actions/ekillcharacterfinishfail.h"
+#include "characters/actions/ekrakendefenderaction.h"
+#include "characters/actions/eguardiandefenderaction.h"
+#include "characters/monsters/ecalydonianboar.h"
+#include "characters/monsters/ecalydonianboar.h"
 
 #include "buildings/eresourcebuilding.h"
 #include "buildings/eplaceholder.h"
@@ -34,6 +46,8 @@
 #include "ezeussanctuary.h"
 
 #include "etemplealtarbuilding.h"
+#include "characters/epriest.h"
+#include "characters/actions/epriestaction.h"
 #include "enumbers.h"
 
 #include <algorithm>
@@ -46,6 +60,7 @@ eSanctuary::eSanctuary(eGameBoard& board,
     eMonument(board, type, sw, sh,
               maxEmployees, cid) {
     eGameTextures::loadSanctuary();
+    mActiveTime = eNumbers::sSanctuaryActivePeriod;
     sLoadMonumentTextures(godType());
     board.registerSanctuary(this);
 }
@@ -85,6 +100,8 @@ void eSanctuary::erase() {
         const auto c = board.boardCityWithId(cid);
         if(c) c->incTerrainState();
     }
+    if(mKraken) mKraken->kill();
+    if(mGuardian) mGuardian->kill();
     eMonument::erase();
 }
 
@@ -218,6 +235,70 @@ double eSanctuary::helpTimeFraction() const {
     return double(mHelpTimer)/eNumbers::sGodHelpPeriod;
 }
 
+bool eSanctuary::active() const {
+    return finished() && mActiveTime > 0;
+}
+
+int eSanctuary::activeDaysLeft() const {
+    if(!active()) return 0;
+    const int d = eNumbers::sDayLength;
+    return (mActiveTime + d - 1)/d;
+}
+
+bool eSanctuary::hasOracle() const {
+    const auto type = godType();
+    return type == eGodType::zeus || type == eGodType::apollo;
+}
+
+bool eSanctuary::oracleReady() const {
+    return mOracleTimer >= eNumbers::sGodHelpPeriod;
+}
+
+double eSanctuary::oracleTimeFraction() const {
+    return double(mOracleTimer)/eNumbers::sGodHelpPeriod;
+}
+
+// Every original prediction says the event comes "within a year". When
+// several are coming, the Oracle reveals the one farthest in the future
+// (Nicolas's call; no source says which). The Oracle only waits again
+// after it actually made a prediction (Zeus manual: "especially if it
+// recently made a prediction for you").
+void eSanctuary::consultOracle() {
+    auto& board = getBoard();
+    const auto cid = cityId();
+    const auto city = board.boardCityWithId(cid);
+    if(!city) return;
+    const auto now = board.date();
+    const auto limit = now + 365;
+
+    std::vector<eGameEvent*> coming;
+    std::function<void(const stdsptr<eGameEvent>&)> collect;
+    collect = [&](const stdsptr<eGameEvent>& e) {
+        if(!e) return;
+        if(e->repeat() > 0 && !e->episodeCompleteEvent()) {
+            const auto& d = e->nextDate();
+            if(d > now && d <= limit) coming.push_back(e.get());
+        }
+        for(const auto& c : e->consequences()) collect(c);
+    };
+    for(const auto& e : city->cityEvents().events()) collect(e);
+
+    std::stable_sort(coming.begin(), coming.end(),
+                     [](eGameEvent* const a, eGameEvent* const b) {
+        return a->nextDate() > b->nextDate();
+    });
+    for(const auto e : coming) {
+        eEventData ed(cid);
+        eMessageType msg;
+        if(!e->oraclePrediction(ed, msg)) continue;
+        oracleConsulted();
+        board.showMessage(ed, msg);
+        return;
+    }
+    eEventData ed(cid);
+    board.showMessage(ed, eMessages::instance.fOracleNothing);
+}
+
 double eSanctuary::helpAttackTimeFraction() const {
     auto& board = getBoard();
     const auto pid = playerId();
@@ -314,14 +395,160 @@ bool eSanctuary::sacrificing() const {
     return false;
 }
 
+eTempleAltarBuilding* eSanctuary::altar() const {
+    for(const auto& e : mElements) {
+        if(e->type() != eBuildingType::templeAltar) continue;
+        return static_cast<eTempleAltarBuilding*>(e.get());
+    }
+    return nullptr;
+}
+
+eTile* eSanctuary::priestTile() const {
+    const auto a = altar();
+    if(!a) return nullptr;
+    const auto ct = a->centerTile();
+    if(!ct) return nullptr;
+    auto& board = getBoard();
+    return eTileHelper::closestRoad(ct->x(), ct->y(), board);
+}
+
+int eSanctuary::maxPriests() const {
+    // exe 0x004EA330 by god
+    switch(godType()) {
+    case eGodType::zeus:
+    case eGodType::poseidon:
+    case eGodType::hades:
+    case eGodType::hera:
+        return 3;
+    case eGodType::demeter:
+    case eGodType::apollo:
+    case eGodType::artemis:
+    case eGodType::athena:
+    case eGodType::atlas:
+        return 2;
+    default:
+        return 1;
+    }
+}
+
+void eSanctuary::priestCycle() {
+    // priests gone: one not yet back no longer counts as on its way
+    for(int i = 0; i < static_cast<int>(mPriests.size()); i++) {
+        const auto& p = mPriests[i];
+        if(p.fC && !p.fC->dead() && p.fC->tile()) continue;
+        if(!p.fArrived) {
+            mPriestsEnRoute = std::max(0, mPriestsEnRoute - 1);
+        }
+        mPriests.erase(mPriests.begin() + i);
+        i--;
+    }
+    if(mPriestTimer > 24) mPriestTimer = 22;
+    if(employed() <= 0) return;
+    // the original counts down a byte: 0 becomes 255
+    mPriestTimer = (mPriestTimer + 255) % 256;
+    if(mPriestTimer >= 20) return;
+    // sacrifices need the full staff (Model column EMP; the sanctuary's
+    // text: "lacks a few priests. No sacrifices can be conducted")
+    if(employed() < maxEmployees()) return;
+    if(!altar()) return;
+    if(static_cast<int>(mPriests.size()) >= maxPriests()) return;
+    sendPriest();
+}
+
+void eSanctuary::sendPriest() {
+    const auto t = priestTile();
+    if(!t) return;
+    auto& board = getBoard();
+    const auto c = e::make_shared<ePriest>(board);
+    c->setBothCityIds(cityId());
+    c->changeTile(t);
+    const auto a = e::make_shared<ePriestAction>(c.get());
+    a->setSanctuary(this);
+    c->setAction(a);
+    mPriests.push_back({c.get(), false});
+    mPriestsEnRoute++;
+    if(static_cast<int>(mPriests.size()) == maxPriests()) {
+        if(const auto al = altar()) al->setSacrifice(eSacrifice::none);
+    }
+}
+
+void eSanctuary::priestArrived(eCharacter* const p) {
+    for(auto& pp : mPriests) {
+        if(pp.fC.get() != p) continue;
+        if(pp.fArrived) return;
+        pp.fArrived = true;
+        mPriestsEnRoute--;
+        return;
+    }
+}
+
+bool eSanctuary::tryToSacrifice(const eSacrifice s) {
+    const auto a = altar();
+    if(!a) return false;
+    if(a->sacrifice() == eSacrifice::none) mSacrificeShown = false;
+    if(mPriestsEnRoute >= 1 || mSacrificeShown) return false;
+    mSacrificeShown = true;
+    a->setSacrifice(s);
+    mPriestsEnRoute--;
+    mPriestTimer = 24;
+    mActiveTime = eNumbers::sSanctuaryActivePeriod;
+    if(mPriestsEnRoute == -maxPriests()) mPriestsEnRoute = 0;
+    return true;
+}
+
 void eSanctuary::timeChanged(const int by) {
+    if(finished()) {
+        // one of the original's 16 cycles a month
+        const int cycle = static_cast<int>(365.*eNumbers::sDayLength/(12*16));
+        mPriestCycleTime += by;
+        while(mPriestCycleTime >= cycle) {
+            mPriestCycleTime -= cycle;
+            priestCycle();
+        }
+        mActiveTime = std::max(0, mActiveTime - by);
+    }
+
     mHelpTimer += by;
+    if(mOracleTimer < eNumbers::sGodHelpPeriod) mOracleTimer += by;
     eMonument::timeChanged(by);
 
     if(!mGod && !mGodAbroad && finished()) {
         mSpawnWait -= by;
         if(mSpawnWait <= 0) {
             spawnPatrolingGod();
+        }
+    }
+
+    // Nicolás's mod rule: Artemis, when out on her rounds, hunts down the
+    // wolves left in her city (wolf dens there stop, see eWolfSpawner)
+    if(godType() == eGodType::artemis && mGod && !mGodAbroad && active()) {
+        mWolfHuntCheck += by;
+        if(mWolfHuntCheck > 1000) {
+            mWolfHuntCheck = 0;
+            const auto a = mGod->action();
+            const bool rounds = a &&
+                a->type() == eCharActionType::godWorshippedAction;
+            if(rounds && mGod->tile() &&
+               eArtemisHuntAction::sWolf(getBoard(), cityId())) {
+                const auto h = e::make_shared<eArtemisHuntAction>(mGod.get());
+                mGod->setAction(h);
+            }
+        }
+    }
+
+    if(!mKraken && godType() == eGodType::poseidon && active()) {
+        mKrakenWait -= by;
+        if(mKrakenWait <= 0) {
+            mKrakenWait = 5000;
+            spawnKraken();
+        }
+    }
+    if(!mGuardian && active() &&
+       (godType() == eGodType::ares || godType() == eGodType::hades)) {
+        mGuardianWait -= by;
+        if(mGuardianWait <= 0) {
+            mGuardianWait = 5000;
+            spawnGuardian();
         }
     }
 
@@ -365,7 +592,13 @@ void eSanctuary::nextMonth() {
 }
 
 void eSanctuary::read(eReadStream& src) {
+    // A sanctuary's staff size is fixed per god (set in its constructor).
+    // Keep that value instead of the one in the save, so saves made before
+    // the per-god numbers were corrected pick up the new values.
+    const int maxEmpl = maxEmployees();
     eMonument::read(src);
+    setMaxEmployees(maxEmpl);
+    if(employed() > maxEmpl) setEmployed(maxEmpl);
 
     auto& board = getBoard();
 
@@ -392,6 +625,39 @@ void eSanctuary::read(eReadStream& src) {
         const auto t = src.readTile(board);
         mSpecialTiles.push_back(t);
     }
+
+    if(src.formatVersion() >= eFileFormat::oracleTimer) {
+        src >> mOracleTimer;
+    }
+    if(src.formatVersion() >= eFileFormat::poseidonKraken) {
+        src.readCharacter(&board, [this](eCharacter* const c) {
+            mKraken = c;
+        });
+    }
+    if(src.formatVersion() >= eFileFormat::sanctuaryGuardian) {
+        src.readCharacter(&board, [this](eCharacter* const c) {
+            mGuardian = c;
+        });
+    }
+    if(src.formatVersion() >= eFileFormat::sanctuaryPriests) {
+        src >> mPriestTimer;
+        src >> mPriestCycleTime;
+        src >> mPriestsEnRoute;
+        src >> mSacrificeShown;
+        int np;
+        src >> np;
+        for(int i = 0; i < np; i++) {
+            const int id = static_cast<int>(mPriests.size());
+            mPriests.emplace_back();
+            src.readCharacter(&board, [this, id](eCharacter* const c) {
+                mPriests[id].fC = c;
+            });
+            src >> mPriests[id].fArrived;
+        }
+    }
+    if(src.formatVersion() >= eFileFormat::sanctuaryActive) {
+        src >> mActiveTime;
+    }
 }
 
 void eSanctuary::write(eWriteStream& dst) const {
@@ -414,6 +680,20 @@ void eSanctuary::write(eWriteStream& dst) const {
     for(const auto t : mSpecialTiles) {
         dst.writeTile(t);
     }
+    dst << mOracleTimer;
+    dst.writeCharacter(mKraken);
+    dst.writeCharacter(mGuardian);
+
+    dst << mPriestTimer;
+    dst << mPriestCycleTime;
+    dst << mPriestsEnRoute;
+    dst << mSacrificeShown;
+    dst << static_cast<int>(mPriests.size());
+    for(const auto& p : mPriests) {
+        dst.writeCharacter(p.fC);
+        dst << p.fArrived;
+    }
+    dst << mActiveTime;
 }
 
 std::vector<eTile*> eSanctuary::warriorTiles() const {
@@ -429,6 +709,10 @@ void eSanctuary::addSpecialTile(eTile* const t) {
 }
 
 bool eSanctuary::askForAttack(const eCityId cid, eHelpDenialReason& reason) {
+    if(!active()) {
+        reason = eHelpDenialReason::inactive;
+        return false;
+    }
     auto& board = getBoard();
     const auto pid = playerId();
     const auto p = board.boardPlayerWithId(pid);
@@ -470,6 +754,10 @@ bool eSanctuary::askForAttack(const eCityId cid, eHelpDenialReason& reason) {
 }
 
 bool eSanctuary::askForHelp(eHelpDenialReason& reason) {
+    if(!active()) {
+        reason = eHelpDenialReason::inactive;
+        return false;
+    }
     if(mGodAbroad || mHelpTimer < eNumbers::sGodHelpPeriod) {
         reason = eHelpDenialReason::tooSoon;
         return false;
@@ -610,4 +898,119 @@ bool eSanctuary::askForHelp(eHelpDenialReason& reason) {
         mGodAbroad = true;
     }
     return true;
+}
+
+void eSanctuary::spawnKraken() {
+    auto& board = getBoard();
+    const auto cid = cityId();
+    const auto ct = centerTile();
+    if(!ct) return;
+    // the Kraken rises in the city's water closest to the sanctuary
+    const SDL_Rect r = board.boardCityTileBRect(cid);
+    eTile* spawn = nullptr;
+    int bestDist = __INT_MAX__;
+    for(int x = r.x; x < r.x + r.w; x++) {
+        for(int y = r.y; y < r.y + r.h; y++) {
+            const auto t = board.tile(x, y);
+            if(!t) continue;
+            if(t->cityId() != cid) continue;
+            if(!t->hasDeepWater()) continue;
+            const int dx = t->x() - ct->x();
+            const int dy = t->y() - ct->y();
+            const int dist = dx*dx + dy*dy;
+            if(dist >= bestDist) continue;
+            bestDist = dist;
+            spawn = t;
+        }
+    }
+    if(!spawn) return; // no sea in this city
+    const auto k = e::make_shared<eKraken>(board);
+    k->setBothCityIds(cid);
+    k->changeTile(spawn);
+    const auto a = e::make_shared<eKrakenDefenderAction>(k.get());
+    k->setAction(a);
+    mKraken = k.get();
+}
+
+void eSanctuary::spawnGuardian() {
+    const auto ct = centerTile();
+    if(!ct) return;
+    auto& board = getBoard();
+    const auto cid = cityId();
+    stdsptr<eCharacter> g;
+    if(godType() == eGodType::ares) g = e::make_shared<eDragon>(board);
+    else g = e::make_shared<eCerberus>(board);
+    g->setBothCityIds(cid);
+    // start on the nearest walkable road
+    const auto t = eTileHelper::closestRoad(ct->x(), ct->y(), board);
+    g->changeTile(t ? t : ct);
+    const auto a = e::make_shared<eGuardianDefenderAction>(g.get());
+    g->setAction(a);
+    mGuardian = g.get();
+}
+
+// Original marble and wood each sanctuary needs after placement, Zeus +
+// Poseidon values (Citadel of Poseidon, sanctuary.html; where the site
+// gives two numbers, the second, Poseidon one, per Nicolás). The Citadel
+// of Poseidon already matches (231 marble, 52 wood).
+static bool sOriginalTotals(const eBuildingType type, int& marble, int& wood) {
+    switch(type) {
+    case eBuildingType::templeZeus: marble = 137; wood = 24; return true;
+    case eBuildingType::templePoseidon: marble = 103; wood = 20; return true;
+    case eBuildingType::templeHades: marble = 132; wood = 24; return true;
+    case eBuildingType::templeHera: marble = 88; wood = 20; return true;
+    case eBuildingType::templeDemeter: marble = 110; wood = 20; return true;
+    case eBuildingType::templeAthena: marble = 55; wood = 16; return true;
+    case eBuildingType::templeArtemis: marble = 63; wood = 20; return true;
+    case eBuildingType::templeApollo: marble = 76; wood = 16; return true;
+    case eBuildingType::templeAtlas: marble = 76; wood = 20; return true;
+    case eBuildingType::templeAres: marble = 40; wood = 12; return true;
+    case eBuildingType::templeHephaestus: marble = 44; wood = 12; return true;
+    case eBuildingType::templeAphrodite: marble = 37; wood = 12; return true;
+    case eBuildingType::templeHermes: marble = 35; wood = 12; return true;
+    case eBuildingType::templeDionysus: marble = 31; wood = 12; return true;
+    default: return false;
+    }
+}
+
+void eSanctuary::applyOriginalMaterialTotals() {
+    const auto t = type();
+    if(t == eBuildingType::templePoseidon && atlantean()) return; // Citadel
+    int marble;
+    int wood;
+    if(!sOriginalTotals(t, marble, wood)) return;
+    int baseMarble = 0;
+    int baseWood = 0;
+    for(const auto& e : mElements) {
+        if(!e) continue;
+        for(const auto& c : e->costs()) {
+            baseMarble += c.fMarble + c.fBlackMarble;
+            baseWood += c.fWood;
+        }
+    }
+    // Round the running total, not each piece, so the sum is exact and a
+    // 1-marble floor tile is not doubled.
+    const auto scaler = [](const int target, const int base) {
+        return [target, base, cum = 0, charged = 0](const int v) mutable {
+            if(base <= 0 || v <= 0) return v;
+            cum += v;
+            const int now = static_cast<int>(
+                std::round(static_cast<double>(target)*cum/base));
+            const int r = now - charged;
+            charged = now;
+            return r;
+        };
+    };
+    auto sm = scaler(marble, baseMarble);
+    auto sw = scaler(wood, baseWood);
+    for(const auto& e : mElements) {
+        if(!e) continue;
+        auto costs = e->costs();
+        for(auto& c : costs) {
+            c.fMarble = sm(c.fMarble);
+            c.fBlackMarble = sm(c.fBlackMarble);
+            c.fWood = sw(c.fWood);
+        }
+        e->setCosts(costs);
+    }
 }

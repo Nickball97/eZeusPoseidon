@@ -20,6 +20,9 @@ public:
     void write(eWriteStream& dst) const override;
 
     void decCount(const int by);
+    // a second good delivered after the first (Athena: olives after oil)
+    void setNextResource(const eResourceType res, const int count)
+    { mNextResource = res; mNextCount = count; }
 
     static bool sHelpNeeded(const eCityId cid,
                             const eGameBoard& board,
@@ -33,6 +36,8 @@ private:
     stdptr<eStorageBuilding> mTarget;
     eResourceType mResource = eResourceType::wheat;
     int mCount = 32;
+    eResourceType mNextResource = eResourceType::none;
+    int mNextCount = 0;
 };
 
 class eGodProvideResourceAct : public eGodAct {

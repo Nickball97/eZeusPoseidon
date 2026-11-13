@@ -6,6 +6,11 @@
 class eTaxOffice : public ePatrolBuilding {
 public:
     eTaxOffice(eGameBoard& board, const eCityId cid);
+
+    // Hades' blessing: the next collector's houses pay 4 times their tax
+    // once (original exe), not faster collectors
+    bool blessingLastsUntilUsed() const override { return true; }
+    bool blessingBoostsSpeed() const override { return false; }
 };
 
 #endif // ETAXOFFICE_H

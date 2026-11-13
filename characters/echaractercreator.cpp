@@ -92,6 +92,8 @@
 #include "characters/eelitecitizen.h"
 #include "characters/etrireme.h"
 #include "characters/eenemyboat.h"
+#include "characters/eenemywarship.h"
+#include "characters/epriest.h"
 #include "characters/eorichalcminer.h"
 
 stdsptr<eCharacter> eCharacter::sCreate(
@@ -240,6 +242,12 @@ stdsptr<eCharacter> eCharacter::sCreate(
         return e::make_shared<eHomeless>(board);
     case eCharacterType::disgruntled:
         return e::make_shared<eDisgruntled>(board);
+    case eCharacterType::mugger:
+        return e::make_shared<eMugger>(board);
+    case eCharacterType::thief:
+        return e::make_shared<eThief>(board);
+    case eCharacterType::vandal:
+        return e::make_shared<eVandal>(board);
     case eCharacterType::sick:
         return e::make_shared<eSick>(board);
 
@@ -348,6 +356,10 @@ stdsptr<eCharacter> eCharacter::sCreate(
         return e::make_shared<eTrireme>(board);
     case eCharacterType::enemyBoat:
         return e::make_shared<eEnemyBoat>(board);
+    case eCharacterType::enemyWarship:
+        return e::make_shared<eEnemyWarship>(board);
+    case eCharacterType::priest:
+        return e::make_shared<ePriest>(board);
     }
     return nullptr;
 }

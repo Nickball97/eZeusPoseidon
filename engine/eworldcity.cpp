@@ -4,6 +4,7 @@
 #include "egifthelpers.h"
 #include "evectorhelpers.h"
 #include "engine/egameboard.h"
+#include "fileIO/efileformat.h"
 
 #include <algorithm>
 
@@ -404,57 +405,63 @@ void eWorldCity::troopsByType(const int troops,
                               int &cavalry,
                               int &archers) const {
     const auto n = nationality();
+    // "If the numbers aren't whole, the game rounds them down"
+    // (Citadel of Poseidon, enemy_appearance.html)
+    const auto share = [troops](const double p) {
+        return static_cast<int>(std::floor(p*troops + 1e-9));
+    };
     switch(n) {
     case eNationality::greek: {
-        infantry = std::ceil(0.6*troops);
-        cavalry = std::ceil(0.2*troops);
-        archers = std::ceil(0.2*troops);
+        infantry = share(0.6);
+        cavalry = share(0.2);
+        archers = share(0.2);
     } break;
     case eNationality::trojan: {
-        infantry = std::ceil(0.5*troops);
-        cavalry = std::ceil(0.3*troops);
-        archers = std::ceil(0.2*troops);
+        infantry = share(0.5);
+        cavalry = share(0.3);
+        archers = share(0.2);
     } break;
     case eNationality::persian: {
-        infantry = std::ceil(0.3*troops);
-        cavalry = std::ceil(0.3*troops);
-        archers = std::ceil(0.4*troops);
+        infantry = share(0.3);
+        cavalry = share(0.3);
+        archers = share(0.4);
     } break;
     case eNationality::centaur: {
-        infantry = 0;
-        cavalry = std::ceil(0.5*troops);
-        archers = std::ceil(0.5*troops);
+        // centaur swordsmen are foot soldiers (enemy_appearance.html)
+        infantry = share(0.5);
+        cavalry = 0;
+        archers = share(0.5);
     } break;
     case eNationality::amazon: {
-        infantry = std::ceil(0.75*troops);
+        infantry = share(0.75);
         cavalry = 0;
-        archers = std::ceil(0.25*troops);
+        archers = share(0.25);
     } break;
 
     case eNationality::egyptian: {
-        infantry = std::ceil(0.5*troops);
-        cavalry = std::ceil(0.2*troops);
-        archers = std::ceil(0.3*troops);
+        infantry = share(0.5);
+        cavalry = share(0.2);
+        archers = share(0.3);
     } break;
     case eNationality::mayan: {
-        infantry = std::ceil(0.25*troops);
+        infantry = share(0.25);
         cavalry = 0;
-        archers = std::ceil(0.75*troops);
+        archers = share(0.75);
     } break;
     case eNationality::phoenician: {
         infantry = 0;
-        cavalry = std::ceil(0.3*troops);
-        archers = std::ceil(0.7*troops);
+        cavalry = share(0.3);
+        archers = share(0.7);
     } break;
     case eNationality::oceanid: {
-        infantry = std::ceil(0.5*troops);
+        infantry = share(0.5);
         cavalry = 0;
-        archers = std::ceil(0.5*troops);
+        archers = share(0.5);
     } break;
     case eNationality::atlantean: {
-        infantry = std::ceil(0.4*troops);
-        cavalry = std::ceil(0.3*troops);
-        archers = std::ceil(0.3*troops);
+        infantry = share(0.4);
+        cavalry = share(0.3);
+        archers = share(0.3);
     } break;
     }
 }
@@ -592,6 +599,7 @@ void eWorldCity::write(eWriteStream& dst) const {
     dst << mTributeCount;
     dst << mRecTributeType;
     dst << mRecTributeCount;
+    dst << mRescueGiven;
 }
 
 void sread(eReadStream& src,
@@ -675,6 +683,9 @@ void eWorldCity::read(eReadStream& src, eWorldBoard* const board) {
     src >> mTributeCount;
     src >> mRecTributeType;
     src >> mRecTributeCount;
+    if(src.formatVersion() >= eFileFormat::worldCityRescue) {
+        src >> mRescueGiven;
+    }
 }
 
 void eWorldCity::gifted(const eResourceType type, const int count) {

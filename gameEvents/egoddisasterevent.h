@@ -15,6 +15,7 @@ public:
                       eGameBoard& board);
 
     void trigger() override;
+    bool oraclePrediction(eEventData& ed, eMessageType& msg) override;
     std::string longName() const override;
 
     void write(eWriteStream& dst) const override;

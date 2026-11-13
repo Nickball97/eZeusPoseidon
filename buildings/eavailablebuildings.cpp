@@ -100,6 +100,16 @@ void eAvailableBuildings::read(eReadStream& src) {
             a.fLevels.push_back(l);
         }
     }
+    if(src.formatVersion() >= eFileFormat::allowedSwitches) {
+        int ns;
+        src >> ns;
+        for(int i = 0; i < ns; i++) {
+            eBuildingType type;
+            src >> type;
+            fSwitchedOff.insert(type);
+        }
+        src >> fRoadblockOff;
+    }
 }
 
 void eAvailableBuildings::write(eWriteStream& dst) const {
@@ -190,6 +200,11 @@ void eAvailableBuildings::write(eWriteStream& dst) const {
             dst << d;
         }
     }
+    dst << static_cast<int>(fSwitchedOff.size());
+    for(const auto type : fSwitchedOff) {
+        dst << type;
+    }
+    dst << fRoadblockOff;
 }
 
 void eAvailableBuildings::allowPyramid(
@@ -219,6 +234,7 @@ bool eAvailableBuildings::available(
         const auto& a = it->second;
         return a.fA == eAvailable::available;
     }
+    if(fSwitchedOff.count(type)) return false;
 
     switch(type) {
     case eBuildingType::eliteHousing:
@@ -483,6 +499,10 @@ void eAvailableBuildings::destroyed(
 
 void eAvailableBuildings::allow(
         const eBuildingType type, const int id) {
+    if(sSwitchOnly(type)) {
+        fSwitchedOff.erase(type);
+        return;
+    }
     switch(type) {
     case eBuildingType::commemorative: {
         int* c = nullptr;
@@ -523,6 +543,10 @@ void eAvailableBuildings::allow(
 
 void eAvailableBuildings::disallow(
         const eBuildingType type, const int id) {
+    if(sSwitchOnly(type)) {
+        fSwitchedOff.insert(type);
+        return;
+    }
     const bool pyramid = eBuilding::sPyramidBuilding(type);
     if(pyramid) {
         const auto it = fPyramids.find(type);
@@ -545,6 +569,9 @@ void eAvailableBuildings::disallow(
 }
 
 void eAvailableBuildings::startEpisode(const eAvailableBuildings& o) {
+    fSwitchedOff = o.fSwitchedOff;
+    fRoadblockOff = o.fRoadblockOff;
+
     for(auto& op : o.fPyramids) {
         auto& oa = op.second;
         auto& a = fPyramids[op.first];
@@ -744,4 +771,63 @@ eAvailable* eAvailableBuildings::availablePtr(const eBuildingType type) {
         break;
     }
     return a;
+}
+
+bool eAvailableBuildings::sSwitchOnly(const eBuildingType type) {
+    switch(type) {
+    case eBuildingType::grandAgora:
+    case eBuildingType::granary:
+    case eBuildingType::commonAgora:
+    case eBuildingType::warehouse:
+    case eBuildingType::tradePost:
+    case eBuildingType::pier:
+    case eBuildingType::stadium:
+    case eBuildingType::museum:
+    case eBuildingType::theater:
+    case eBuildingType::laboratory:
+    case eBuildingType::gymnasium:
+    case eBuildingType::bibliotheke:
+    case eBuildingType::podium:
+    case eBuildingType::observatory:
+    case eBuildingType::college:
+    case eBuildingType::university:
+    case eBuildingType::fountain:
+    case eBuildingType::dramaSchool:
+    case eBuildingType::inventorsWorkshop:
+    case eBuildingType::maintenanceOffice:
+    case eBuildingType::hospital:
+    case eBuildingType::taxOffice:
+    case eBuildingType::watchPost:
+    case eBuildingType::palace:
+    case eBuildingType::bridge:
+    case eBuildingType::doricColumn:
+    case eBuildingType::ionicColumn:
+    case eBuildingType::corinthianColumn:
+    case eBuildingType::park:
+    case eBuildingType::avenue:
+    case eBuildingType::boulevard:
+    case eBuildingType::wall:
+    case eBuildingType::tower:
+    case eBuildingType::gatehouse:
+    case eBuildingType::bench:
+    case eBuildingType::flowerGarden:
+    case eBuildingType::gazebo:
+    case eBuildingType::hedgeMaze:
+    case eBuildingType::fishPond:
+    case eBuildingType::tallObelisk:
+    case eBuildingType::sundial:
+    case eBuildingType::topiary:
+    case eBuildingType::spring:
+    case eBuildingType::stoneCircle:
+    case eBuildingType::shortObelisk:
+    case eBuildingType::waterPark:
+    case eBuildingType::dolphinSculpture:
+    case eBuildingType::orrery:
+    case eBuildingType::shellGarden:
+    case eBuildingType::baths:
+    case eBuildingType::birdBath:
+        return true;
+    default:
+        return false;
+    }
 }

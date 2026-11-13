@@ -2,6 +2,8 @@
 
 #include "textures/egametextures.h"
 
+#include <algorithm>
+
 void eBitmapWidget::sizeHint(int& w, int& h) {
     const auto res = resolution();
     const double mult = res.multiplier();
@@ -13,9 +15,15 @@ void eBitmapWidget::paintEvent(ePainter& p) {
     const auto res = resolution();
     const double mult = res.multiplier();
     const auto tex = texture();
-    const int tw = tex->width();
+    if(!tex) return;
+    if(mFill) {
+        p.drawTextureCover(rect(), tex);
+        return;
+    }
     const int th = tex->height();
-    const SDL_Rect srcRect{0, 0, tw, th};
+    // a widescreen picture from the game folder: show its 4:3 middle
+    const int tw = std::min(tex->width(), 4*th/3);
+    const SDL_Rect srcRect{(tex->width() - tw)/2, 0, tw, th};
     const int w = std::round(mult*mScaling*400);
     const int h = std::round(mult*mScaling*300);
     const SDL_Rect dstRect{p.x(), p.y(), w, h};

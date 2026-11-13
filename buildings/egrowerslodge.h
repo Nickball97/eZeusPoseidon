@@ -27,6 +27,9 @@ public:
 
     std::vector<eCartTask> cartTasks() const override;
 
+    // a blessing gives one bigger delivery (see useBlessing)
+    bool blessingLastsUntilUsed() const override { return true; }
+    bool blessingBoostsSpeed() const override { return false; }
     void read(eReadStream& src) override;
     void write(eWriteStream& dst) const override;
 
@@ -36,7 +39,9 @@ public:
     void setNoTarget(const bool t);
     bool noTarget() const { return mNoTarget; }
 private:
-    const int mMaxResource = 8;
+    // "the growers' lodge can only have 5 loads of both in stock"
+    // (Citadel of Poseidon)
+    const int mMaxResource = 5;
 
     const eGrowerType mType;
 
@@ -51,8 +56,15 @@ private:
     stdptr<eCartTransporter> mCart;
 
     double mSpawnTime = 1000000;
+    double mHarvestSpawnTime = 0;
 
     stdptr<eGrower> mGrower;
+    // "The growers' lodge sends out 3 harvesters in the harvest time"
+    // (Citadel of Poseidon): two more join the tender in season
+    std::vector<stdptr<eGrower>> mHarvesters;
+    int harvesterCount();
+    bool harvestSeason() const;
+    eGrower* spawnGrowerChar();
 };
 
 #endif // EGROWERSLODGE_H

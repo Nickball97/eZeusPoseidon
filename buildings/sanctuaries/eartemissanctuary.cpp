@@ -16,7 +16,7 @@ eAresSanctuary::eAresSanctuary(
         eGameBoard& board,
         const eCityId cid) :
     eSanctuaryWithWarriors(board, eBuildingType::templeAres,
-                           sw, sh, 60, cid) {}
+                           sw, sh, 50, cid) {}
 
 void eSanctuaryWithWarriors::erase() {
     eSanctuary::erase();
@@ -59,7 +59,8 @@ void eSanctuaryWithWarriors::timeChanged(const int by)
             b->moveToDefault();
             id++;
         }
-        mSoldierSpawn += by;
+        // an inactive sanctuary sends no new warriors (mod feature 1B)
+        if(active()) mSoldierSpawn += by;
         const int ssr = 20000;
         if(mSoldierSpawn > ssr) {
             mSoldierSpawn -= ssr;

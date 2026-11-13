@@ -23,6 +23,8 @@
 #include "echeckbox.h"
 
 #include "engine/eeventdata.h"
+#include "characters/esoldierbanner.h"
+#include "characters/etrireme.h"
 
 class eTerrainEditMenu;
 class eDomesticatedAnimal;
@@ -47,10 +49,13 @@ using eBuildingCreator = std::function<stdsptr<eBuilding>()>;
 struct eSavedMessage {
     eEventData fEd;
     eMessage fMsg;
+    int fRecordId = -1; // its entry in the message history
 };
 
 struct eGameWidgetSettings {
     bool fPaused = false;
+    // no longer used (game speed is in the Options menu, for all cities);
+    // kept so saves keep their layout
     int fSpeedId = 1;
     int fSpeed = 10;
     int fDX = 0;
@@ -108,6 +113,8 @@ public:
                  int& idX, int& idY) const;
 
     void setViewMode(const eViewMode m);
+    // the original's cheat codes (Ctrl+Alt+C); true when one was applied
+    bool applyCheat(const std::string& code);
     eViewMode viewMode() const { return mViewMode; }
 
     void viewFraction(const double fx, const double fy);
@@ -142,10 +149,21 @@ public:
 
     void centerDialog(eWidget* const d);
     void openDialog(eWidget* const d) override;
+
+    // reopens message number index (0 = newest) of the city's history
+    void showMessageRecord(const int index);
+    // the Messages window: every message received (text group 63)
+    void showMessagesWindow();
 protected:
     void paintEvent(ePainter& p) override;
 
     bool keyPressEvent(const eKeyPressEvent& e) override;
+    // game speed, Options > Speed options: 10-100%, saved in settings.txt
+    void changeGameSpeed(const int by);
+    // See Security: the soldiers living in the elite house under the mouse
+    void updateSecurityTooltip();
+    // eZeus ticks to run this frame at the current game speed
+    int gameSpeedTicks();
     bool mousePressEvent(const eMouseEvent& e) override;
     bool mouseMoveEvent(const eMouseEvent& e) override;
     bool mouseReleaseEvent(const eMouseEvent& e) override;
@@ -167,6 +185,10 @@ private:
 
     void setBookmark(const int id);
     void viewBookmark(const int id);
+    // the original's company bookmarks (zeus.exe 0x00433AB0 / 0x00433B60):
+    // Ctrl+1-5 stores the selected companies, Alt+1-5 selects them again
+    void setCompanyBookmark(const int id);
+    void selectCompanyBookmark(const int id);
 
     using eApply = std::function<void(eTile* const)>;
     eApply editFunc();
@@ -242,7 +264,11 @@ private:
     void updateHippodromeIds();
 
     void showMessage(eEventData& ed, const eMessage& msg,
-                     const bool prepend = false);
+                     const bool prepend = false,
+                     const eMessage* const condensed = nullptr);
+    // shows a message (or queues it behind the one on screen)
+    void displayMessage(eEventData& ed, const eMessage& msg,
+                        const int recordId, const bool prepend = false);
     void showMessage(eEventData& ed, const eMessageType& msg,
                      const bool prepend = false);
     void showMessage(eEventData& ed, const eEventMessageType& msg,
@@ -281,6 +307,7 @@ private:
     eInfoWidget* openInfoWidget(const std::vector<eCharacter *> chars);
 
     void switchPause();
+    bool footprintFrozen() const;
 
     stdsptr<eTexture> getBasementTexture(
             const int tx, const int ty, eBuilding* const d,
@@ -296,20 +323,27 @@ private:
     bool mTerrainEditMode = false;
 
     bool mRotate = false;
+    // M: the build preview stays on its tile while the mouse moves
+    // (zeus.exe DAT_00665e3e)
+    bool mFreezeFootprint = false;
     int mRotateId = 0;
 
-    const int sSpeeds[6] = {2, 10, 25, 50, 100, 100};
-    const int sMaxSpeedId = int(std::size(sSpeeds)) - 1;
-
     bool mPaused = false;
+    bool mCheatFireball = false; // "Fireballs from Heaven": next click
+    eViewMode mLastSpecialView = eViewMode::defaultView; // for Space
     bool mLocked = false;
     int mFrame{0};
     int mRotateFrame{0};
     std::vector<int> mValiableHippodromePieces;
     int mTime{0};
-    int mSpeedId = 1;
-    int mSpeed = sSpeeds[mSpeedId];
+    // part of an eZeus tick carried to the next frame (game speed)
+    double mSpeedCarry = 0;
     std::map<int, std::pair<int, int>> mBookmarks;
+    struct eCompanyBookmark {
+        std::vector<stdptr<eSoldierBanner>> fBanners;
+        std::vector<stdptr<eTrireme>> fTriremes;
+    };
+    eCompanyBookmark mCompanyBookmarks[5];
 
     int mWheel = 0;
 

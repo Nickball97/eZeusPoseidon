@@ -6,6 +6,8 @@
 #include "walkable/eobsticlehandler.h"
 #include "etilehelper.h"
 
+enum class ePlayerSoldierType;
+
 enum class eGodAttackStage {
     none, appear, goTo1, patrol1, goTo2, patrol2, disappear
 };
@@ -25,6 +27,8 @@ public:
     void setSanctuary(const stdptr<eSanctuary>& s);
 private:
     void initialize();
+    void applyArrivalEffects();
+    void spawnArmy(const ePlayerSoldierType type);
 
     bool lookForAttack(const int dtime, int& time,
                        const int freq, const int range);
@@ -43,6 +47,7 @@ private:
     int mLookForTargetedAttack = eRand::rand() % 2000;
     int mLookForGod = eRand::rand() % 2000;
     int mLookForSpecial = eRand::rand() % 2000;
+    int mCursesLeft = 10; // curses left this visit (zeus.exe +0x8BA)
 
     stdptr<eSanctuary> mSanctuary;
 };

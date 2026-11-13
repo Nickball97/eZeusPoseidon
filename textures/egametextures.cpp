@@ -210,6 +210,13 @@ void eGameTextures::loadShepherd() {
     });
 }
 
+void eGameTextures::loadPriest() {
+    loadTexture([](const int i) {
+        auto& c = sCharacterTextures[i];
+        c.loadPriest();
+    });
+}
+
 void eGameTextures::loadMarbleMiner() {
     loadTexture([](const int i) {
         auto& c = sCharacterTextures[i];
@@ -390,6 +397,7 @@ void eGameTextures::loadTrireme() {
         auto& c = sCharacterTextures[i];
         c.loadTrireme();
         c.loadTriremeOverlay();
+        c.loadFrigate();
     });
 }
 
@@ -1336,6 +1344,13 @@ void eGameTextures::loadBridge() {
     loadTexture([](const int i) {
         auto& c = sBuildingTextures[i];
         c.loadBridge();
+    });
+}
+
+void eGameTextures::loadPoseidonBridge() {
+    loadTexture([](const int i) {
+        auto& c = sBuildingTextures[i];
+        c.loadPoseidonBridge();
     });
 }
 
@@ -2434,4 +2449,18 @@ int eGameTextures::menuSize() {
 
 void eGameTextures::setSettings(const eSettings& s) {
     sSettings = s;
+}
+
+void eGameTextures::loadAtlanteanFire() {
+    loadTexture([](const int i) {
+        auto& c = sDestructionTextures[i];
+        c.loadAtlanteanFire();
+    });
+}
+
+void eGameTextures::loadPoseidonGrandStatue() {
+    loadTexture([](const int i) {
+        auto& c = sBuildingTextures[i];
+        c.loadPoseidonGrandStatue();
+    });
 }

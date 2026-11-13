@@ -12,9 +12,16 @@ public:
 
     void fitOptions(const std::vector<std::string>& options);
     void renderTargetsReset() override;
+
+    // full-screen backgrounds: a widescreen picture is scaled to fill the
+    // whole label instead of being drawn at its own size (a 4:3 picture is
+    // still drawn as before)
+    void setCoverTexture(const bool c) { mCoverTexture = c; }
 protected:
     void sizeHint(int& w, int& h) override;
     void paintEvent(ePainter& p) override;
+private:
+    bool mCoverTexture = false;
 };
 
 #endif // ELABEL_H

@@ -1,4 +1,5 @@
 #include "eelitehousing.h"
+#include "ehousemodel.h"
 
 #include "engine/egameboard.h"
 
@@ -6,6 +7,10 @@
 #include "elanguage.h"
 #include "enumbers.h"
 #include "buildings/epalace.h"
+#include "characters/eelitecitizen.h"
+#include "characters/actions/esickdisgruntledaction.h"
+#include "fileIO/efileformat.h"
+#include "erand.h"
 
 #include <algorithm>
 
@@ -162,14 +167,18 @@ int eEliteHousing::provide(const eProvide p, const int n) {
         value = &mWine;
         max = 16;
         break;
-    case eProvide::arms:
-        max = 4;
+    case eProvide::arms: {
+        // armor storage by level (Model "ALL HOUSES" rows)
+        static const int sMax[] = {0, 2, 2, 4, 4};
+        max = sMax[std::clamp(mLevel, 0, 4)];
         value = &mArms;
-        break;
-    case eProvide::horses:
-        max = 4;
+    } break;
+    case eProvide::horses: {
+        // horse storage by level (Model "ALL HOUSES" rows)
+        static const int sMax[] = {0, 1, 2, 4, 4};
+        max = sMax[std::clamp(mLevel, 0, 4)];
         value = &mHorses;
-        break;
+    } break;
 
     case eProvide::philosopherInventor:
         value = &mPhilosophers;
@@ -213,11 +222,38 @@ int eEliteHousing::provide(const eProvide p, const int n) {
     return add;
 }
 
+eEliteHousing::~eEliteHousing() {
+    if(mNoble) mNoble->kill();
+}
+
+void eEliteHousing::spawnNoble() {
+    auto ts = surroundingRoad(false, true);
+    if(ts.empty()) return;
+    const auto tile = ts[eRand::rand() % ts.size()];
+    const auto c = e::make_shared<eEliteCitizen>(getBoard());
+    c->setBothCityIds(cityId());
+    c->changeTile(tile);
+    const auto a = e::make_shared<eSickDisgruntledAction>(c.get(), this);
+    c->setAction(a);
+    mNoble = c.get();
+}
+
 void eEliteHousing::timeChanged(const int by) {
-    const int lupdate = 1000;
+    // how often and how far nobles walk isn't in any source: eZeus's
+    // usual roaming-walker wait is used
+    if(!mNoble && mPeople > 0) {
+        mNobleWait += by;
+        if(mNobleWait > eNumbers::sPatrolerWaitTime) {
+            mNobleWait = 0;
+            spawnNoble();
+        }
+    }
+    // checked every cycle (16 a month), as houses_evolve does
+    mUpdateLevel += by;
+    const int lupdate = (365*eNumbers::sDayLength)/(12*16);
     if(mUpdateLevel > lupdate) {
         mUpdateLevel -= lupdate;
-        updateLevel();
+        updateLevel(true);
     }
     eHouseBase::timeChanged(by);
 }
@@ -225,19 +261,29 @@ void eEliteHousing::timeChanged(const int by) {
 void eEliteHousing::nextMonth() {
     mPaidTaxesLastMonth = mPaidTaxes;
     mPaidTaxes = 0;
-    const int cfood = round((mPeople + mHorses)*0.25);
+    // a devolved home needs and uses nothing (Model columns i-l are 0)
+    if(mLevel <= 0 || mPeople <= 0) return;
+    // the residents eat a quarter of their number, rounded down, and the
+    // horses 1 unit between them; with no food left for them a horse is
+    // lost (original exe 0x0048B8D0)
+    const int cfood = mPeople*25/100;
+    mFood = std::max(0, mFood - cfood);
+    if(mHorses > 0) {
+        if(mFood > 0) mFood--;
+        else removeHorse();
+    }
+    // fleece, oil and wine: 1 each twice a month (original 0x00484C50)
     const int cfleece = 2;
     const int coil = 2;
-    const int cwine = mLevel > 1 ? 2 : 0;
-    mFood = std::max(0, mFood - cfood);
+    const int cwine = mLevel > 2 ? 2 : 0;
     mFleece = std::max(0, mFleece - cfleece);
     mOil = std::max(0, mOil - coil);
-    if(mLevel > 2) mWine = std::max(0, mWine - cwine);
+    mWine = std::max(0, mWine - cwine);
 }
 
 bool eEliteHousing::lowFood() const {
     if(!mFood) return true;
-    const int cfood = round((mPeople + mHorses)*0.25);
+    const int cfood = mPeople*25/100 + (mHorses > 0 ? 1 : 0);
     return mFood < cfood;
 }
 
@@ -251,50 +297,44 @@ void eEliteHousing::removeHorse() {
     updateLevel();
 }
 
-eHouseMissing eEliteHousing::missing() const {
+// Original Zeus elite house desirability (Model data, ALL HOUSES rows a
+// and b): reaching level L needs eliteEvolve(L); a house already at level
+// L or above keeps it while appeal stays at or above eliteDevolve(L).
+// Levels: 0 abandoned, 1 residence, 2 mansion, 3 manor, 4 estate.
+// Values by difficulty in eHouseModel.
+bool eEliteHousing::appealFor(const int l) const {
     const double appeal = eHouseBase::appeal();
-    int nVenues = 0;
-    if(mPhilosophers > 0) nVenues++;
-    if(mActors > 0) nVenues++;
-    if(mAthletes > 0) nVenues++;
-    if(mCompetitors > 0) nVenues++;
-    if(mFood > 0) {
-        if(mFleece > 0) {
-            if(mOil > 0) {
-                if(nVenues > 2) {
-                    if(appeal > 5.0) {
-                        if(mArms > 0) {
-                            if(appeal > 7.0) {
-                                if(mWine > 0) {
-                                    if(appeal > 9.0) {
-                                        if(mHorses > 0) {
-                                            if(nVenues > 3) {
-                                                if(appeal > 10.) {
-                                                    return eHouseMissing::nothing;
-                                                }
-                                                return eHouseMissing::appeal;
-                                            }
-                                            return eHouseMissing::venues;
-                                        }
-                                        return eHouseMissing::horse;
-                                    }
-                                    return eHouseMissing::appeal;
-                                }
-                                return eHouseMissing::wine;
-                            }
-                            return eHouseMissing::appeal;
-                        }
-                        return eHouseMissing::arms;
-                    }
-                    return eHouseMissing::appeal;
-                }
-                return eHouseMissing::venues;
-            }
-            return eHouseMissing::oil;
-        }
-        return eHouseMissing::fleece;
-    }
-    return eHouseMissing::food;
+    const auto d = getBoard().difficulty(playerId());
+    const int need = level() >= l ? eHouseModel::eliteDevolve(d, l) :
+                                    eHouseModel::eliteEvolve(d, l);
+    return appeal >= need - aphroditeAppealBonus();
+}
+
+// culture/science points for level L. Nicolás's call (9 Nov 2026): an
+// estate needs only its points, no stadium or competitor visit, although
+// the original exe (0x004843D0, Model column e) also asks for a
+// competitor (Atlantean: curator) visit
+bool eEliteHousing::cultureFor(const int l) const {
+    const auto d = getBoard().difficulty(playerId());
+    return culturePoints() >= eHouseModel::eliteCulture(d, l);
+}
+
+eHouseMissing eEliteHousing::missing() const {
+    if(mFood <= 0) return eHouseMissing::food;
+    if(mFleece <= 0) return eHouseMissing::fleece;
+    if(mOil <= 0) return eHouseMissing::oil;
+    if(!cultureFor(1)) return eHouseMissing::venues;
+    if(!appealFor(1)) return eHouseMissing::appeal;
+    if(mArms <= 0) return eHouseMissing::arms;
+    if(!cultureFor(2)) return eHouseMissing::venues;
+    if(!appealFor(2)) return eHouseMissing::appeal;
+    if(mWine <= 0) return eHouseMissing::wine;
+    if(!cultureFor(3)) return eHouseMissing::venues;
+    if(!appealFor(3)) return eHouseMissing::appeal;
+    if(mHorses <= 0) return eHouseMissing::horse;
+    if(!cultureFor(4)) return eHouseMissing::venues;
+    if(!appealFor(4)) return eHouseMissing::appeal;
+    return eHouseMissing::nothing;
 }
 
 void eEliteHousing::read(eReadStream& src) {
@@ -303,6 +343,15 @@ void eEliteHousing::read(eReadStream& src) {
     src >> mWine;
     src >> mArms;
     src >> mHorses;
+    if(src.formatVersion() >= eFileFormat::eliteNoble) {
+        src.readCharacter(&getBoard(), [this](eCharacter* const c) {
+            mNoble = c;
+        });
+        src >> mNobleWait;
+    }
+    if(src.formatVersion() >= eFileFormat::eliteFailedChecks) {
+        src >> mFailedChecks;
+    }
 }
 
 void eEliteHousing::write(eWriteStream& dst) const {
@@ -311,6 +360,9 @@ void eEliteHousing::write(eWriteStream& dst) const {
     dst << mWine;
     dst << mArms;
     dst << mHorses;
+    dst.writeCharacter(mNoble);
+    dst << mNobleWait;
+    dst << mFailedChecks;
 }
 
 std::string eEliteHousing::sName(const int level) {
@@ -332,24 +384,73 @@ const eTextureCollection& eEliteHousing::getTextureCollection(
     }
 }
 
-void eEliteHousing::updateLevel() {
-    const double appeal = eHouseBase::appeal();
-    int nVenues = 0;
-    if(mPhilosophers > 0) nVenues++;
-    if(mActors > 0) nVenues++;
-    if(mAthletes > 0) nVenues++;
-    if(mCompetitors > 0) nVenues++;
-    if(mFood > 0 && mFleece > 0 && mOil > 0 && nVenues > 2 && appeal > 5.0) {
-        if(mArms > 0 && appeal > 7.0) {
-            if(mWine > 0 && appeal > 9.0) {
-                if(mHorses > 0 && nVenues > 3 && appeal > 10.0) {
-                    return setLevel(4);
-                }
-                return setLevel(3);
-            }
-            return setLevel(2);
+// Original elite houses (exe 0x004FE9C0 ... 0x004FEC30): one level at a
+// time, and a level is lost only after 10 failed checks in a row.
+void eEliteHousing::stepToward(const int target, const bool timed) {
+    if(target > mLevel) {
+        mFailedChecks = 0;
+        setLevel(mLevel + 1);
+    } else if(target < mLevel) {
+        if(!timed) return;
+        if(++mFailedChecks >= 10) {
+            mFailedChecks = 0;
+            setLevel(mLevel - 1);
         }
-        return setLevel(1);
+    } else if(timed) {
+        mFailedChecks = 0;
     }
-    setLevel(0);
+}
+
+void eEliteHousing::updateLevel(const bool timed) {
+    if(mFood > 0 && mFleece > 0 && mOil > 0 && cultureFor(1) && appealFor(1)) {
+        if(mArms > 0 && cultureFor(2) && appealFor(2)) {
+            if(mWine > 0 && cultureFor(3) && appealFor(3)) {
+                if(mHorses > 0 && cultureFor(4) && appealFor(4)) {
+                    return stepToward(4, timed);
+                }
+                return stepToward(3, timed);
+            }
+            return stepToward(2, timed);
+        }
+        return stepToward(1, timed);
+    }
+    stepToward(0, timed);
+}
+
+// Original thief (exe 0x005C00C0): from each good he takes a quarter of
+// what the house holds, or half the house level's storage number from the
+// Model file if that is more (food: column q, horses: g, armor: n; the
+// other goods' numbers are 1 and so add nothing).
+void eEliteHousing::robbed() {
+    static const int sFood[5] = {0, 75, 100, 150, 200};
+    static const int sHorses[5] = {0, 1, 2, 4, 4};
+    static const int sArms[5] = {0, 2, 2, 4, 4};
+    const int l = std::clamp(mLevel, 0, 4);
+    const auto steal = [](int& stock, const int floor) {
+        const int t = std::max(stock/4, floor);
+        stock = std::max(0, stock - t);
+    };
+    steal(mFood, sFood[l]/2);
+    steal(mFleece, 0);
+    steal(mOil, 0);
+    steal(mWine, 0);
+    steal(mArms, sArms[l]/2);
+    steal(mHorses, sHorses[l]/2);
+    updateLevel();
+}
+
+void eEliteHousing::soldiers(int& hoplites, int& horsemen) const {
+    hoplites = 0;
+    horsemen = 0;
+    const int l = level();
+    if(l < 2) return;
+    const int a = mArms;
+    if(l == 2) {
+        hoplites = std::min(2, a);
+    } else if(l == 3) {
+        hoplites = std::min(4, a);
+    } else if(l == 4) {
+        horsemen = std::min(std::min(a, 4), mHorses);
+        hoplites = std::max(0, std::min(4 - horsemen, a - horsemen));
+    }
 }

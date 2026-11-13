@@ -9,6 +9,14 @@
 #include "characters/edeer.h"
 
 #include "buildings/ehuntinglodge.h"
+#include "characters/efigurestats.h"
+#include <algorithm>
+#include "engine/egameboard.h"
+#include "engine/eorientation.h"
+#include "vec2.h"
+#include "erand.h"
+
+#include <cmath>
 
 eHuntAction::eHuntAction(eHuntingLodge* const b, eCharacter* const c) :
     eActionWithComeback(c, eCharActionType::huntAction),
@@ -39,6 +47,18 @@ bool tryToCollect(eTile* const tile) {
 }
 
 void eHuntAction::increment(const int by) {
+    if(mHunter && !mHunter->dead()) {
+        if(mHunter->collected() == 0 &&
+           mHunter->actionType() == eCharacterActionType::walk) {
+            mPreyScan += by;
+            if(mPreyScan > 200) {
+                mPreyScan = 0;
+                provokeBoars();
+            }
+        } else if(mHunter->collected() > 0) {
+            mJudged.clear();
+        }
+    }
     if(mHunter) {
         const auto t = mHunter->tile();
         if(t && tryToCollect(t)) {
@@ -82,7 +102,7 @@ bool eHuntAction::decide() {
 
     if(coll > 0) {
         if(inLodge) {
-            mLodge->addProduced(eResourceType::meat, coll);
+            mLodge->addProduced(eResourceType::meat, mLodge->useBlessing(coll));
             mHunter->incCollected(-coll);
             setState(eCharacterActionState::finished);
         } else {
@@ -179,4 +199,47 @@ void eHuntAction::waitDecision() {
     const auto w = e::make_shared<eWaitAction>(mHunter);
     w->setTime(5000);
     setCurrentAction(w);
+}
+
+// The manual: "In anger, some will attack your hunters and kill them."
+// Per Nicolas, 1 boar in 5 charges a hunter who comes within 3 tiles
+// (the hunter's missile range in Figure_model), with attack 10 (the
+// file's 1 would do nothing against a hunter's armor of 1). Calm boars
+// just get caught; either way the hunter fights it with his usual
+// attack animation.
+void eHuntAction::provokeBoars() {
+    const auto t = mHunter->tile();
+    if(!t) return;
+    auto& brd = board();
+    const int range = 3;
+    const int tx = t->x();
+    const int ty = t->y();
+    for(int i = -range; i <= range; i++) {
+        for(int j = -range; j <= range; j++) {
+            const auto tt = brd.tile(tx + i, ty + j);
+            if(!tt) continue;
+            for(const auto& cc : tt->characters()) {
+                if(cc->type() != eCharacterType::boar) continue;
+                if(cc->dead() || cc->fighting()) continue;
+                const auto boar = cc.get();
+                // each boar is judged once per hunter's approach
+                if(std::find(mJudged.begin(), mJudged.end(), boar) !=
+                   mJudged.end()) continue;
+                mJudged.push_back(boar);
+                if(boar->attack() != 0) continue; // already angry
+                if(eRand::rand() % 5 != 0) continue;
+                boar->setAttack(10);
+                boar->pauseAction();
+                const auto a = e::make_shared<eMoveToAction>(boar);
+                // back to grazing afterwards (as after a fight)
+                const auto resume = std::make_shared<eChar_fightFinish>(
+                                        brd, boar);
+                a->setFinishAction(resume);
+                a->setFailAction(resume);
+                boar->setActionType(eCharacterActionType::walk);
+                boar->setAction(a);
+                a->start(t);
+            }
+        }
+    }
 }

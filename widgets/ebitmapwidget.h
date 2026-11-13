@@ -14,6 +14,9 @@ public:
     void setScaling(const double s) {
         mScaling = s;
     }
+    // fill the whole widget with the picture, keeping its shape and
+    // trimming what overflows (the adventure picture in its frame)
+    void setFill(const bool f) { mFill = f; }
 protected:
     void sizeHint(int& w, int& h);
 
@@ -23,6 +26,7 @@ private:
 
     int mBitmap = 0;
     double mScaling = 1.;
+    bool mFill = false;
 };
 
 #endif // EBITMAPWIDGET_H

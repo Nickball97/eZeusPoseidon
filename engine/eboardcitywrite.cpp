@@ -150,4 +150,13 @@ void eBoardCity::write(eWriteStream& dst) const {
     }
 
     dst << mDefending;
+    dst << mMood;
+    dst << mMoodTimer;
+    dst << mMoodActive;
+    dst << mCityHealth;
+    dst << mHealthTarget;
+    dst << mHealthCycle;
+    dst << mOutbreaksThisYear;
+    dst << mOutbreakThisMonth;
+    dst << mPeaceMonths;
 }
