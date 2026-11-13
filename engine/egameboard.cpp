@@ -2499,6 +2499,23 @@ void eGameBoard::incTime(const int by) {
     }
 }
 
+void eGameBoard::step(const int ticks, const bool waitForTasks) {
+    beginStep();
+    incTime(ticks);
+    endStep(waitForTasks);
+}
+
+void eGameBoard::beginStep() {
+    scheduleDataUpdate();
+    updateAppealMapIfNeeded();
+    handleFinishedTasks();
+}
+
+void eGameBoard::endStep(const bool waitForTasks) {
+    emptyRubbish();
+    if(waitForTasks) waitUntilFinished();
+}
+
 void eGameBoard::incFrame() {
     mFrame++;
 }

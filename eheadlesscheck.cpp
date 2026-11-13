@@ -181,15 +181,10 @@ void connect(eGameBoard& board, eCounters& counters) {
     });
 }
 
-// One step of the game, as eGameWidget::paintEvent does it at 100% speed.
+// One step of the game, the same one the game window runs at 100% speed.
 void step(eGameBoard& board) {
-    board.scheduleDataUpdate();
-    board.updateAppealMapIfNeeded();
-    board.handleFinishedTasks();
     eRand::logMark(static_cast<unsigned int>(board.totalTime()/gTicksPerStep));
-    if(!board.episodeLost()) board.incTime(gTicksPerStep);
-    board.emptyRubbish();
-    board.waitUntilFinished();
+    board.step(gTicksPerStep, true);
 }
 
 // ---- the test city ----

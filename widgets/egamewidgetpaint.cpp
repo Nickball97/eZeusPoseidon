@@ -398,9 +398,7 @@ void eGameWidget::paintEvent(ePainter& p) {
     const bool iterate = window()->settings().fGameSpeed >= 100;
     const int iMax = iterate ? 5 : 1;
     for(int i = 0; i < iMax; i++) {
-        mBoard->scheduleDataUpdate();
-        mBoard->updateAppealMapIfNeeded();
-        mBoard->handleFinishedTasks();
+        mBoard->beginStep();
         const int nc = children().size() - mTips.size();
         const bool incTime = !mPaused && !mLocked && !mMsgBox && !mInfoWidget && nc < 6;
         if(incTime) {
@@ -415,8 +413,7 @@ void eGameWidget::paintEvent(ePainter& p) {
                 mBoard->incTime(ticks);
             }
         }
-        mBoard->emptyRubbish();
-        if(iterate) mBoard->waitUntilFinished();
+        mBoard->endStep(iterate);
         if(!incTime) break;
     }
 

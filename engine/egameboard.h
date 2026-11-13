@@ -255,6 +255,19 @@ public:
 
     int state() const { return mState; }
     void incState() { mState++; }
+    // One step of the game: lets `ticks` of game time pass, with the
+    // housekeeping that belongs around it. With waitForTasks the path
+    // searches started by this step are finished before it returns, as
+    // the game does at 100% speed. The headless check calls this with no
+    // window at all.
+    void step(const int ticks, const bool waitForTasks);
+    // The two halves of that housekeeping, for the game window: it has to
+    // decide between them whether time passes at all (paused, a message
+    // or a window open) and calls incTime itself.
+    // before: results of finished path searches are taken in
+    void beginStep();
+    // after: objects that were removed are freed
+    void endStep(const bool waitForTasks);
     void incTime(const int by);
     void incFrame();
     int frame() const { return mFrame; }

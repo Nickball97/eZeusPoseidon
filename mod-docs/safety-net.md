@@ -90,7 +90,7 @@ list of what to try in the game.
   - `eThreadPool::sSynchronous`: pathfinding tasks run at once on the main
     thread instead of on worker threads, so nothing depends on timing. The
     game itself keeps using threads.
-- One step is what `eGameWidget::paintEvent` does at 100% speed: 100 ticks,
+- One step is `eGameBoard::step`, what the game window runs at 100% speed: 100 ticks,
   then wait for the tasks. No picture or sound is ever loaded: every
   texture size is switched off, so the "load this picture" calls do nothing.
 - The test city is placed with the game's own AI building code
@@ -241,3 +241,12 @@ at once which value differs.
 - Still switched off (`/wd4267 /wd4244` in `CMakeLists.txt`): about 400
   places that mix number sizes or cut decimals to whole numbers. Most are
   harmless, but nobody has looked at them one by one.
+
+## The time step is the engine's own (13 Nov 2026, branch `cleanup/sim-step`)
+
+`eGameBoard::step(ticks, waitForTasks)` is one step of game time with its
+housekeeping; `beginStep()` and `endStep()` are its two halves. The game
+window (`eGameWidget::paintEvent`) uses the halves, because between them it
+decides whether time passes at all (paused, a message or a window open). The
+headless check calls `step()`. Before, the check carried its own copy of
+those lines. The order of operations in the window is exactly what it was.
