@@ -28,6 +28,7 @@ private:
     eWidget* mRowsW = nullptr;
     eWidget* mEmptyW = nullptr;
     int mDateW = 0;
+    int mIconW = 0;
     int mRowW = 0;
 };
 

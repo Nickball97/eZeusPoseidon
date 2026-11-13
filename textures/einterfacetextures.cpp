@@ -1038,6 +1038,12 @@ void eInterfaceTextures::load() {
         eSpriteLoader loader(fTileH, "paneling", sds,
                              nullptr, fRenderer);
 
+        // Messages list: closed envelope for an unread message, the
+        // scroll with writing for a read one (Zeus_Interface 258 and 259, by
+        // zeus.exe 0x00522620)
+        fMessageUnread = loader.load(1, 58);
+        fMessageRead = loader.load(1, 59);
+
         for(int i = 0; i < 2; i++) {
             fComboBox.emplace_back(fRenderer);
         }

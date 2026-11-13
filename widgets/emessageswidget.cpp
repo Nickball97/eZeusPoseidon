@@ -7,6 +7,7 @@
 #include "esmallupbutton.h"
 #include "esmalldownbutton.h"
 #include "elanguage.h"
+#include "textures/egametextures.h"
 #include "engine/egameboard.h"
 
 #include <algorithm>
@@ -46,6 +47,15 @@ void eMessagesWidget::initialize(eGameBoard* const board,
         probe->deleteLater();
     }
     mRowW = 40*p;
+    // the envelope column, as wide as the widest envelope picture
+    {
+        const auto& t = eGameTextures::interface()[static_cast<int>(resolution().uiScale())];
+        int iw = 0;
+        if(t.fMessageUnread) iw = std::max(iw, t.fMessageUnread->width());
+        if(t.fMessageRead) iw = std::max(iw, t.fMessageRead->width());
+        mIconW = iw > 0 ? iw + p : 0;
+    }
+    mRowW += mIconW;
 
     const auto header = new eWidget(window());
     header->setNoPadding();
@@ -53,11 +63,12 @@ void eMessagesWidget::initialize(eGameBoard* const board,
     dateH->setSmallFontSize();
     dateH->fitContent();
     header->addWidget(dateH);
+    dateH->setX(mIconW);
     const auto subjH = new eLabel(eLanguage::zeusText(63, 3), window());
     subjH->setSmallFontSize();
     subjH->fitContent();
     header->addWidget(subjH);
-    subjH->setX(mDateW);
+    subjH->setX(mIconW + mDateW);
     header->fitContent();
     cw->addWidget(header);
 
@@ -77,6 +88,8 @@ void eMessagesWidget::initialize(eGameBoard* const board,
         probe->setText("Ag");
         probe->fitContent();
         rowH = probe->height();
+        const auto& t = eGameTextures::interface()[static_cast<int>(resolution().uiScale())];
+        if(t.fMessageUnread) rowH = std::max(rowH, t.fMessageUnread->height() + 2);
         probe->deleteLater();
     }
     mRowsW->resize(mRowW, sRows*rowH);
@@ -184,19 +197,33 @@ void eMessagesWidget::updateRows() {
             b->setNoPadding();
             b->setSmallFontSize();
             b->setText(text);
-            // unread messages stand out, as the original marks them with
-            // a different envelope
-            if(!r.fRead) b->setYellowFontColor();
             b->fitContent();
             b->setPressAction(open);
             b->setRightPressAction(remove);
             row->addWidget(b);
             return b;
         };
-        make(monthYear(r.fDate));
+        // a closed envelope until read, then the scroll (0x00522620)
+        {
+            const auto& t = eGameTextures::interface()[static_cast<int>(resolution().uiScale())];
+            const auto& tex = r.fRead ? t.fMessageRead : t.fMessageUnread;
+            if(tex) {
+                const auto icon = new eButton(window());
+                icon->setNoPadding();
+                icon->setTexture(tex);
+                icon->fitContent();
+                icon->setPressAction(open);
+                icon->setRightPressAction(remove);
+                row->addWidget(icon);
+                icon->setX((mIconW - icon->width())/2);
+            }
+        }
+        const auto date = make(monthYear(r.fDate));
+        date->setX(mIconW);
         const auto subj = make(r.fTitle);
-        subj->setX(mDateW);
+        subj->setX(mIconW + mDateW);
         row->fitContent();
+        for(const auto c : row->children()) c->align(eAlignment::vcenter);
         mRowsW->addWidget(row);
         row->setY(y);
         y += row->height();

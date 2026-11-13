@@ -324,6 +324,8 @@ public:
 
     std::shared_ptr<eTexture> fSuppliesBg;
     std::shared_ptr<eTexture> fEliteSuppliesBg;
+    std::shared_ptr<eTexture> fMessageUnread;
+    std::shared_ptr<eTexture> fMessageRead;
 
     std::shared_ptr<eTexture> fHasFood;
     std::shared_ptr<eTexture> fHasFleece;
