@@ -31,6 +31,98 @@ std::string string_format(const std::string& format, Args... args) {
     return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 }
 
+eMessage eMessageBox::sFillIn(const eEventData& ed, eMessage msg) {
+    if(const auto& c = ed.fCity) {
+        eStringHelpers::replaceAll(msg.fTitle, "[city_name]",
+                                   c->name());
+    }
+    if(const auto& c = ed.fRivalCity) {
+        eStringHelpers::replaceAll(msg.fTitle, "[rival_city_name]",
+                                   c->name());
+    }
+    {
+        const auto type = ed.fResourceType;
+        const auto nameShort = eResourceTypeHelpers::typeName(type);
+        eStringHelpers::replaceAll(msg.fTitle, "[itemshort]",
+                                   nameShort);
+    }
+
+    eStringHelpers::replaceAll(msg.fTitle, "[god]",
+                               eGod::sGodName(ed.fGod));
+
+    eStringHelpers::replaceAll(msg.fTitle, "[monster]",
+                               eMonster::sMonsterName(ed.fMonster));
+
+    eStringHelpers::replaceAll(msg.fText, "[greeting]",
+                               eLanguage::text("greetings"));
+    eStringHelpers::replaceAll(msg.fText, "[player_name]",
+                               ed.fPlayerName);
+    eStringHelpers::replaceAll(msg.fText, "[god]",
+                               eGod::sGodName(ed.fGod));
+    eStringHelpers::replaceAll(msg.fText, "[monster]",
+                               eMonster::sMonsterName(ed.fMonster));
+
+    const auto type = ed.fResourceType;
+    const auto item = eResourceTypeHelpers::typeLongName(type);
+    const auto itemshort = eResourceTypeHelpers::typeName(type);
+    const int count = ed.fResourceCount;
+    const auto countStr = std::to_string(count);
+
+    eStringHelpers::replaceAll(msg.fText, "[amount]",
+                               countStr);
+    eStringHelpers::replaceAll(msg.fText, "[item]",
+                               item);
+    eStringHelpers::replaceAll(msg.fText, "[itemshort]",
+                               itemshort);
+
+    const int giftSize = eGiftHelpers::giftCount(type);
+    if(giftSize > 0) {
+        const int size = count/giftSize;
+        std::string giftSize;
+        if(size < 2) giftSize = eLanguage::zeusText(162, 0);
+        else if(size < 3) giftSize = eLanguage::zeusText(162, 1);
+        else giftSize = eLanguage::zeusText(162, 2);
+        eStringHelpers::replaceAll(msg.fText, "[gift_size]",
+                                   giftSize);
+    }
+
+    if(const auto c = ed.fCity) {
+        const auto nat = c->nationality();
+        const auto natName = eWorldCity::sNationalityName(nat);
+        eStringHelpers::replaceAll(msg.fText, "[nationality]",
+                                   natName);
+        eStringHelpers::replaceAll(msg.fText, "[city_name]",
+                                   c->name());
+        eStringHelpers::replaceAll(msg.fText, "[last_colony]",
+                                   c->name());
+        eStringHelpers::replaceAll(msg.fText, "[leader_name]",
+                                   c->leader());
+        eStringHelpers::replaceAll(msg.fText, "[a_foreign_army]",
+                                   c->anArmy());
+        if(ed.fType == eMessageEventType::invasionMessage) {
+            eStringHelpers::replaceAll(msg.fText, "[time_until_attack]",
+                                      std::to_string(ed.fTime));
+        }
+        if(ed.fType == eMessageEventType::generalRequestGranted) {
+            eStringHelpers::replaceAll(msg.fText, "[time_allotted]",
+                                       std::to_string(ed.fTime));
+        } else if(ed.fType == eMessageEventType::troopsRequest) {
+            eStringHelpers::replaceAll(msg.fText, "[travel_time]",
+                                       std::to_string(ed.fTime));
+        }
+    }
+    const auto c = ed.fRivalCity ? ed.fRivalCity : ed.fCity;
+    if(c) {
+        const auto nat = c->nationality();
+        const auto natName = eWorldCity::sNationalityName(nat);
+        eStringHelpers::replaceAll(msg.fText, "[rival_nationality]",
+                                   natName);
+        eStringHelpers::replaceAll(msg.fText, "[rival_city_name]",
+                                   c->name());
+    }
+    return msg;
+}
+
 void eMessageBox::initialize(eGameBoard& board,
                              const eEventData& ed,
                              const eAction& viewTile,
@@ -41,30 +133,11 @@ void eMessageBox::initialize(eGameBoard& board,
 
     const int p = padding();
 
+    msg = sFillIn(ed, msg);
+
     const auto w0 = new eWidget(window());
     {
         w0->setNoPadding();
-        if(const auto& c = ed.fCity) {
-            eStringHelpers::replaceAll(msg.fTitle, "[city_name]",
-                                       c->name());
-        }
-        if(const auto& c = ed.fRivalCity) {
-            eStringHelpers::replaceAll(msg.fTitle, "[rival_city_name]",
-                                       c->name());
-        }
-        {
-            const auto type = ed.fResourceType;
-            const auto nameShort = eResourceTypeHelpers::typeName(type);
-            eStringHelpers::replaceAll(msg.fTitle, "[itemshort]",
-                                       nameShort);
-        }
-
-        eStringHelpers::replaceAll(msg.fTitle, "[god]",
-                                   eGod::sGodName(ed.fGod));
-
-        eStringHelpers::replaceAll(msg.fTitle, "[monster]",
-                                   eMonster::sMonsterName(ed.fMonster));
-
         const auto title = new eLabel(msg.fTitle, window());
         title->setHugeFontSize();
         title->fitContent();
@@ -118,66 +191,9 @@ void eMessageBox::initialize(eGameBoard& board,
     const auto text = new eLabel(window());
     text->setSmallFontSize();
     text->setWrapWidth(width() - 8*p);
-    eStringHelpers::replaceAll(msg.fText, "[greeting]",
-                               eLanguage::text("greetings"));
-    eStringHelpers::replaceAll(msg.fText, "[player_name]",
-                               ed.fPlayerName);
-    eStringHelpers::replaceAll(msg.fText, "[god]",
-                               eGod::sGodName(ed.fGod));
-    eStringHelpers::replaceAll(msg.fText, "[monster]",
-                               eMonster::sMonsterName(ed.fMonster));
 
     const auto type = ed.fResourceType;
-    const auto item = eResourceTypeHelpers::typeLongName(type);
-    const auto itemshort = eResourceTypeHelpers::typeName(type);
     const int count = ed.fResourceCount;
-    const auto countStr = std::to_string(count);
-
-    eStringHelpers::replaceAll(msg.fText, "[amount]",
-                               countStr);
-    eStringHelpers::replaceAll(msg.fText, "[item]",
-                               item);
-    eStringHelpers::replaceAll(msg.fText, "[itemshort]",
-                               itemshort);
-
-    const int giftSize = eGiftHelpers::giftCount(type);
-    if(giftSize > 0) {
-        const int size = count/giftSize;
-        std::string giftSize;
-        if(size < 2) giftSize = eLanguage::zeusText(162, 0);
-        else if(size < 3) giftSize = eLanguage::zeusText(162, 1);
-        else giftSize = eLanguage::zeusText(162, 2);
-        eStringHelpers::replaceAll(msg.fText, "[gift_size]",
-                                   giftSize);
-    }
-
-    if(const auto c = ed.fCity) {
-        const auto nat = c->nationality();
-        const auto natName = eWorldCity::sNationalityName(nat);
-        eStringHelpers::replaceAll(msg.fText, "[nationality]",
-                                   natName);
-        eStringHelpers::replaceAll(msg.fText, "[city_name]",
-                                   c->name());
-        eStringHelpers::replaceAll(msg.fText, "[last_colony]",
-                                   c->name());
-        eStringHelpers::replaceAll(msg.fText, "[leader_name]",
-                                   c->leader());
-        eStringHelpers::replaceAll(msg.fText, "[a_foreign_army]",
-                                   c->anArmy());
-        if(ed.fType == eMessageEventType::invasionMessage) {
-            eStringHelpers::replaceAll(msg.fText, "[time_until_attack]",
-                                      std::to_string(ed.fTime));
-        }
-    }
-    const auto c = ed.fRivalCity ? ed.fRivalCity : ed.fCity;
-    if(c) {
-        const auto nat = c->nationality();
-        const auto natName = eWorldCity::sNationalityName(nat);
-        eStringHelpers::replaceAll(msg.fText, "[rival_nationality]",
-                                   natName);
-        eStringHelpers::replaceAll(msg.fText, "[rival_city_name]",
-                                   c->name());
-    }
 
     ww->addWidget(text);
     addWidget(ww);
@@ -357,11 +373,7 @@ void eMessageBox::initialize(eGameBoard& board,
         const auto c = ed.fCity;
         if(!c) return;
         const int time = ed.fTime;
-        const auto timeStr = std::to_string(time);
         const auto tributeWid = createTributeWidget(type, count, 0, time);
-
-        eStringHelpers::replaceAll(msg.fText, "[time_allotted]",
-                                   timeStr);
 
         ww->addWidget(tributeWid);
         tributeWid->setX(p);
@@ -452,11 +464,6 @@ void eMessageBox::initialize(eGameBoard& board,
     } else if(ed.fType == eMessageEventType::troopsRequest) {
         const auto c = ed.fCity;
         if(!c) return;
-        const int time = ed.fTime;
-        const auto timeStr = std::to_string(time);
-
-        eStringHelpers::replaceAll(msg.fText, "[travel_time]",
-                                   timeStr);
 
         wid = new eWidget(window());
         wid->setNoPadding();
@@ -548,6 +555,68 @@ void eMessageBox::initialize(eGameBoard& board,
         wid->align(eAlignment::hcenter);
         wid->setY(wid->y() + p/2);
     }
+    w0->align(eAlignment::hcenter);
+    ww->align(eAlignment::hcenter);
+}
+
+void eMessageBox::initializeRecord(const eMessageRecord& r,
+                                   const std::string& playerName,
+                                   const eAction& closeFunc) {
+    // a message read again from the history: its text as it arrived, with
+    // an OK button (choices it once offered were made back then)
+    mCloseFunc = closeFunc;
+    setType(eFrameType::message);
+    const int p = padding();
+
+    const auto w0 = new eWidget(window());
+    w0->setNoPadding();
+    const auto title = new eLabel(r.fTitle, window());
+    title->setHugeFontSize();
+    title->fitContent();
+    w0->addWidget(title);
+    w0->fitContent();
+    w0->setWidth(width() - 2*p);
+    title->align(eAlignment::hcenter);
+    addWidget(w0);
+
+    const auto ww = new eFramedWidget(window());
+    ww->setType(eFrameType::inner);
+    ww->setTextColor(eFontColor::panel);
+    ww->setSmallPadding();
+
+    const auto to = eLanguage::zeusText(63, 5); // to
+    auto str = r.fDate.shortString() + "     " + to + " " + playerName;
+    if(!r.fCityName.empty()) str += ",     " + r.fCityName;
+    const auto d = new eLabel(str, window());
+    d->setSmallFontSize();
+    d->fitContent();
+    ww->addWidget(d);
+    d->setX(p);
+
+    const auto text = new eLabel(window());
+    text->setSmallFontSize();
+    text->setWrapWidth(width() - 8*p);
+    text->setText(r.fText);
+    text->fitContent();
+    ww->addWidget(text);
+    text->setX(p);
+    addWidget(ww);
+
+    const auto ok = new eOkButton(window());
+    ok->setPressAction([this]() { close(); });
+    addWidget(ok);
+
+    ww->stackVertically();
+    ww->fitContent();
+    ww->setWidth(width() - 2*p);
+
+    stackVertically();
+    fitContent();
+
+    mClosable = true;
+    ok->align(eAlignment::right | eAlignment::bottom);
+    ok->setX(ok->x() - 1.5*p);
+    ok->setY(ok->y() - 1.5*p);
     w0->align(eAlignment::hcenter);
     ww->align(eAlignment::hcenter);
 }

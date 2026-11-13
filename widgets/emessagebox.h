@@ -5,6 +5,7 @@
 
 #include "emessage.h"
 #include "engine/edate.h"
+#include "engine/emessagehistory.h"
 
 class eWorldCity;
 struct eEventData;
@@ -22,6 +23,14 @@ public:
                     const eAction& viewTile,
                     const eAction& closeFunc,
                     eMessage msg);
+
+    // a message from the city's history (Messages window, side panel)
+    void initializeRecord(const eMessageRecord& r,
+                          const std::string& playerName,
+                          const eAction& closeFunc);
+
+    // the message with names, goods, numbers etc. filled in from ed
+    static eMessage sFillIn(const eEventData& ed, eMessage msg);
 
     void close();
     bool closable() const { return mClosable; }

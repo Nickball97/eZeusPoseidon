@@ -175,4 +175,5 @@ void eGameBoard::write(eWriteStream& dst) const {
     }
 
     dst << mSavedYear;
+    mMessageHistory.write(dst);
 }

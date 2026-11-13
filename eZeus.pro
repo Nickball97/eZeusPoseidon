@@ -395,6 +395,7 @@ SOURCES += \
         engine/ecityrequest.cpp \
         engine/ecolonymonumentaction.cpp \
         engine/edate.cpp \
+        engine/emessagehistory.cpp \
         engine/edifficulty.cpp \
         engine/eemploymentdistributor.cpp \
         engine/eepisode.cpp \
@@ -643,6 +644,7 @@ SOURCES += \
         widgets/egameloadingwidget.cpp \
         widgets/egamemainmenu.cpp \
         widgets/egameoptions.cpp \
+        widgets/emessageswidget.cpp \
         widgets/egamemenu.cpp \
         widgets/egamemenubase.cpp \
         widgets/egamewidget.cpp \
@@ -2873,6 +2875,8 @@ HEADERS += \
     widgets/egameloadingwidget.h \
     widgets/egamemainmenu.h \
     widgets/egameoptions.h \
+    widgets/emessageswidget.h \
+    engine/emessagehistory.h \
     widgets/egamemenu.h \
     widgets/egamemenubase.h \
     widgets/egamewidget.h \

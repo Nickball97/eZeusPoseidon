@@ -22,6 +22,7 @@
 #include "eminimap.h"
 
 #include "eeventwidget.h"
+#include "emessageswidget.h"
 
 #include "egamewidget.h"
 
@@ -1079,8 +1080,22 @@ void eGameMenu::initialize(eGameBoard* const b,
     }
 
     {
-        const auto m = eCheckableButton::sCreate(coll.fMessages, window(), this);
+        // Messages button: the list of every message received
+        const auto m = eButton::sCreate(coll.fMessages, window(), this);
         m->move(mult*73, mult*239);
+        m->setTooltip(eLanguage::zeusText(68, 33)); // View messages
+        m->setPressAction([this]() {
+            if(mGW) mGW->showMessagesWindow();
+        });
+
+        // the box under the event icons: the latest message, short
+        const auto cm = new eCondensedMessages(window());
+        cm->resize(std::round(mult*84.5), mult*22);
+        cm->move(mult*4, std::round(mult*256.5));
+        cm->initialize(b, [this](const int i) {
+            if(mGW) mGW->showMessageRecord(i);
+        });
+        addWidget(cm);
     }
     {
         const auto butts = new eWidget(window());

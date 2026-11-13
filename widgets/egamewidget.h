@@ -49,6 +49,7 @@ using eBuildingCreator = std::function<stdsptr<eBuilding>()>;
 struct eSavedMessage {
     eEventData fEd;
     eMessage fMsg;
+    int fRecordId = -1; // its entry in the message history
 };
 
 struct eGameWidgetSettings {
@@ -148,6 +149,11 @@ public:
 
     void centerDialog(eWidget* const d);
     void openDialog(eWidget* const d) override;
+
+    // reopens message number index (0 = newest) of the city's history
+    void showMessageRecord(const int index);
+    // the Messages window: every message received (text group 63)
+    void showMessagesWindow();
 protected:
     void paintEvent(ePainter& p) override;
 
@@ -256,7 +262,11 @@ private:
     void updateHippodromeIds();
 
     void showMessage(eEventData& ed, const eMessage& msg,
-                     const bool prepend = false);
+                     const bool prepend = false,
+                     const eMessage* const condensed = nullptr);
+    // shows a message (or queues it behind the one on screen)
+    void displayMessage(eEventData& ed, const eMessage& msg,
+                        const int recordId, const bool prepend = false);
     void showMessage(eEventData& ed, const eMessageType& msg,
                      const bool prepend = false);
     void showMessage(eEventData& ed, const eEventMessageType& msg,

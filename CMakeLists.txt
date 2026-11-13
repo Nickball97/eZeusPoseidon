@@ -792,6 +792,8 @@ add_executable(eZeus
     engine/ecolonymonumentaction.cpp
     engine/ecolonymonumentaction.h
     engine/edate.cpp
+    engine/emessagehistory.cpp
+    engine/emessagehistory.h
     engine/edate.h
     engine/edifficulty.cpp
     engine/edifficulty.h
@@ -2807,6 +2809,8 @@ add_executable(eZeus
     widgets/egamemainmenu.h
     widgets/egameoptions.cpp
     widgets/egameoptions.h
+    widgets/emessageswidget.cpp
+    widgets/emessageswidget.h
     widgets/egamemenu.cpp
     widgets/egamemenu.h
     widgets/egamemenubase.cpp

@@ -1,5 +1,6 @@
 #include "egamewidget.h"
 #include "egameoptions.h"
+#include "emessageswidget.h"
 #include "echeatwidget.h"
 
 #include "engine/egameboard.h"
@@ -1103,7 +1104,7 @@ void eGameWidget::updateHippodromeIds() {
 void eGameWidget::showMessage(eEventData& ed,
                               const eMessageType& msg,
                               const bool prepend) {
-    showMessage(ed, msg.fFull, prepend);
+    showMessage(ed, msg.fFull, prepend, &msg.fCondensed);
 }
 
 void eGameWidget::showMessage(eEventData& ed,
@@ -1115,7 +1116,39 @@ void eGameWidget::showMessage(eEventData& ed,
         reason = msg.fNoReason;
     }
     eStringHelpers::replace(m.fFull.fText, "[reason_phrase]", reason);
-    showMessage(ed, m.fFull, prepend);
+    eStringHelpers::replace(m.fCondensed.fText, "[reason_phrase]", reason);
+    showMessage(ed, m.fFull, prepend, &m.fCondensed);
+}
+
+void eGameWidget::showMessagesWindow() {
+    if(mMsgBox) return;
+    const auto w = new eMessagesWidget(window());
+    w->initialize(mBoard, [this](const int i) {
+        showMessageRecord(i);
+    });
+    window()->execDialog(w, true, nullptr, this);
+    w->align(eAlignment::center);
+    // over the map, not the side panel
+    w->setX((width() - mGm->width() - w->width())/2);
+}
+
+void eGameWidget::showMessageRecord(const int index) {
+    auto& h = mBoard->messageHistory();
+    if(index < 0 || index >= h.count()) return;
+    if(mMsgBox) return;
+    h.setRead(index);
+    const auto msgb = new eMessageBox(window());
+    mMsgBox = msgb;
+    msgb->setHeight(height()/3);
+    msgb->setWidth(width() - mGm->width() - 2*padding());
+    const auto close = [this]() {
+        mMsgBox = nullptr;
+    };
+    msgb->initializeRecord(h.at(index), window()->leader(), close);
+    window()->execDialog(msgb, true, close, this);
+    msgb->align(eAlignment::bottom | eAlignment::hcenter);
+    msgb->setY(msgb->y() - mGm->width()/10);
+    msgb->setX(msgb->x() - mGm->width()/2);
 }
 
 void eGameWidget::showTip(const ePlayerCityTarget& target,
@@ -1206,7 +1239,8 @@ void eGameWidget::updateTipPositions() {
 
 void eGameWidget::showMessage(eEventData& ed,
                               const eMessage& msg,
-                              const bool prepend) {
+                              const bool prepend,
+                              const eMessage* const condensed) {
     const auto& target = ed.fTarget;
     const auto ppid = mBoard->personPlayer();
     if(target.isPlayerTarget()) {
@@ -1217,13 +1251,44 @@ void eGameWidget::showMessage(eEventData& ed,
         const auto pid = mBoard->cityIdToPlayerId(cid);
         if(pid != ppid) return;
     }
+    // keep it in the city's message history, as the original does when a
+    // message arrives (zeus.exe 0x00521A70)
+    eMessageRecord r;
+    {
+        auto red = ed;
+        red.fDate = mBoard->date();
+        red.fPlayerName = window()->leader();
+        const auto full = eMessageBox::sFillIn(red, msg);
+        r.fDate = red.fDate;
+        r.fTitle = full.fTitle;
+        r.fText = full.fText;
+        if(condensed) {
+            const auto c = eMessageBox::sFillIn(red, *condensed);
+            r.fCondensed = c.fText.empty() ? c.fTitle : c.fText;
+        }
+        if(r.fCondensed.empty()) r.fCondensed = r.fTitle;
+        if(target.isCityTarget()) {
+            r.fCityName = mBoard->cityName(target.cityTarget());
+        }
+    }
+    const int recordId = mBoard->messageHistory().add(r);
+    displayMessage(ed, msg, recordId, prepend);
+}
+
+void eGameWidget::displayMessage(eEventData& ed,
+                                 const eMessage& msg,
+                                 const int recordId,
+                                 const bool prepend) {
     if(mMsgBox) {
         auto& smsg = prepend ? mSavedMsgs.emplace_front() :
                                mSavedMsgs.emplace_back();
         smsg.fEd = ed;
         smsg.fMsg = msg;
+        smsg.fRecordId = recordId;
         return;
     }
+    // shown in full: it counts as read
+    if(recordId >= 0) mBoard->messageHistory().markRead(recordId);
     const auto msgb = new eMessageBox(window());
     mMsgBox = msgb;
     msgb->setHeight(height()/3);
@@ -1253,9 +1318,9 @@ void eGameWidget::showMessage(eEventData& ed,
     const auto close = [this]() {
         mMsgBox = nullptr;
         if(mSavedMsgs.empty()) return;
-        auto& msg = mSavedMsgs.front();
-        showMessage(msg.fEd, msg.fMsg);
+        auto smsg = mSavedMsgs.front();
         mSavedMsgs.pop_front();
+        displayMessage(smsg.fEd, smsg.fMsg, smsg.fRecordId);
     };
 
     msgb->initialize(*mBoard, ed, a, close, msg);

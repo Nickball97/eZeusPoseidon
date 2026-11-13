@@ -180,6 +180,10 @@ void eGameBoard::read(eReadStream& src) {
 
     src >> mSavedYear;
 
+    if(src.formatVersion() >= eFileFormat::messageHistory) {
+        mMessageHistory.read(src);
+    }
+
     updateMarbleTiles();
     updateTerritoryBorders();
     for(const auto& c : mCitiesOnBoard) {

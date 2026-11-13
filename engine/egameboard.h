@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "elimits.h"
+#include "emessagehistory.h"
 #include "etile.h"
 
 #include "boardData/epopulationdata.h"
@@ -93,6 +94,9 @@ class eGameBoard : public eStdSelfRef {
 public:
     eGameBoard(eWorldBoard& world);
     ~eGameBoard();
+
+    // messages the player received (Messages window, side panel box)
+    eMessageHistory& messageHistory() { return mMessageHistory; }
 
     void initialize(const int w, const int h);
     void resize(const int w, const int h);
@@ -873,6 +877,7 @@ private:
     std::vector<eTrireme*> mSelectedTriremes;
 
     std::vector<ePlannedAction*> mPlannedActions;
+    eMessageHistory mMessageHistory;
 
     struct eMarbleTiles {
         bool contains(eTile* const tile) const;
