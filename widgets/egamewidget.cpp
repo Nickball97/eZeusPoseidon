@@ -211,7 +211,7 @@ void eGameWidget::initializeNumbers() {
     for(const auto size : {eTileSize::s15, eTileSize::s30,
                            eTileSize::s45, eTileSize::s60}) {
         auto& numbers = mNumbers[size];
-        int fs;
+        int fs = 0;
         switch(size) {
         case eTileSize::s15:
             fs = 10;

@@ -658,7 +658,7 @@ void eSoldierBanner::updateCount() {
     const int n = mSoldiers.size();
     if(!mHome && !mAbroad) {
         for(int i = n; i < mCount; i++) {
-            eCharacterType cht;
+            eCharacterType cht = eCharacterType::none;
             switch(mType) {
             case eBannerType::rockThrower:
                 cht = eCharacterType::rockThrower;

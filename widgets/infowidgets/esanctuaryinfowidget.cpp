@@ -151,7 +151,7 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
             pb->setPressAction([s, godId, buttonReasonW, reasonLabel]() {
                 eHelpDenialReason reason;
                 const bool r = s->askForHelp(reason);
-                int string;
+                int string = 0;
                 if(!r) {
                     switch(reason) {
                     case eHelpDenialReason::tooSoon:
@@ -234,7 +234,7 @@ void eSanctuaryInfoWidget::initialize(eMonument* const m) {
                 const auto askForAttack = [s, buttonReasonW, reasonLabel](const eCityId cid) {
                     eHelpDenialReason reason;
                     const bool r = s->askForAttack(cid, reason);
-                    int string;
+                    int string = 0;
                     if(!r) {
                         switch(reason) {
                         case eHelpDenialReason::tooSoon: {

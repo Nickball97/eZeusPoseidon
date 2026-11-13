@@ -23,6 +23,8 @@ eEliteHousingRenderer::getTexture(const eTileSize size) const {
     case eEliteRendererType::right:
         return mBuilding->getRightTexture(size);
     }
+    // not reached with a valid value: every case above returns
+    return nullptr;
 }
 
 std::vector<eOverlay>
@@ -35,4 +37,6 @@ eEliteHousingRenderer::getOverlays(const eTileSize size) const {
     case eEliteRendererType::top:
         return mBuilding->getHorseOverlays(size);
     }
+    // not reached with a valid value: every case above returns
+    return {};
 }

@@ -3407,6 +3407,18 @@ target_include_directories(eZeus PRIVATE
     ${EZEUS_SDL2_COMPAT_INCLUDE}
 )
 
+# Compiler warnings for the game's own code (not the downloaded libraries).
+# Level 3 reports the likely mistakes without the noise of level 4.
+if(MSVC)
+    target_compile_options(eZeus PRIVATE /W3
+        # also: a local value that may be used before it is set
+        /w34701 /w34703
+        # Not shown: whole numbers of different sizes mixed, and decimal
+        # numbers cut to whole ones. There are about 400 such places; none
+        # has been looked at one by one yet, and they would bury the rest.
+        /wd4267 /wd4244)
+endif()
+
 # Testing shortcuts (Ctrl+Shift+M: +10000 drachmas). Never on by default.
 option(EZEUS_DEV_CHEATS "Enable developer test shortcuts" OFF)
 if(EZEUS_DEV_CHEATS)

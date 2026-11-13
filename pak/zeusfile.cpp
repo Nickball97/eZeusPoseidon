@@ -381,7 +381,7 @@ bool ZeusFile::loadBoard(eGameBoard& board, eCampaign& campaign,
 
     const auto fertile = readCompressedByteGrid(); // meadow, 0-99
     skipBytes(18628);
-    bool worldMapIsPoseidon;
+    bool worldMapIsPoseidon = false;
     std::vector<uint8_t> cityBytes1;
     std::vector<uint8_t> cityBytes2;
     std::vector<uint8_t> cityBytes3;

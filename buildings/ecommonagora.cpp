@@ -9,6 +9,8 @@ int swCA(const eAgoraOrientation o) {
     case eAgoraOrientation::topLeft:
         return 3;
     }
+    // not reached with a valid value: every case above returns
+    return 6;
 }
 
 int shCA(const eAgoraOrientation o) {
@@ -20,6 +22,8 @@ int shCA(const eAgoraOrientation o) {
     case eAgoraOrientation::topLeft:
         return 6;
     }
+    // not reached with a valid value: every case above returns
+    return 3;
 }
 
 eCommonAgora::eCommonAgora(const eAgoraOrientation o, eGameBoard& board,

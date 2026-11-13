@@ -204,6 +204,8 @@ eOrientation eCharacter::rotatedOrientation() const {
             return eOrientation::right;
         }
     }
+    // not reached with a valid value: every case above returns
+    return mOrientation;
 }
 
 void eCharacter::changeTile(eTile* const t, const bool prepend) {

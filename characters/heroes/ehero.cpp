@@ -80,6 +80,8 @@ stdsptr<eHero> eHero::sCreateHero(const eHeroType type, eGameBoard& board) {
     case eHeroType::theseus:
         return e::make_shared<eTheseus>(board);
     }
+    // not reached with a valid value: every case above returns
+    return nullptr;
 }
 
 std::string eHero::sHeroName(const eHeroType ht) {

@@ -3,7 +3,7 @@
 
 #include "eframedwidget.h"
 
-class eEpisode;
+struct eEpisode;
 class eCampaign;
 class eWorldBoard;
 

@@ -48,4 +48,6 @@ double eTaxRateHelpers::getRate(const eTaxRate tr) {
     case eTaxRate::outrageous:
         return 0.20;
     }
+    // not reached with a valid value: every case above returns
+    return 0.09; // the normal rate
 }

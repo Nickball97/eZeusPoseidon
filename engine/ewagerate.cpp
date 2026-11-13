@@ -37,4 +37,6 @@ double eWageRateHelpers::wageMultiplier(const eWageRate wr) {
     case eWageRate::high: return 3.4;
     case eWageRate::veryHigh: return 4;
     }
+    // not reached with a valid value: every case above returns
+    return 3; // the normal wage
 }

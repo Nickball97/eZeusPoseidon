@@ -276,6 +276,8 @@ void eGameWidget::scheduleConnectedTerrainUpdate(eTile* const startTile) {
             return t1dy > t2dy;
         } break;
         }
+        // not reached with a valid value: every case above returns
+        return false;
     });
 
     const int tid = static_cast<int>(mTileSize);
@@ -1831,9 +1833,9 @@ void eGameWidget::paintEvent(ePainter& p) {
                     };
                     if(id == 2) {
                         bool reverse = false;
-                        int texId1;
-                        int texId2;
-                        int texId3;
+                        int texId1 = 0;
+                        int texId2 = 0;
+                        int texId3 = 0;
                         switch(dir) {
                         case eWorldDirection::N: {
                             texId1 = 11;
@@ -1875,9 +1877,9 @@ void eGameWidget::paintEvent(ePainter& p) {
                         }
                     } else if(id == 4) {
                         bool reverse = false;
-                        int texId1;
-                        int texId2;
-                        int texId3;
+                        int texId1 = 0;
+                        int texId2 = 0;
+                        int texId3 = 0;
                         switch(dir) {
                         case eWorldDirection::N: {
                             texId1 = 10;

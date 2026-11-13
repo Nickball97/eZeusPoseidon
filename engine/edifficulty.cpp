@@ -17,6 +17,8 @@ std::string eDifficultyHelpers::name(const eDifficulty diff) {
     case eDifficulty::olympian:
         return "olympian";
     }
+    // not reached with a valid value: every case above returns
+    return "";
 }
 
 int costBase(const eBuildingType type) {
@@ -363,6 +365,8 @@ int costBase(const eBuildingType type) {
     case eBuildingType::crosswalk:
         return 25;
     }
+    // not reached with a valid value: every case above returns
+    return 0;
 }
 
 double costMultiplier(const eDifficulty diff) {
@@ -1028,6 +1032,8 @@ int eDifficultyHelpers::taxSentiment(
         return vals[id];
     }
     }
+    // not reached with a valid value: every case above returns
+    return 0;
 }
 
 double eDifficultyHelpers::workerFrac(

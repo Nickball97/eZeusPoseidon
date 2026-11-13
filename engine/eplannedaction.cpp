@@ -39,6 +39,8 @@ ePlannedAction* ePlannedAction::sCreate(const ePlannedActionType type) {
     case ePlannedActionType::colonyMonument:
         return new eColonyMonumentAction();
     }
+    // not reached with a valid value: every case above returns
+    return nullptr;
 }
 
 void ePlannedAction::incTime(const int by, eGameBoard& board) {

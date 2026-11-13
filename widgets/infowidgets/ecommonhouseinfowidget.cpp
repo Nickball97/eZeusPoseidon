@@ -66,7 +66,7 @@ void eCommonHouseInfoWidget::initialize(eHouseBase* const house) {
     if(people <= 0) return;
 
     const auto miss = house->missing();
-    int needString;
+    int needString = 0;
     switch(miss) {
     case eHouseMissing::water:
         needString = 49;

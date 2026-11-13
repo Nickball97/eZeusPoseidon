@@ -304,7 +304,7 @@ void eTroopsRequestEvent::won() {
         board->event(eEvent::troopsRequestAttackAverted, ed);
     } break;
     case eTroopsRequestEventType::cityAttacksRival: {
-        eEvent event;
+        eEvent event = eEvent::fire; // always set below
         if(mCity->isVassal()) {
             event = eEvent::vassalConqueresRival;
             rrmsgs = &msgs.fVassalTroopsAttackRequest;
@@ -358,7 +358,7 @@ void eTroopsRequestEvent::lost() {
     ed.fType = eMessageEventType::common;
 
     auto& msgs = eMessages::instance;
-    eEvent event;
+    eEvent event = eEvent::fire; // always set below
     eTroopsRequestedMessages* rrmsgs = nullptr;
     switch(mType) {
     case eTroopsRequestEventType::cityUnderAttack: {

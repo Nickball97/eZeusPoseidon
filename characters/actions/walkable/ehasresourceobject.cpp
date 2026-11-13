@@ -17,6 +17,8 @@ stdsptr<eHasResourceObject> eHasResourceObject::sCreate(
     case eHasResourceObjectType::blackMarble:
         return std::make_shared<eHasResourceObject>(type);
     }
+    // not reached with a valid value: every case above returns
+    return std::make_shared<eHasNonBusyResourceObject>();
 }
 
 stdsptr<eHasResourceObject> eHasResourceObject::sCreateNonBusy(

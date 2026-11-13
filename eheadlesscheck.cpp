@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS // plain fopen is fine here
+
 #include "eheadlesscheck.h"
 
 #include <algorithm>

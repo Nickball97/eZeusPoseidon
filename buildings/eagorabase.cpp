@@ -77,10 +77,10 @@ int eAgoraBase::spaceLeft(const eResourceType type) const {
 SDL_Point eAgoraBase::pt(const int rx, const int ry,
                          const eAgoraOrientation o,
                          const int id) const {
-    int dx;
-    int dy;
-    int ddx;
-    int ddy;
+    int dx = 0;
+    int dy = 0;
+    int ddx = 0;
+    int ddy = 0;
     switch(o) {
     case eAgoraOrientation::bottomLeft:
         dx = 0;

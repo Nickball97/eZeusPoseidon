@@ -71,8 +71,8 @@ eOverlay eCartTransporter::getSecondaryTexture(const eTileSize size) const {
     default: break;
     }
 
-    double xx;
-    double yy;
+    double xx = 0;
+    double yy = 0;
     switch(rotatedOrientation()) {
     case eOrientation::topRight:
         xx = 0.25;

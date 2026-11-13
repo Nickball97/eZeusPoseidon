@@ -673,8 +673,8 @@ bool eGameWidget::buildMouseRelease() {
             r = true;
             int x = __INT_MAX__;
             int y = __INT_MAX__;
-            int w;
-            int h;
+            int w = 0;
+            int h = 0;
             int ri = 0;
             for(const auto t : p) {
                 const int tx = t->x();
@@ -725,8 +725,8 @@ bool eGameWidget::buildMouseRelease() {
             r = true;
             int x = __INT_MAX__;
             int y = __INT_MAX__;
-            int w;
-            int h;
+            int w = 0;
+            int h = 0;
             int ri = 0;
             for(const auto t : p) {
                 const int tx = t->x();
@@ -832,7 +832,7 @@ bool eGameWidget::buildMouseRelease() {
                     const auto diff = mBoard->difficulty(ppid);
                     const int cost = eDifficultyHelpers::buildingCost(
                                          diff, eBuildingType::bridge);
-                    mBoard->incDrachmas(ppid, -path.size()*cost, eFinanceTarget::construction);
+                    mBoard->incDrachmas(ppid, -static_cast<int>(path.size())*cost, eFinanceTarget::construction);
                 }
             }
         } break;

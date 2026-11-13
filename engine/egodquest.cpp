@@ -118,6 +118,8 @@ eHeroType eGodQuest::sDefaultHero(
         }
     } break;
     }
+    // not reached with a valid value: every case above returns
+    return eHeroType::achilles;
 }
 
 std::string eGodQuest::name() const {

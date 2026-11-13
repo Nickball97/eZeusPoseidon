@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS // plain fopen is fine here
+
 // Part of the safety net (developer build only): reading the logs written
 // with --rand-log. Kept apart from eheadlesscheck.cpp because it needs
 // windows.h, whose names clash with the game's.

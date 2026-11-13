@@ -412,6 +412,8 @@ eBuildingType eBuildingModeHelpers::toBuildingType(const eBuildingMode mode) {
     case eBuildingMode::crosswalk:
         return eBuildingType::crosswalk;
     }
+    // not reached with a valid value: every case above returns
+    return eBuildingType::none;
 }
 
 int eBuildingModeHelpers::toCommemorativeId(const eBuildingMode mode) {

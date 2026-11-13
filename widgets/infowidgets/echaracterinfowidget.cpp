@@ -305,6 +305,8 @@ std::shared_ptr<eTexture> gCharPortrait(
     default:
         return zgp.getTexture(0);
     }
+    // not reached with a valid value: every case above returns
+    return zgp.getTexture(0);
 }
 
 std::string gCharName(const eCharacterType c, const int seedId) {

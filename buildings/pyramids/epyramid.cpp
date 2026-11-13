@@ -955,8 +955,8 @@ void ePyramid::initialize(const std::vector<bool>& levels) {
     }
 
     for(const auto& t : top) {
-        int w;
-        int h;
+        int w = 0;
+        int h = 0;
         stdsptr<ePyramidElement> b;
         switch(t.fType) {
         case ePyramidTopType::top: {
@@ -1714,7 +1714,7 @@ eGodType ePyramid::sGod(const eBuildingType type) {
 eBuildingType ePyramid::sSwitchGod(const eBuildingType srcType,
                                    const eGodType god) {
     const int godId = static_cast<int>(god);
-    eBuildingType type;
+    eBuildingType type = eBuildingType::none;
     switch(srcType) {
     case eBuildingType::minorShrineAphrodite:
     case eBuildingType::minorShrineApollo:

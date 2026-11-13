@@ -326,12 +326,12 @@ int eRoad::getHippodromeTextureId() const {
     const bool tlRoad = !tl || tl->hasRoad();
 
     if(mAboveHippodrome) {
-        int texId1;
-        int texId2;
-        int texId3;
-        int texId4;
-        int texId5;
-        int texId6;
+        int texId1 = 0;
+        int texId2 = 0;
+        int texId3 = 0;
+        int texId4 = 0;
+        int texId5 = 0;
+        int texId6 = 0;
         switch(dir) {
         case eWorldDirection::N: {
             texId1 = 8;

@@ -20,7 +20,7 @@ bool hasResource(eThreadTile* const tile, const eGrowerType gt,
                  const bool grapesDisabled, const bool olivesDisabled) {
     if(eRand::rand() % 2) return false;
     const auto ub = tile->underBuildingType();
-    bool r;
+    bool r = false;
     switch(gt) {
     case eGrowerType::grapesAndOlives:
         r = (ub == eBuildingType::vine && !grapesDisabled) ||

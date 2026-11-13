@@ -5,7 +5,7 @@
 
 template <class T> using stdsptr = std::shared_ptr<T>;
 
-class eEpisodeGoal;
+struct eEpisodeGoal;
 class eGameBoard;
 
 class eEpisodeGoalWidget : public eFramedWidget {

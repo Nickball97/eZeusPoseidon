@@ -889,7 +889,7 @@ std::vector<eOverlay> eHerosHall::getOverlays(const eTileSize size) const {
     const int sizeId = static_cast<int>(size);
     const auto& texs = eGameTextures::buildings()[sizeId];
     const auto& statues = texs.fHeroStatues;
-    int id;
+    int id = 0;
     switch(mType) {
     case eHeroType::achilles:
         id = 0;

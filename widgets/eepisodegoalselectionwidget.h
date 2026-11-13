@@ -5,7 +5,7 @@
 
 #include "pointers/estdselfref.h"
 
-class eEpisodeGoal;
+struct eEpisodeGoal;
 class eGameBoard;
 
 enum class eGameEventBranch;

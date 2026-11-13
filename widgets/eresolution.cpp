@@ -81,6 +81,8 @@ double eResolution::multiplier() const {
     case eUIScale::large:
         return 2.0;
     }
+    // not reached with a valid value: every case above returns
+    return 1.0;
 }
 
 int eResolution::hugeFontSize() const {

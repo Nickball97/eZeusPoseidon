@@ -48,6 +48,8 @@ public:
         case eHasResourceObjectType::nonBusy:
             return false;
         }
+        // not reached with a valid value: every case above returns
+        return false;
     }
 
     virtual void read(eReadStream&) {}

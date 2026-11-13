@@ -250,8 +250,8 @@ eTextureSpace eHippodromePiece::getTextureSpace(
     const auto& r = tileRect();
     const auto& board = getBoard();
     const auto dir = board.direction();
-    int x;
-    int y;
+    int x = 0;
+    int y = 0;
     switch(dir) {
     case eWorldDirection::N: {
         x = r.x;
@@ -292,8 +292,8 @@ eTextureSpace eHippodromePiece::getTextureSpace(
             }
         }
 
-        int x;
-        int y;
+        int x = 0;
+        int y = 0;
         switch(dir) {
         case eWorldDirection::N: {
             x = r.x + r.w - 1;

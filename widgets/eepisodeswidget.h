@@ -5,7 +5,7 @@
 
 class eWidgetColumn;
 class eCampaign;
-class eEpisode;
+struct eEpisode;
 class eEpisodeWidget;
 
 class eEpisodesWidget : public eWidget {

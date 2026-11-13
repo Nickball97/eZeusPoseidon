@@ -60,7 +60,7 @@ void eReceiveRequestEvent::trigger() {
         auto& msgs = eMessages::instance;
         if(mPostpone > 1) {
             ed.fType = eMessageEventType::resourceGranted;
-            eEvent event;
+            eEvent event = eEvent::fire; // always set below
             eReceiveRequestMessages* rrmsgs = nullptr;
             if(mRequestType == eReceiveRequestType::tribute) {
                 event = eEvent::generalRequestTributeTooLate;
@@ -146,7 +146,7 @@ void eReceiveRequestEvent::trigger() {
             me->finished(*me->mTooLateTrigger, reason);
         } else {
             ed.fType = eMessageEventType::resourceGranted;
-            eEvent event;
+            eEvent event = eEvent::fire; // always set below
             eReceiveRequestMessages* rrmsgs = nullptr;
             if(mRequestType == eReceiveRequestType::tribute) {
                 event = eEvent::generalRequestTributeComply;
@@ -236,7 +236,7 @@ void eReceiveRequestEvent::trigger() {
 
     if(mPostpone > 3) {
         ed.fType = eMessageEventType::resourceGranted;
-        eEvent event;
+        eEvent event = eEvent::fire; // always set below
         eReceiveRequestMessages* rrmsgs = nullptr;
         auto& msgs = eMessages::instance;
         if(mRequestType == eReceiveRequestType::tribute) {
