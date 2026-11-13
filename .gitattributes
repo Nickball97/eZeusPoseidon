@@ -1,0 +1,3 @@
+# The safety net compares these byte for byte with fresh results, which
+# are written with plain line ends on every system.
+/tools/check/baseline/*.txt text eol=lf
