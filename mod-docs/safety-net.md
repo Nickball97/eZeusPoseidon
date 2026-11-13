@@ -160,7 +160,8 @@ before deciding anything):
 4. **Agoras burning down.** A real bug, fixed; see "Other findings" below.
    The rest of the weak food supply was the test city's own layout (too
    few farms, a street out of reach of any maintenance office).
-5. `eGameBoard::canBuildBase` takes (minX, maxX, minY, maxY) but the AI's
+5. Fixed on 13 Nov 2026 (branch `cleanup/housekeeping`):
+   `eGameBoard::canBuildBase` takes (minX, maxX, minY, maxY) but the AI's
    pier code in `eaidistrict.cpp` passes (minX, minY, maxX, maxY). Only
    affects AI-built trade piers.
 6. About 650 fields in the game's classes have no starting value in their
@@ -225,3 +226,18 @@ at once which value differs.
   paid), six farms instead of three, and a maintenance office on each of
   the two middle streets. The baseline was made again; results from before
   this step cannot be compared with it.
+
+## Housekeeping (13 Nov 2026, branch `cleanup/housekeeping`)
+
+- The build and install scripts are in the repository: `tools/build.cmd`
+  and `tools/deploy.ps1`.
+- The compiler now reports likely mistakes in the game's own code (MSVC
+  level 3, plus "local value may be used before it is set"). The first
+  build gave 2,660 warnings, now none: 20 functions that could end without
+  a value, 41 local values without a starting value, a few small ones. The
+  safety net gave the same result before and after, on all seven
+  adventures. Keep the build at zero warnings: after a build, search
+  `build.log` for `warning C`.
+- Still switched off (`/wd4267 /wd4244` in `CMakeLists.txt`): about 400
+  places that mix number sizes or cut decimals to whole numbers. Most are
+  harmless, but nobody has looked at them one by one.

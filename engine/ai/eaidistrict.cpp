@@ -683,8 +683,11 @@ bool gBuild(const eAIBuilding& b,
     case eBuildingType::tradePost: {
         const auto& oR = b.fOtherRect;
         if(b.fTradePostType == eTradePostType::pier) {
-            const bool cb = board.canBuildBase(oR.x, oR.y,
-                                               oR.x + oR.w - 1, oR.y + oR.h - 1,
+            // the land for the pier must be free too (the four numbers
+            // are: left, right, top, bottom; they used to be passed in the
+            // wrong order, so this never really looked)
+            const bool cb = board.canBuildBase(oR.x, oR.x + oR.w,
+                                               oR.y, oR.y + oR.h,
                                                true, cid, pid, false, false, 2);
             if(!cb) return false;
         }
