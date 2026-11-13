@@ -386,6 +386,12 @@ SOURCES += \
         engine/boardData/ehusbandrydata.cpp \
         engine/boardData/epopulationdata.cpp \
         engine/eboardcity.cpp \
+        engine/eboardcitydistricts.cpp \
+        engine/eboardcityemployment.cpp \
+        engine/eboardcitymilitary.cpp \
+        engine/eboardcitypeople.cpp \
+        engine/eboardcityregistry.cpp \
+        engine/eboardcityresources.cpp \
         engine/eboardcityread.cpp \
         engine/eboardcitywrite.cpp \
         engine/eboardplayer.cpp \
@@ -403,6 +409,12 @@ SOURCES += \
         engine/eeventtime.cpp \
         engine/efunctask.cpp \
         engine/egameboard.cpp \
+        engine/egameboardbuild.cpp \
+        engine/egameboarddisasters.cpp \
+        engine/egameboardevents.cpp \
+        engine/egameboardmilitary.cpp \
+        engine/egameboardregistry.cpp \
+        engine/egameboardundo.cpp \
         engine/egameboardread.cpp \
         engine/egameboardwrite.cpp \
         engine/egameevents.cpp \

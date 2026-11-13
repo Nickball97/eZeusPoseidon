@@ -777,6 +777,12 @@ add_executable(eZeus
     engine/boardData/epopulationdata.cpp
     engine/boardData/epopulationdata.h
     engine/eboardcity.cpp
+    engine/eboardcitydistricts.cpp
+    engine/eboardcityemployment.cpp
+    engine/eboardcitymilitary.cpp
+    engine/eboardcitypeople.cpp
+    engine/eboardcityregistry.cpp
+    engine/eboardcityresources.cpp
     engine/eboardcity.h
     engine/eboardcityread.cpp
     engine/eboardcitywrite.cpp
