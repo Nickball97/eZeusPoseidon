@@ -18,10 +18,17 @@ to try after each step.
 
 ## Rules that carry over
 
-- **Numbers from the original game:** verify every one against a source
-  (HeavenGames https://zeus.heavengames.com/, the manuals, zeus.exe, the
-  game's `Model\Zeus_Model_*.txt`) before coding it. Never guess. If it
-  can't be verified, say so and leave it unchanged.
+- **Game values (numbers, rules, behaviour):** don't change any value
+  without asking Nicolás first, unless it's an obvious bug. Some current
+  values are his own creative choices and deliberately differ from the
+  original, so "the original says otherwise" isn't a reason to change one.
+  - When a value looks wrong, tell him what it is now, what you'd change it
+    to and why. Name a source if there is one (HeavenGames
+    https://zeus.heavengames.com/, the manuals, zeus.exe, the game's
+    `Model\Zeus_Model_*.txt`). Then wait for his OK.
+  - Never invent a number. When nothing confirms a value, say so.
+  - Cleanup and refactors must not change any value at all. That is what
+    the safety net checks.
 - **Design docs:** check each claim in a design doc against the actual code
   before changing anything.
 - **Original game files:** never commit them (art, text, `.eng`, maps, the
@@ -30,11 +37,17 @@ to try after each step.
   pull requests unless Nicolás asks. End every commit message with
   `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` (or the
   attribution the session gives).
-- **Saves:** new saved fields must keep old saves loading. Append a new
-  value to `eFileFormat` in `fileIO/efileformat.h` (just before
-  `nextVersion`, never in the middle). Read the field only when
-  `src.formatVersion() >= eFileFormat::yourVersion`. Always write it.
-  Latest so far: `messageHistory`, `messagePanel`, `godCurseVisit`.
+- **Old saves:** not a priority (Nicolás, 13 Nov 2026). The game is still
+  being built, and he'll deal with save compatibility once he's happy with
+  the end product. A change may break saves from older builds; just say so
+  when it does, so he knows to start a new city.
+  - The version mechanism is still there if it's cheap to keep using:
+    append a value to `eFileFormat` in `fileIO/efileformat.h` (latest:
+    `messageHistory`, `messagePanel`, `godCurseVisit`).
+  - A save must still reload correctly in the build that made it. The
+    safety net's save-and-reload check covers this.
+  - `CLAUDE.md` still says new saved fields must keep old saves loading.
+    That line is out of date; Nicolás will edit it.
 - **Working with Nicolás:** he isn't a programmer. Use plain language, say
   what to test in the game, and ask before anything hard to undo. He tests
   in the game himself. Don't drive the game with computer-use unless he asks.
@@ -108,8 +121,11 @@ this exists.
   (The Founding of Athens, The Sands of Betrayal) plus the original
   campaigns in the data folder. Read the maps from the data folder; don't
   copy them into the repo.
-- **Save and reload.** A save made after the run should reload and give
-  the same summary. That catches save-format slips.
+- **Save and reload.** A save made after the run should reload in the same
+  build and give the same summary. That catches save-format slips.
+- **Start from maps, not saves.** Old saves may stop loading as the game
+  changes, so the baseline should start from the campaign maps and not
+  from saved cities.
 - **What it won't catch:**
   - drawing and interface bugs;
   - anything that needs a player to click (building, Undo, dialogs);
@@ -130,7 +146,7 @@ covers.
 | #43: missing text after a window resize | Owner suspects SDL2 textures being lost. Not seen by Nicolás. |
 | #60 | Reported on Mac only. Low priority on Windows. |
 | #4: sheep and goats | The clear-land tool removes them. Nicolás is fine with that. |
-| Unrest cut-offs | The Overview's word and the Hygiene tab's sentence use different cut-offs. No source says which is right, so leave it unless one turns up. |
+| Unrest cut-offs | The Overview's word and the Hygiene tab's sentence use different cut-offs. No source says which is right. Ask Nicolás whether to line them up. |
 | Test city "GG Aperta" | Still installed in `Save/Nickball/` and `Adventures/Aperta` in the data folder. Ask Nicolás before deleting it. |
 
 ### Added 12–13 Nov and still waiting on Nicolás's playtest
