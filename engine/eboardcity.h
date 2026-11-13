@@ -400,6 +400,7 @@ public:
     int roadState() const { return mRoadState; }
 
     int allBuildingsState() const { return mAllBuildingsState; }
+    const std::vector<eBuilding*>& allBuildings() const { return mAllBuildings; }
 
     int terrainState() const { return mTerrainState; }
     void incTerrainState();

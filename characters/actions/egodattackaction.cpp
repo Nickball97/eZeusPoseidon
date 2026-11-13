@@ -69,7 +69,10 @@ void eGodAttackAction::increment(const int by) {
         }
         if(!r) r = lookForTargetedAttack(by, mLookForTargetedAttack,
                                          targetedAttackPeriod, targetedAttackRange);
-        if(!r && mCursesLeft > 0 && eGod::sCurseKind(type) >= 0) {
+        const bool curseVisit = mStage == eGodAttackStage::curseSeek ||
+                                mStage == eGodAttackStage::curseGo;
+        // on a curse visit the god curses the building it walks to
+        if(!r && !curseVisit && mCursesLeft > 0 && eGod::sCurseKind(type) >= 0) {
             r = lookForTargetedBlessCurse(by, mLookForTargetedCurse,
                                           targetedCursePeriod, targetedCurseRange, -1);
             if(r) mCursesLeft--;
@@ -189,9 +192,20 @@ bool eGodAttackAction::decide() {
         }
         break;
     case eGodAttackStage::appear:
-        mStage = eGodAttackStage::goTo1;
         initialize();
-        goToTarget();
+        if(cursingGod()) {
+            seekCurse();
+        } else {
+            mStage = eGodAttackStage::goTo1;
+            goToTarget();
+        }
+        break;
+    case eGodAttackStage::curseSeek:
+        seekCurse();
+        break;
+    case eGodAttackStage::curseGo:
+        // arrived (or stopped): curse the target, then look again
+        curseAtTarget();
         break;
     case eGodAttackStage::goTo1: {
         mStage = eGodAttackStage::patrol1;
@@ -232,6 +246,12 @@ void eGodAttackAction::read(eReadStream& src) {
     src.readBuilding(&board, [this](eBuilding* const b) {
         mSanctuary = static_cast<eSanctuary*>(b);
     });
+    if(src.formatVersion() >= eFileFormat::godCurseVisit) {
+        src >> mSearchesLeft;
+        src.readBuilding(&board, [this](eBuilding* const b) {
+            mCurseTarget = b;
+        });
+    }
 }
 
 void eGodAttackAction::write(eWriteStream& dst) const {
@@ -245,6 +265,8 @@ void eGodAttackAction::write(eWriteStream& dst) const {
     dst << mLookForSpecial;
     dst << mCursesLeft;
     dst.writeBuilding(mSanctuary);
+    dst << mSearchesLeft;
+    dst.writeBuilding(mCurseTarget);
 }
 
 void eGodAttackAction::setSanctuary(const stdptr<eSanctuary>& s) {
@@ -362,4 +384,92 @@ void eGodAttackAction::spawnArmy(const ePlayerSoldierType type) {
     // deletes itself when the army is gone
     const auto h = new eInvasionHandler(board, cityId(), nullptr, nullptr);
     h->initializeGodArmy(tile, type, count);
+}
+
+// ---- the curse visit (zeus.exe 0x004ED400 search, 0x004ED2A0 cast,
+// 0x004EC090 / 0x004EC180 set 10 casts and 3 failed searches) ----
+
+bool eGodAttackAction::cursingGod() const {
+    const auto t = type();
+    return eGod::sCurseKind(t) >= 0 && eGod::sCurseMonths(t, 0) > 0;
+}
+
+eBuilding* eGodAttackAction::findCurseTarget() const {
+    auto& board = this->board();
+    const auto c = character();
+    const auto ct = c ? c->tile() : nullptr;
+    if(!ct) return nullptr;
+    const auto city = board.boardCityWithId(cityId());
+    if(!city) return nullptr;
+    // the same rules as a curse cast (eLookForTargetedBlessGodAct):
+    // the god's list, not cursed yet, not part of a sanctuary
+    const auto act = std::make_shared<eLookForTargetedBlessGodAct>(
+                         board, -1, type());
+    eBuilding* best = nullptr;
+    int bestDist = 0;
+    for(const auto b : city->allBuildings()) {
+        if(!b) continue;
+        const auto t = b->centerTile();
+        if(!t) continue;
+        if(!act->find(t).target()) continue;
+        const int dx = t->x() - ct->x();
+        const int dy = t->y() - ct->y();
+        const int d = dx*dx + dy*dy;
+        if(!best || d < bestDist) {
+            best = b;
+            bestDist = d;
+        }
+    }
+    return best;
+}
+
+void eGodAttackAction::seekCurse() {
+    if(mCursesLeft <= 0 || mSearchesLeft <= 0) {
+        mStage = eGodAttackStage::disappear;
+        disappear();
+        return;
+    }
+    const auto b = findCurseTarget();
+    if(!b) {
+        // nothing to curse: wander a while and look again
+        mSearchesLeft--;
+        mCurseTarget = nullptr;
+        mStage = eGodAttackStage::curseSeek;
+        goToTarget();
+        return;
+    }
+    mCurseTarget = b;
+    mStage = eGodAttackStage::curseGo;
+    auto& board = this->board();
+    const auto ct = b->centerTile();
+    auto tile = eTileHelper::closestRoad(ct->x(), ct->y(), board);
+    if(!tile) tile = ct;
+    const auto tele = std::make_shared<eTeleportFindFailFunc>(board, this);
+    goToTile(tile, tele, obsticleHandler());
+}
+
+void eGodAttackAction::curseAtTarget() {
+    mStage = eGodAttackStage::curseSeek;
+    const auto b = mCurseTarget.get();
+    mCurseTarget = nullptr;
+    if(!b || mCursesLeft <= 0) return;
+    const auto ct = b->centerTile();
+    if(!ct) return;
+    auto& board = this->board();
+    // Zeus draws a random list for each curse; try until one fits
+    stdsptr<eLookForTargetedBlessGodAct> act;
+    eMissileTarget tt(static_cast<eTile*>(nullptr));
+    for(int i = 0; i < 11; i++) {
+        act = std::make_shared<eLookForTargetedBlessGodAct>(board, -1, type());
+        tt = act->find(ct);
+        if(tt.target()) break;
+    }
+    if(!tt.target()) return; // cursed meanwhile: look again
+    mCursesLeft--;
+    const auto finish = std::make_shared<eGA_lookForRangeActionFinish>(
+                            board, this);
+    pauseAction();
+    const auto c = character();
+    spawnGodMissile(eCharacterActionType::curse, c->type(), tt,
+                    eGodSound::curse, act, finish);
 }

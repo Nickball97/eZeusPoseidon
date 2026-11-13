@@ -9,7 +9,9 @@
 enum class ePlayerSoldierType;
 
 enum class eGodAttackStage {
-    none, appear, goTo1, patrol1, goTo2, patrol2, disappear
+    none, appear, goTo1, patrol1, goTo2, patrol2, disappear,
+    // gods that curse (zeus.exe 0x004ED400): find a target, go, curse
+    curseSeek, curseGo
 };
 
 class eGodAttackAction : public eGodAction {
@@ -36,6 +38,12 @@ private:
                                const int freq, const int range);
 
     void goToTarget();
+    // the curse visit: nearest building this god can curse, walk to it,
+    // curse it; leave after 10 curses or 3 searches that find nothing
+    bool cursingGod() const;
+    eBuilding* findCurseTarget() const;
+    void seekCurse();
+    void curseAtTarget();
     stdsptr<eObsticleHandler> obsticleHandler();
     void destroyBuilding(eBuilding* const b);
 
@@ -48,6 +56,8 @@ private:
     int mLookForGod = eRand::rand() % 2000;
     int mLookForSpecial = eRand::rand() % 2000;
     int mCursesLeft = 10; // curses left this visit (zeus.exe +0x8BA)
+    int mSearchesLeft = 3; // failed searches allowed (zeus.exe +0x8A8)
+    stdptr<eBuilding> mCurseTarget;
 
     stdptr<eSanctuary> mSanctuary;
 };
