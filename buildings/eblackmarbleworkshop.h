@@ -1,19 +1,12 @@
 #ifndef EBLACKMARBLEWORKSHOP_H
 #define EBLACKMARBLEWORKSHOP_H
 
-#include "eresourcecollectbuilding.h"
+#include "emasonryshop.h"
 
-class eBlackMarbleWorkshop : public eResourceCollectBuilding {
+// a masonry shop for black marble (see eMasonryShopBase)
+class eBlackMarbleWorkshop : public eMasonryShopBase {
 public:
     eBlackMarbleWorkshop(eGameBoard& board, const eCityId cid);
-
-    std::vector<eOverlay> getOverlays(const eTileSize size) const;
-
-    void timeChanged(const int by);
-private:
-    void setCollectAction();
-
-    bool mCollectActionSet = false;
 };
 
 #endif // EBLACKMARBLEWORKSHOP_H

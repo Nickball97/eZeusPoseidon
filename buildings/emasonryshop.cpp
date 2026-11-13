@@ -15,15 +15,24 @@
 
 #include <algorithm>
 
-eMasonryShop::eMasonryShop(eGameBoard& board, const eCityId cid) :
+eMasonryShopBase::eMasonryShopBase(eGameBoard& board,
+                                   const eBaseTex baseTex,
+                                   const eStones stones,
+                                   const eBuildingType type,
+                                   const eHasResourceObjectType hasResource,
+                                   const eResourceType resType,
+                                   const eTileActionType collectedAction,
+                                   const eCityId cid) :
     eResourceCollectBuilding(board,
-                             &eBuildingTextures::fMasonryShop,
+                             baseTex,
                              0, 0, nullptr,
                              3, 0.5, -1.5,
                              [this]() { return e::make_shared<eMarbleMiner>(getBoard()); },
-                             eBuildingType::masonryShop,
-                             eHasResourceObject::sCreate(eHasResourceObjectType::marble),
-                             2, 2, 15, eResourceType::marble, cid) {
+                             type,
+                             eHasResourceObject::sCreate(hasResource),
+                             2, 2, 15, resType, cid),
+    mStones(stones),
+    mCollectedAction(collectedAction) {
     eGameTextures::loadMasonryShop();
     setAddResource(false);
     setRawInc(8);
@@ -32,14 +41,14 @@ eMasonryShop::eMasonryShop(eGameBoard& board, const eCityId cid) :
 }
 
 std::vector<eOverlay>
-eMasonryShop::getOverlays(const eTileSize size) const {
+eMasonryShopBase::getOverlays(const eTileSize size) const {
     auto os = eResourceCollectBuilding::getOverlays(size);
     const int sizeId = static_cast<int>(size);
     const auto& btexs = eGameTextures::buildings()[sizeId];
     const int t = textureTime();
     const int rc = rawCount();
     if(rc) {
-        const auto& stones = btexs.fMasonryShopStones;
+        const auto& stones = btexs.*mStones;
         const int sid = std::clamp(8 - rc, 0, stones.size());
 
         eOverlay& o = os.emplace_back();
@@ -82,14 +91,20 @@ eMasonryShop::getOverlays(const eTileSize size) const {
     return os;
 }
 
-void eMasonryShop::timeChanged(const int by) {
+void eMasonryShopBase::timeChanged(const int by) {
     if(!mCollectActionSet) {
         mCollectActionSet = true;
-        setCollectAction();
+        setCollectedAction(mCollectedAction);
     }
     eResourceCollectBuilding::timeChanged(by);
 }
 
-void eMasonryShop::setCollectAction() {
-    setCollectedAction(eTileActionType::masonry);
-}
+eMasonryShop::eMasonryShop(eGameBoard& board, const eCityId cid) :
+    eMasonryShopBase(board,
+                     &eBuildingTextures::fMasonryShop,
+                     &eBuildingTextures::fMasonryShopStones,
+                     eBuildingType::masonryShop,
+                     eHasResourceObjectType::marble,
+                     eResourceType::marble,
+                     eTileActionType::masonry,
+                     cid) {}

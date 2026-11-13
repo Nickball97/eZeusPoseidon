@@ -93,23 +93,8 @@ int eSmallHouse::provide(const eProvide p, const int n) {
         value = &mCompetitors;
         break;
 
-    case eProvide::taxes: {
-        if(mPaidTaxes) return 0;
-        auto& b = getBoard();
-        const auto cid = cityId();
-        const auto p = b.palace(cid);
-        if(!p || p->cursed()) return 0;
-        const auto pid = playerId();
-        const auto diff = b.difficulty(pid);
-        const int taxMult = eDifficultyHelpers::taxMultiplier(
-                                diff, type(), mLevel);
-        const double tax = eNumbers::sCommonHousingTaxMulitplier *
-                           mPeople * taxMult * b.taxRateF(cid);
-        const int iTax = std::round(tax);
-        b.payTaxes(cid, iTax, mPeople);
-        mPaidTaxes = iTax;
-        return iTax;
-    }
+    case eProvide::taxes:
+        return collectTaxes(eNumbers::sCommonHousingTaxMulitplier);
 
     case eProvide::satisfaction: {
         // a watchman lowers crime by the guardpost's risk reducer (Model

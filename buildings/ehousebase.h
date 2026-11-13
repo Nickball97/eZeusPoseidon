@@ -33,6 +33,11 @@ public:
 
     int paidTaxes() const { return mPaidTaxes; }
     int paidTaxesLastMonth() const { return mPaidTaxesLastMonth; }
+    // What a passing tax collector takes, once a month and only while the
+    // city has a palace that is not cursed: residents x the house level's
+    // multiplier x the tax rate x `multiplier` (the common or the elite
+    // housing number). Returns the drachmas paid.
+    int collectTaxes(const double multiplier);
 
     int food() const { return mFood; }
     int fleece() const { return mFleece; }

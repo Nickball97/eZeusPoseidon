@@ -4,6 +4,7 @@
 #include "engine/eboardcity.h"
 #include "buildings/estadium.h"
 #include "buildings/emuseum.h"
+#include "buildings/epalace.h"
 #include "buildings/sanctuaries/esanctuary.h"
 
 #include "characters/esettler.h"
@@ -15,6 +16,7 @@
 #include "fileIO/efileformat.h"
 
 #include <algorithm>
+#include <cmath>
 
 eHouseBase::eHouseBase(eGameBoard& board,
                        const eBuildingType type,
@@ -278,4 +280,21 @@ ePopulationData& eHouseBase::popData() {
     const auto cid = cityId();
     const auto c = board.boardCityWithId(cid);
     return c->populationData();
+}
+
+int eHouseBase::collectTaxes(const double multiplier) {
+    if(mPaidTaxes) return 0;
+    auto& b = getBoard();
+    const auto cid = cityId();
+    const auto p = b.palace(cid);
+    if(!p || p->cursed()) return 0;
+    const auto pid = playerId();
+    const auto diff = b.difficulty(pid);
+    const int taxMult = eDifficultyHelpers::taxMultiplier(
+                            diff, type(), mLevel);
+    const double tax = multiplier * mPeople * taxMult * b.taxRateF(cid);
+    const int iTax = std::round(tax);
+    b.payTaxes(cid, iTax, mPeople);
+    mPaidTaxes = iTax;
+    return iTax;
 }
