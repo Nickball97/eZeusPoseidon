@@ -103,7 +103,10 @@ std::vector<std::string> textLines(const std::string& text,
             if(isLast && c != ' ' && c != '\n') word += c;
             int w = 0;
             int h = 0;
-            const auto newLine = line + (line.empty() ? "" : " ") + word;
+            // no second space after one kept from the text (keepSpaces):
+            // that doubled every gap and spread the words out
+            const bool sep = !line.empty() && line.back() != ' ';
+            const auto newLine = line + (sep ? " " : "") + word;
             TTF_SizeUTF8(&font, newLine.c_str(), &w, &h);
             if(line.empty() || w < width) {
                 line = newLine;
@@ -126,7 +129,10 @@ std::vector<std::string> textLines(const std::string& text,
             word += c;
         }
     }
-    if(!word.empty()) line += (line.empty() ? "" : " ") + word;
+    if(!word.empty()) {
+        const bool sep = !line.empty() && line.back() != ' ';
+        line += (sep ? " " : "") + word;
+    }
     if(!line.empty()) result.push_back(line);
     return result;
 }

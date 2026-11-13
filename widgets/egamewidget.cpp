@@ -1,6 +1,7 @@
 #include "egamewidget.h"
 #include "egameoptions.h"
 #include "emessageswidget.h"
+#include "buildings/eelitehousing.h"
 #include "echeatwidget.h"
 
 #include "engine/egameboard.h"
@@ -2350,6 +2351,7 @@ bool eGameWidget::mouseMoveEvent(const eMouseEvent& e) {
         if(!footprintFrozen()) {
             pixToId(e.x(), e.y(), mHoverTX, mHoverTY);
         }
+        updateSecurityTooltip();
 
         const bool left = static_cast<bool>(e.buttons() & eMouseButton::left);
         if(left && mTem->visible()) {
@@ -2790,4 +2792,36 @@ int eGameWidget::gameSpeedTicks() {
     const int ticks = static_cast<int>(mSpeedCarry);
     mSpeedCarry -= ticks;
     return ticks;
+}
+
+void eGameWidget::updateSecurityTooltip() {
+    // See Security: over an elite house, "4 horsemen live here." from the
+    // original's own pieces (text group 66: 88-91 and 94-95 the soldiers,
+    // 98 "live here.", 99 "lives here.")
+    std::string tip;
+    if(mViewMode == eViewMode::security && mBoard) {
+        const auto t = mBoard->tile(mHoverTX, mHoverTY);
+        const auto b = t ? t->underBuilding() : nullptr;
+        if(b && b->type() == eBuildingType::eliteHousing) {
+            const auto eh = static_cast<eEliteHousing*>(b);
+            int hoplites;
+            int horsemen;
+            eh->soldiers(hoplites, horsemen);
+            const bool atl = eh->atlantean();
+            const auto line = [](const int n, const int one, const int many) {
+                const auto who = eLanguage::zeusText(66, n == 1 ? one : many);
+                const auto verb = eLanguage::zeusText(66, n == 1 ? 99 : 98);
+                return std::to_string(n) + who + verb;
+            };
+            if(horsemen > 0) {
+                // Atlantean houses send chariots
+                tip = atl ? line(horsemen, 94, 95) : line(horsemen, 89, 88);
+            }
+            if(hoplites > 0) {
+                if(!tip.empty()) tip += " ";
+                tip += line(hoplites, 90, 91);
+            }
+        }
+    }
+    setTooltip(tip);
 }

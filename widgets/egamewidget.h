@@ -160,6 +160,8 @@ protected:
     bool keyPressEvent(const eKeyPressEvent& e) override;
     // game speed, Options > Speed options: 10-100%, saved in settings.txt
     void changeGameSpeed(const int by);
+    // See Security: the soldiers living in the elite house under the mouse
+    void updateSecurityTooltip();
     // eZeus ticks to run this frame at the current game speed
     int gameSpeedTicks();
     bool mousePressEvent(const eMouseEvent& e) override;

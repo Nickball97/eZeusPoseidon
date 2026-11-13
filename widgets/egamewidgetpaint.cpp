@@ -864,19 +864,30 @@ void eGameWidget::paintEvent(ePainter& p) {
                 int horsemen;
                 eh->soldiers(hoplites, horsemen);
                 if(hoplites + horsemen <= 0) return;
-                if(horsemen > 0) eGameTextures::loadGreekHorseman();
-                if(hoplites > 0) eGameTextures::loadGreekHoplite();
+                // the player's own soldiers: Greek hoplites and horsemen, or
+                // Atlantean hoplites and chariots, as their companies look
+                // (eSoldierBanner::characterType)
+                const bool atl = eh->atlantean();
+                if(atl) {
+                    if(horsemen > 0) eGameTextures::loadChariotPoseidon();
+                    if(hoplites > 0) eGameTextures::loadHoplitePoseidon();
+                } else {
+                    if(horsemen > 0) eGameTextures::loadHorseman();
+                    if(hoplites > 0) eGameTextures::loadHoplite();
+                }
                 const int o = static_cast<int>(eOrientation::bottomLeft);
-                const auto standing = [&](const eFightingCharacterTextures& t) {
+                const auto standing = [&](const std::vector<eTextureCollection>& walk) {
                     std::shared_ptr<eTexture> tex;
-                    if(o < static_cast<int>(t.fWalk.size()) &&
-                       t.fWalk[o].size() > 0) {
-                        tex = t.fWalk[o].getTexture(0);
+                    if(o < static_cast<int>(walk.size()) &&
+                       walk[o].size() > 0) {
+                        tex = walk[o].getTexture(0);
                     }
                     return tex;
                 };
-                const auto horseTex = standing(charTexs.fGreekHorseman);
-                const auto hopliteTex = standing(charTexs.fGreekHoplite);
+                const auto horseTex = standing(atl ? charTexs.fChariotPoseidon.fWalk :
+                                                     charTexs.fHorseman.fWalk);
+                const auto hopliteTex = standing(atl ? charTexs.fHoplitePoseidon.fWalk :
+                                                       charTexs.fHoplite.fWalk);
                 // the row climbs to the upper right, as in the original;
                 // drawn from the back so nearer figures overlap the others
                 const double xx = rx - 2.6;
