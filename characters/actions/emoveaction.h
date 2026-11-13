@@ -33,15 +33,17 @@ private:
 
     stdsptr<eWalkableObject> mTileWalkable;
 
-    eOrientation mOrientation;
+    eOrientation mOrientation = eOrientation::topRight;
     eTile* mTargetTile = nullptr;
 
     bool mWait = false;
 
-    double mStartX;
-    double mStartY;
-    double mTargetX;
-    double mTargetY;
+    double mStartX = 0.;
+    double mStartY = 0.;
+    // set by the first step; given a value so a save made before that
+    // does not hold leftover memory
+    double mTargetX = 0.;
+    double mTargetY = 0.;
 
     stdsptr<eObsticleHandler> mObstHandler;
 };

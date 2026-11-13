@@ -223,9 +223,14 @@ void eHuntAction::provokeBoars() {
                 if(cc->dead() || cc->fighting()) continue;
                 const auto boar = cc.get();
                 // each boar is judged once per hunter's approach
-                if(std::find(mJudged.begin(), mJudged.end(), boar) !=
-                   mJudged.end()) continue;
-                mJudged.push_back(boar);
+                bool judged = false;
+                for(const auto& j : mJudged) {
+                    if(j.get() != boar) continue;
+                    judged = true;
+                    break;
+                }
+                if(judged) continue;
+                mJudged.emplace_back(boar);
                 if(boar->attack() != 0) continue; // already angry
                 if(eRand::rand() % 5 != 0) continue;
                 boar->setAttack(10);

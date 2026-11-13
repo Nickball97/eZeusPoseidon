@@ -1,5 +1,8 @@
 #include "ewritestream.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "engine/egameboard.h"
 #include "characters/actions/echaracteraction.h"
 #include "characters/actions/walkable/ewalkableobject.h"
@@ -85,9 +88,26 @@ void eWriteStream::writeObsticleHandler(eObsticleHandler* const w) {
 
 void eWriteStream::writeDirectionTimes(eDirectionTimes* const d) {
     *this << d->size();
+    // The map is ordered by where its tiles sit in memory, which changes
+    // from run to run. Written in map order (by x, then y) instead, so the
+    // same city always gives the same save file. Loading is unaffected.
+    using ePair = std::pair<eTile* const, eDirectionLastUseTime>;
+    std::vector<const ePair*> sorted;
+    sorted.reserve(d->size());
     for(const auto& dt : *d) {
-        writeTile(dt.first);
-        dt.second.write(*this);
+        sorted.push_back(&dt);
+    }
+    std::sort(sorted.begin(), sorted.end(),
+              [](const ePair* const a, const ePair* const b) {
+        const auto ta = a->first;
+        const auto tb = b->first;
+        if(!ta || !tb) return !ta && tb;
+        if(ta->x() != tb->x()) return ta->x() < tb->x();
+        return ta->y() < tb->y();
+    });
+    for(const auto dt : sorted) {
+        writeTile(dt->first);
+        dt->second.write(*this);
     }
 }
 

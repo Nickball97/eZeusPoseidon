@@ -34,7 +34,10 @@ private:
     bool mNoResource = false;
 
     int mPreyScan = 0;
-    std::vector<eCharacter*> mJudged;
+    // Pointers that know when their boar is gone (not just where it sat in
+    // memory): a boar that died could otherwise be mistaken for a new one
+    // that happens to be put in the same place in memory.
+    std::vector<stdptr<eCharacter>> mJudged;
 };
 
 #endif // EHUNTACTION_H

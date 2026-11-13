@@ -11,8 +11,10 @@ enum class eCartActionType {
 };
 
 struct eCartTask {
-    eCartActionType fType;
-    eResourceType fResource;
+    // given a value so that a cart with no task never saves or reads
+    // leftover memory
+    eCartActionType fType = eCartActionType::take;
+    eResourceType fResource = eResourceType::none;
     int fMaxCount = 0;
 };
 

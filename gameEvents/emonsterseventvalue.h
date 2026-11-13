@@ -31,7 +31,7 @@ protected:
 
     std::vector<eMonsterTypeValid> mMonsters = {{}, {}, {}};
 
-    eMonsterType mMonster;
+    eMonsterType mMonster = eMonsterType::calydonianBoar;
 };
 
 #endif // EMONSTERSEVENTVALUE_H

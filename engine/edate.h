@@ -62,9 +62,11 @@ public:
     void write(eWriteStream& dst) const;
     void read(eReadStream& src);
 private:
-    int mDay;
-    eMonth mMonth;
-    int mYear;
+    // a date that was never set is 1 January 1500 BC, the same every
+    // time, instead of whatever was left in memory
+    int mDay = 1;
+    eMonth mMonth = eMonth::january;
+    int mYear = -1500;
 };
 
 #endif // EDATE_H

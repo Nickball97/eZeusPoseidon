@@ -374,9 +374,23 @@ void eSoldierBanner::write(eWriteStream& dst) const {
     dst << mOnCityId;
 
     dst << mPlaces.size();
-    for(const auto& p : mPlaces) {
-        dst.writeTile(p.second);
-        dst.writeCharacter(p.first);
+    {
+        // The map is ordered by where its soldiers sit in memory, which
+        // changes from run to run. Written by the soldiers' save numbers
+        // instead, so the same city always gives the same save file.
+        std::vector<std::pair<eSoldier*, eTile*>> places(
+                    mPlaces.begin(), mPlaces.end());
+        std::sort(places.begin(), places.end(),
+                  [](const std::pair<eSoldier*, eTile*>& a,
+                     const std::pair<eSoldier*, eTile*>& b) {
+            const int ia = a.first ? a.first->ioID() : -1;
+            const int ib = b.first ? b.first->ioID() : -1;
+            return ia < ib;
+        });
+        for(const auto& p : places) {
+            dst.writeTile(p.second);
+            dst.writeCharacter(p.first);
+        }
     }
 
     dst << mSoldiers.size();
