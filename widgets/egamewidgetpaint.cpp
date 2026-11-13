@@ -316,6 +316,7 @@ void eGameWidget::updateTerrainTextures() {
 }
 
 void eGameWidget::paintEvent(ePainter& p) {
+    mGm->setUndoAvailable(mBoard && mBoard->canUndo(mBoard->personPlayer()));
     // the original's shovel pointer while clearing land, over the map
     {
         const bool overMap = mHoverX < width() - mGm->width();

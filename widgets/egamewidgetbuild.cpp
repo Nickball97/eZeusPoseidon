@@ -570,6 +570,15 @@ eGameWidget::eApply eGameWidget::editFunc() {
 bool eGameWidget::buildMouseRelease() {
     const auto cid = mViewedCityId;
     const auto pid = mBoard->personPlayer();
+    // Undo: everything this click or drag builds is one action
+    struct eUndoGuard {
+        eGameBoard* fB = nullptr;
+        ~eUndoGuard() { if(fB) fB->endUndoAction(); }
+    } undoGuard;
+    if(!mEditorMode && !mTem->visible()) {
+        mBoard->beginUndoAction(pid);
+        undoGuard.fB = mBoard;
+    }
 
     const auto& wrld = mBoard->world();
     const auto ppid = mBoard->personPlayer();
@@ -616,9 +625,11 @@ bool eGameWidget::buildMouseRelease() {
                     if(const auto b = tile->underBuilding()) {
                         if(b->isOnFire()) continue;
                         eraser.addBuilding(b);
+                        mBoard->blockUndo(); // cleared buildings can't come back
                     } else {
                         const auto t = tile->terrain();
                         if(t == eTerrain::forest || t == eTerrain::choppedForest) {
+                            mBoard->recordUndoTerrain(tile, t, cost);
                             tile->setTerrain(eTerrain::dry);
                             const auto c = mBoard->boardCityWithId(cid);
                             if(c) c->incForestsState();

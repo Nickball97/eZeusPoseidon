@@ -106,6 +106,8 @@
 
 #include <algorithm>
 #include <set>
+#include "buildings/ehousebase.h"
+#include "buildings/eemployingbuilding.h"
 
 #ifndef uint
 #define uint unsigned int
@@ -2263,6 +2265,7 @@ std::vector<eAgoraBase*> eGameBoard::agoras(const eCityId cid) const {
 
 void eGameBoard::incTime(const int by) {
     if(mEpisodeLost) return;
+    updateUndo(by);
     const int dayLen = eNumbers::sDayLength;
     { // autosave
         const int time = mTime + by;
@@ -4099,6 +4102,10 @@ bool eGameBoard::buildBase(const int minX, const int minY,
         const auto diff = difficulty(pid);
         const int cost = eDifficultyHelpers::buildingCost(diff, b->type());
         incDrachmas(pid, -cost, eFinanceTarget::construction);
+        if(mUndoRecording) {
+            mUndoPending.fBuildings.emplace_back(b.get());
+            mUndoPending.fCost += cost;
+        }
     }
     return true;
 }
@@ -4459,4 +4466,85 @@ void eGameBoard::rebuildAnimalNear(const eBuildingType type,
         const int cost = eDifficultyHelpers::buildingCost(diff, type);
         incDrachmas(pid, cost, eFinanceTarget::construction);
     }
+}
+
+// ---- Undo (zeus.exe 0x004A6E90 records, 0x004A6FD0 lights the button,
+// 0x004A7A50 counts down and checks; see original-exe-findings.md) ----
+
+void eGameBoard::beginUndoAction(const ePlayerId pid) {
+    mUndoPending = eUndoAction();
+    mUndoPending.fPid = pid;
+    mUndoRecording = true;
+}
+
+void eGameBoard::endUndoAction() {
+    if(!mUndoRecording) return;
+    mUndoRecording = false;
+    if(mUndoPending.fBlocked) {
+        // clearing buildings: the original can't be undone either way,
+        // and the action before it can't be undone any more
+        mUndoValid = false;
+        mUndo = eUndoAction();
+        return;
+    }
+    if(mUndoPending.empty()) return; // nothing built: keep the last one
+    mUndo = mUndoPending;
+    // 500 original ticks (0x004A6FD0); a month is 816 of them
+    mUndo.fTicksLeft = (500*365*eNumbers::sDayLength)/(12*816);
+    mUndoValid = true;
+}
+
+void eGameBoard::blockUndo() {
+    if(mUndoRecording) mUndoPending.fBlocked = true;
+}
+
+void eGameBoard::recordUndoTerrain(eTile* const t, const eTerrain was,
+                                   const int cost) {
+    if(!mUndoRecording) return;
+    mUndoPending.fTerrain.push_back({t, was});
+    mUndoPending.fCost += cost;
+}
+
+bool eGameBoard::canUndo(const ePlayerId pid) const {
+    return mUndoValid && mUndo.fPid == pid;
+}
+
+void eGameBoard::updateUndo(const int by) {
+    if(!mUndoValid) return;
+    mUndo.fTicksLeft -= by;
+    bool valid = mUndo.fTicksLeft > 0;
+    // a building that is gone, has moved in people or has workers ends it
+    // (the original checks the recorded buildings' state each tick)
+    for(const auto& b : mUndo.fBuildings) {
+        if(!valid) break;
+        if(!b) {
+            valid = false;
+        } else if(const auto h = dynamic_cast<eHouseBase*>(b.get())) {
+            if(h->people() > 0) valid = false;
+        } else if(const auto e = dynamic_cast<eEmployingBuilding*>(b.get())) {
+            if(e->employed() > 0) valid = false;
+        }
+    }
+    if(!valid) {
+        mUndoValid = false;
+        mUndo = eUndoAction();
+    }
+}
+
+void eGameBoard::undo(const ePlayerId pid) {
+    if(!canUndo(pid)) return;
+    for(const auto& b : mUndo.fBuildings) {
+        if(b) b->erase();
+    }
+    std::set<eCityId> cities;
+    for(const auto& t : mUndo.fTerrain) {
+        t.first->setTerrain(t.second);
+        cities.insert(t.first->cityId());
+    }
+    for(const auto cid : cities) {
+        if(const auto c = boardCityWithId(cid)) c->incForestsState();
+    }
+    incDrachmas(pid, mUndo.fCost, eFinanceTarget::construction);
+    mUndoValid = false;
+    mUndo = eUndoAction();
 }

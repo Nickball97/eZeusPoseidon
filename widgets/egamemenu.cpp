@@ -1050,7 +1050,14 @@ void eGameMenu::initialize(eGameBoard* const b,
         e->setPressAction([this]() {
             setMode(eBuildingMode::erase);
         });
-        eButton::sCreate(coll.fUndo, window(), btmButtons);
+        // Undo: lit only while the last build action can be taken back
+        mUndoButton = eButton::sCreate(coll.fUndo, window(), btmButtons);
+        mUndoButton->setTooltip(eLanguage::zeusText(68, 10));
+        mUndoButton->setEnabled(false);
+        mUndoButton->setPressAction([this]() {
+            if(!mBoard) return;
+            mBoard->undo(mBoard->personPlayer());
+        });
 
         const int x = mult*24;
         const int y = std::round(mult*217.5);
@@ -1269,4 +1276,8 @@ void eGameMenu::setMapMode(const bool m) {
         overview->addWidget(mMiniMap);
         mMiniMap->move(mMapHomeX, mMapHomeY);
     }
+}
+
+void eGameMenu::setUndoAvailable(const bool a) {
+    if(mUndoButton && mUndoButton->enabled() != a) mUndoButton->setEnabled(a);
 }

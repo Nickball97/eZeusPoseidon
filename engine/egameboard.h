@@ -98,6 +98,18 @@ public:
     // messages the player received (Messages window, side panel box)
     eMessageHistory& messageHistory() { return mMessageHistory; }
 
+    // Undo, as in the original (zeus.exe 0x004A6E90, 0x004A6FD0,
+    // 0x004A7A50): one build action (a click or drag) can be taken back,
+    // with its money, for 500 of the original's ticks, until one of its
+    // buildings gets people or workers or is gone. Clearing trees is
+    // undone too; clearing buildings can't be.
+    void beginUndoAction(const ePlayerId pid);
+    void endUndoAction();
+    void blockUndo(); // the action removed buildings: nothing to undo
+    void recordUndoTerrain(eTile* const t, const eTerrain was, const int cost);
+    bool canUndo(const ePlayerId pid) const;
+    void undo(const ePlayerId pid);
+
     void initialize(const int w, const int h);
     void resize(const int w, const int h);
     void clear();
@@ -878,6 +890,21 @@ private:
 
     std::vector<ePlannedAction*> mPlannedActions;
     eMessageHistory mMessageHistory;
+
+    struct eUndoAction {
+        ePlayerId fPid = ePlayerId::neutralFriendly;
+        std::vector<stdptr<eBuilding>> fBuildings;
+        std::vector<std::pair<eTile*, eTerrain>> fTerrain;
+        int fCost = 0;
+        int fTicksLeft = 0;
+        bool fBlocked = false;
+        bool empty() const { return fBuildings.empty() && fTerrain.empty(); }
+    };
+    bool mUndoRecording = false;
+    eUndoAction mUndoPending;
+    eUndoAction mUndo;
+    bool mUndoValid = false;
+    void updateUndo(const int by);
 
     struct eMarbleTiles {
         bool contains(eTile* const tile) const;

@@ -55,6 +55,8 @@ public:
     void clearMode() { mMode = eBuildingMode::none; }
 
     void setGameWidget(eGameWidget* const gw);
+    // lights the Undo button while there is something to undo
+    void setUndoAvailable(const bool a);
 
     eMiniMap* miniMap() const;
 
@@ -127,6 +129,7 @@ private:
 
     eRotateButton* mRotateButton = nullptr;
     eButton* mWorldButton = nullptr;
+    eButton* mUndoButton = nullptr;
 
     eMiniMap* mMiniMap = nullptr;
     // the info/map buttons: the map in place of the tab's information
