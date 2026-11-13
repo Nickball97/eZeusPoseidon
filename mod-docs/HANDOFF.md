@@ -237,6 +237,23 @@ safety net (same result on all seven adventures):
   5,050 and so on) were left in the code: mods are not expected to tune them.
   `farm_ripe_period_i` is still loaded but nothing uses it since farms
   harvest once a year.
+- Step 5, first pass (branch `cleanup/duplicates`): a scan for runs of 10 or
+  more identical lines found less copy-paste in the game logic than
+  expected. Merged: masonry shop and black marble workshop
+  (`eMasonryShopBase`), the tax calculation of common and elite houses
+  (`eHouseBase::collectTaxes`), the god-to-statue-pictures choice of temple
+  and pyramid statues (`eTempleStatueBuilding::sStatues`). Left, with why:
+  - `efishery.cpp` / `eurchinquay.cpp`: about half alike, different state
+    machines, and the test city has neither, so the net cannot vouch for a
+    merge. Add a fishery to the test city first.
+  - `ebuilding.cpp`, the info-window text choice (about 20 near-identical
+    if-chains by employee count): interface text, not covered by the net.
+  - `ebuildingreader.cpp` / `ebuildingwriter.cpp` and the AI builder in
+    `eaidistrict.cpp`: long lists of one case per building type. A table
+    of building types would replace all three and make adding a building
+    a one-line job; worth doing before mods add buildings (cistern).
+  - temple and pyramid monuments, soldier banner and trireme, Ares warrior
+    and chariot: small, drawing or selection code.
 
 Put the parts mods will touch first.
 

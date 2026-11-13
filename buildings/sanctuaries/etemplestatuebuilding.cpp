@@ -3,25 +3,10 @@
 #include "textures/egametextures.h"
 #include "engine/egameboard.h"
 
-eTempleStatueBuilding::eTempleStatueBuilding(
-        const eGodType god,
-        const int id, eGameBoard& board,
-        const eCityId cid) :
-    eSanctBuilding({{0, 0, 1}}, board,
-                   eBuildingType::templeStatue,
-                   1, 1, cid),
-    mGod(god), mId(id) {
-
-}
-
-std::shared_ptr<eTexture>
-eTempleStatueBuilding::getTexture(const eTileSize size) const {
-    const int p = progress();
-    if(p <= 0) return nullptr;
-    const int sizeId = static_cast<int>(size);
-    const auto& blds = eGameTextures::buildings()[sizeId];
+const eTextureCollection* eTempleStatueBuilding::sStatues(
+        const eBuildingTextures& blds, const eGodType god) {
     const eTextureCollection* coll = nullptr;
-    switch(mGod) {
+    switch(god) {
     case eGodType::aphrodite:
         coll = &blds.fAphroditeStatues;
         break;
@@ -65,6 +50,27 @@ eTempleStatueBuilding::getTexture(const eTileSize size) const {
         coll = &blds.fZeusStatues;
         break;
     }
+    return coll;
+}
+
+eTempleStatueBuilding::eTempleStatueBuilding(
+        const eGodType god,
+        const int id, eGameBoard& board,
+        const eCityId cid) :
+    eSanctBuilding({{0, 0, 1}}, board,
+                   eBuildingType::templeStatue,
+                   1, 1, cid),
+    mGod(god), mId(id) {
+
+}
+
+std::shared_ptr<eTexture>
+eTempleStatueBuilding::getTexture(const eTileSize size) const {
+    const int p = progress();
+    if(p <= 0) return nullptr;
+    const int sizeId = static_cast<int>(size);
+    const auto& blds = eGameTextures::buildings()[sizeId];
+    const auto coll = sStatues(blds, mGod);
     auto& board = getBoard();
     const auto dir = board.direction();
     int dirId;

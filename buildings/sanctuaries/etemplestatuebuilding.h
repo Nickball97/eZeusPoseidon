@@ -5,6 +5,9 @@
 
 #include "esanctbuilding.h"
 
+class eBuildingTextures;
+class eTextureCollection;
+
 class eTempleStatueBuilding : public eSanctBuilding {
 public:
     eTempleStatueBuilding(const eGodType god,
@@ -13,6 +16,10 @@ public:
 
     std::shared_ptr<eTexture>
         getTexture(const eTileSize size) const;
+
+    // the statue pictures of a god (also used by the pyramids' statues)
+    static const eTextureCollection* sStatues(
+            const eBuildingTextures& blds, const eGodType god);
 
     eGodType godType() const { return mGod; }
     int id() const { return mId; }
