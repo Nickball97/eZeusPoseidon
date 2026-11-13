@@ -1108,6 +1108,11 @@ void eGameMenu::initialize(eGameBoard* const b,
             if(mGW) mGW->showMessageRecord(i);
         });
         addWidget(cm);
+        const auto countLabel = new eLabel(window());
+        countLabel->setNoPadding();
+        countLabel->setTinyFontSize();
+        addWidget(countLabel);
+        cm->setCountLabel(countLabel, m);
     }
     {
         const auto butts = new eWidget(window());
@@ -1253,16 +1258,12 @@ bool eGameMenu::mousePressEvent(const eMouseEvent& e) {
     return eGameMenuBase::mouseEnterEvent(e);
 }
 
-void eGameMenu::setMapMode(const bool m) {
-    if(m == mMapMode) return;
+void eGameMenu::placeMapOnTop(const bool top) {
+    if(top == mMapOnTop) return;
     if(mWidgets.size() < 12 || !mMiniMap) return;
-    mMapMode = m;
-    // every tab's information gives way to the map, or comes back
-    for(const auto& w : mWidgets) {
-        if(w.fDW) w.fDW->setVisible(!m);
-    }
+    mMapOnTop = top;
     const auto overview = mWidgets[11].fW;
-    if(m) {
+    if(top) {
         mMapHomeX = mMiniMap->x();
         mMapHomeY = mMiniMap->y();
         overview->removeWidget(mMiniMap);
@@ -1276,6 +1277,45 @@ void eGameMenu::setMapMode(const bool m) {
         overview->addWidget(mMiniMap);
         mMiniMap->move(mMapHomeX, mMapHomeY);
     }
+}
+
+void eGameMenu::setMapMode(const bool m) {
+    if(m == mMapMode) return;
+    if(mWidgets.size() < 12 || !mMiniMap) return;
+    mMapMode = m;
+    // every tab's information gives way to the map, or comes back
+    for(const auto& w : mWidgets) {
+        if(w.fDW) w.fDW->setVisible(!m);
+    }
+    placeMapOnTop(m || mMinimapOnly);
+}
+
+void eGameMenu::toggleMinimapOnly() {
+    // Tab, as in the original (zeus.exe 0x00516D30, DAT_00FA0000): the
+    // panel shows only the map, without the tab's contents and build
+    // buttons; Tab again (or picking a tab) brings them back
+    if(mWidgets.size() < 12 || !mMiniMap) return;
+    mMinimapOnly = !mMinimapOnly;
+    if(mMinimapOnly) {
+        mHiddenTab = nullptr;
+        for(const auto& w : mWidgets) {
+            if(w.fW->visible()) mHiddenTab = w.fW;
+            w.fW->hide();
+        }
+        placeMapOnTop(true);
+    } else {
+        if(mHiddenTab) mHiddenTab->show();
+        mHiddenTab = nullptr;
+        placeMapOnTop(mMapMode);
+    }
+}
+
+void eGameMenu::tabShown(const int i) {
+    (void)i;
+    if(!mMinimapOnly) return;
+    mMinimapOnly = false;
+    mHiddenTab = nullptr;
+    placeMapOnTop(mMapMode);
 }
 
 void eGameMenu::setUndoAvailable(const bool a) {

@@ -5,6 +5,7 @@
 
 class eGameBoard;
 class eButton;
+class eLabel;
 
 // The Messages window (text group 63, zeus.exe 0x00522340 / 0x00522620):
 // every message the city received, newest first, 10 rows at a time with
@@ -40,10 +41,15 @@ public:
 
     using eOpenAction = std::function<void(int)>;
     void initialize(eGameBoard* const board, const eOpenAction& open);
+    // the number of messages, drawn on the Messages button as the
+    // original does when there are any (zeus.exe 0x00517CD0)
+    void setCountLabel(eLabel* const l, eWidget* const button);
 protected:
     void paintEvent(ePainter& p) override;
 private:
     void refresh();
+    eLabel* mCountLabel = nullptr;
+    eWidget* mCountButton = nullptr;
 
     eGameBoard* mBoard = nullptr;
     eOpenAction mOpen;

@@ -259,10 +259,28 @@ void eCondensedMessages::refresh() {
     const auto& h = mBoard->messageHistory();
     mRevision = h.revision();
     mCount = h.count();
+    if(mCountLabel && mCountButton) {
+        mCountLabel->setText(mCount > 0 ? std::to_string(mCount) : "");
+        mCountLabel->fitContent();
+        // on the envelope, centred and a little below its middle, as in
+        // the original
+        const int bh = mCountButton->height();
+        mCountLabel->setX(mCountButton->x() +
+                          (mCountButton->width() - mCountLabel->width())/2);
+        mCountLabel->setY(mCountButton->y() +
+                          (bh - mCountLabel->height())/2 + bh/8);
+        mCountLabel->setVisible(mCount > 0);
+    }
     mIndex = std::clamp(mIndex, 0, std::max(0, mCount - 1));
     if(mCount == 0) {
         mText->setText("");
         return;
     }
     mText->setText(h.at(mIndex).fCondensed);
+}
+
+void eCondensedMessages::setCountLabel(eLabel* const l, eWidget* const button) {
+    mCountLabel = l;
+    mCountButton = button;
+    mRevision = -1; // show it at the next paint
 }

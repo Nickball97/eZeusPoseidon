@@ -57,6 +57,9 @@ public:
     void setGameWidget(eGameWidget* const gw);
     // lights the Undo button while there is something to undo
     void setUndoAvailable(const bool a);
+    // Tab: only the map in the side panel, or back
+    void toggleMinimapOnly();
+    void tabShown(const int i) override;
 
     eMiniMap* miniMap() const;
 
@@ -135,6 +138,11 @@ private:
     // the info/map buttons: the map in place of the tab's information
     void setMapMode(const bool m);
     bool mMapMode = false;
+    // the minimap in the information's place (map mode or Tab)
+    void placeMapOnTop(const bool top);
+    bool mMapOnTop = false;
+    bool mMinimapOnly = false;
+    eWidget* mHiddenTab = nullptr;
     int mMapHomeX = 0;
     int mMapHomeY = 0;
 

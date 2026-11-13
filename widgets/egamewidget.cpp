@@ -1930,8 +1930,8 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
             // Tab: the side panel shows only the minimap, Tab again goes
             // back (zeus.exe 0x00516D30 sets DAT_00fa0000, which hides the
             // tab contents and build buttons and draws the minimap higher
-            // up). eZeus switches to its overview tab (the minimap) instead.
-            mGm->toggleOverviewTab(10);
+            // up)
+            mGm->toggleMinimapOnly();
             return true;
         }
         // Home: due north; PgUp: counter-clockwise; PgDn: clockwise

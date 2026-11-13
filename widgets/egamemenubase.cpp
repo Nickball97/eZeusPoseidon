@@ -88,6 +88,7 @@ void eGameMenuBase::connectButtons() {
                     const auto b = mButtons[j];
                     b->setChecked(false);
                 }
+                tabShown(i);
             } else {
                 b->setChecked(true);
             }

@@ -32,6 +32,8 @@ public:
     bool selectTab(const int i);
     // Tab: switch to the overview tab (the minimap) and back
     void toggleOverviewTab(const int overviewTab);
+    // called after a tab button shows its tab
+    virtual void tabShown(const int i) { (void)i; }
 protected:
     bool mousePressEvent(const eMouseEvent& e) override;
     bool mouseReleaseEvent(const eMouseEvent& e) override;
