@@ -101,6 +101,7 @@ repeat: "Repeat:"
 
 hardcoded "Hardcoded"
 automatic "Automatic"
+warships "Warships"
 
 god_visit "God visit"
 pay_tribute "Pay tribute"
