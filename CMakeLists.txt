@@ -810,6 +810,12 @@ add_executable(eZeus
     engine/efunctask.cpp
     engine/efunctask.h
     engine/egameboard.cpp
+    engine/egameboardbuild.cpp
+    engine/egameboarddisasters.cpp
+    engine/egameboardevents.cpp
+    engine/egameboardmilitary.cpp
+    engine/egameboardregistry.cpp
+    engine/egameboardundo.cpp
     engine/egameboard.h
     engine/egameboardread.cpp
     engine/egameboardwrite.cpp
