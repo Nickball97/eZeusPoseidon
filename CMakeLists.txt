@@ -2811,6 +2811,8 @@ add_executable(eZeus
     widgets/egameoptions.h
     widgets/emessageswidget.cpp
     widgets/emessageswidget.h
+    widgets/ecursors.cpp
+    widgets/ecursors.h
     widgets/egamemenu.cpp
     widgets/egamemenu.h
     widgets/egamemenubase.cpp

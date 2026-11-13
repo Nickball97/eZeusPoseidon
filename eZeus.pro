@@ -645,6 +645,7 @@ SOURCES += \
         widgets/egamemainmenu.cpp \
         widgets/egameoptions.cpp \
         widgets/emessageswidget.cpp \
+        widgets/ecursors.cpp \
         widgets/egamemenu.cpp \
         widgets/egamemenubase.cpp \
         widgets/egamewidget.cpp \
@@ -2876,6 +2877,7 @@ HEADERS += \
     widgets/egamemainmenu.h \
     widgets/egameoptions.h \
     widgets/emessageswidget.h \
+    widgets/ecursors.h \
     engine/emessagehistory.h \
     widgets/egamemenu.h \
     widgets/egamemenubase.h \

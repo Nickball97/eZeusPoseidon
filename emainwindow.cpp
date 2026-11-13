@@ -33,6 +33,7 @@
 #include "widgets/eepisodelostwidget.h"
 #include "widgets/erosterofleaders.h"
 #include "widgets/equestionwidget.h"
+#include "widgets/ecursors.h"
 
 eMainWindow::eMainWindow() {}
 
@@ -83,6 +84,7 @@ bool eMainWindow::initialize(const eSettings& settings) {
 }
 
 void eMainWindow::setWidget(eWidget* const w) {
+    eCursors::set(eCursors::eCursor::arrow); // a new screen: the normal pointer
     if(mWidget) {
         if(mWidget != mGW && mWidget != mWW) {
             mWidget->deleteLater();

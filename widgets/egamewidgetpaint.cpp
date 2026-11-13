@@ -1,4 +1,5 @@
 ﻿#include "egamewidget.h"
+#include "ecursors.h"
 #include "characters/eenemyboat.h"
 
 #include "eterraineditmenu.h"
@@ -315,6 +316,13 @@ void eGameWidget::updateTerrainTextures() {
 }
 
 void eGameWidget::paintEvent(ePainter& p) {
+    // the original's shovel pointer while clearing land, over the map
+    {
+        const bool overMap = mHoverX < width() - mGm->width();
+        const bool erase = mGm->mode() == eBuildingMode::erase;
+        eCursors::set(erase && overMap ? eCursors::eCursor::shovel :
+                                         eCursors::eCursor::arrow);
+    }
     if(mUpdateViewedTileScheduled) {
         mUpdateViewedTileScheduled = false;
         const auto oldC = mViewedTile ? mViewedTile->cityId() :

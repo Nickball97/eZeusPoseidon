@@ -15,6 +15,7 @@
 
 #include "audio/emusic.h"
 #include "audio/esounds.h"
+#include "widgets/ecursors.h"
 
 #ifdef EZEUS_DEV_CHEATS
 void eInstallDevCrashHandler(); // edevcrash.cpp
@@ -192,6 +193,7 @@ int main() {
         eMainWindow w;
         const bool i = w.initialize(settings);
         if(!i) return 1;
+        eCursors::load(); // the original's pointers, from zeus.exe
         const bool e = eGameTextures::initialize(w.renderer());
 
         if(e) r = w.exec();
