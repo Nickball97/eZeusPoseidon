@@ -884,6 +884,7 @@ void eMainWindow::saveOptions(const eSettings& s) {
     mSettings.fSpeechVolume = s.fSpeechVolume;
     mSettings.fSoundsVolume = s.fSoundsVolume;
     mSettings.fAmbientVolume = s.fAmbientVolume;
+    mSettings.fMessageSettings = s.fMessageSettings;
     mSettings.applyAudio();
     mSettings.write();
 }

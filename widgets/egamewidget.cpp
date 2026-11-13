@@ -1,6 +1,7 @@
 #include "egamewidget.h"
 #include "egameoptions.h"
 #include "emessageswidget.h"
+#include "emessages.h"
 #include "buildings/eelitehousing.h"
 #include "echeatwidget.h"
 
@@ -1273,6 +1274,16 @@ void eGameWidget::showMessage(eEventData& ed,
         }
     }
     const int recordId = mBoard->messageHistory().add(r);
+    // Options > Messages (zeus.exe 0x00521970, 0x00521A70): a category
+    // set to condensed or off doesn't pop up; the message is still kept
+    // in the Messages list and shown in the side panel box. Messages that
+    // ask for a choice (tribute, requests, invasions) always pop up, since
+    // a message read again from the list no longer offers its choices.
+    const bool choices = ed.fA0 || ed.fA1 || ed.fA2 || ed.fCA0 ||
+                         !ed.fCCA0.empty();
+    const int cat = eMessages::sCategory(msg.fTitle);
+    const int setting = window()->settings().messageSetting(cat);
+    if(setting < 2 && !choices) return;
     displayMessage(ed, msg, recordId, prepend);
 }
 

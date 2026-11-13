@@ -110,6 +110,14 @@ public:
     static bool load();
     static bool loaded();
 
+    // The original's message categories (Model/Zeus event message
+    // categories.txt): the category of a message by its title as loaded
+    // (with its [placeholders]), -1 when it has none. 0-16 can be set to
+    // off, condensed or full in Options > Messages (names: text group
+    // 174); 19, win or lose, is always full (zeus.exe 0x00521970).
+    static int sCategory(const std::string& title);
+    static const int sCategoryCount = 17;
+
     static std::string message(const std::string& key);
     static eMessageType favorMessage(const eMessageType& reason);
     static eMessageType dfavorMessage(const eMessageType& reason);
@@ -399,6 +407,8 @@ public:
     eMessageType fAreaCutOff;
 private:
     bool loadImpl();
+    void loadCategories();
+    std::map<std::string, int> mTitleCategory;
 
     std::string loadMessage(const std::string& key) const;
     void loadMessage(eMessageType& m,

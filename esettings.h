@@ -29,6 +29,11 @@ struct eSettings {
     int fSpeechVolume = 100;
     int fSoundsVolume = 80;
     int fAmbientVolume = 80;
+    // Options > Messages: per message category (text group 174) 0 off,
+    // 1 condensed, 2 full; all full by default (Model/Zeus event
+    // message categories.txt), saved like the original's Zeus.inf
+    std::string fMessageSettings = std::string(17, '2');
+    int messageSetting(const int category) const;
 
     // copies the sound options to the audio code and applies them
     void applyAudio() const;

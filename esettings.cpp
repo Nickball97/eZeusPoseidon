@@ -63,6 +63,7 @@ void eSettings::write() const {
     file << "speech_volume " << n(fSpeechVolume) << "\n";
     file << "sounds_volume " << n(fSoundsVolume) << "\n";
     file << "ambient_volume " << n(fAmbientVolume) << "\n";
+    file << "message_settings \"" << fMessageSettings << "\"\n";
     file.close();
 }
 
@@ -108,6 +109,13 @@ void eSettings::read() {
     readInt("speech_volume", fSpeechVolume, 0, 100);
     readInt("sounds_volume", fSoundsVolume, 0, 100);
     readInt("ambient_volume", fAmbientVolume, 0, 100);
+    {
+        const auto s = settings["message_settings"];
+        for(int i = 0; i < static_cast<int>(s.size()) && i < 17; i++) {
+            const char c = s[i];
+            if(c >= '0' && c <= '2') fMessageSettings[i] = c;
+        }
+    }
     applyInterfaceSize();
 }
 
@@ -136,4 +144,11 @@ void eSettings::applyAudio() const {
     eAudioSettings::sSoundsVolume = fSoundsVolume;
     eAudioSettings::sAmbientVolume = fAmbientVolume;
     eAudioSettings::sApply();
+}
+
+int eSettings::messageSetting(const int category) const {
+    if(category < 0 || category >= static_cast<int>(fMessageSettings.size())) {
+        return 2; // no category, or win/lose (19): always full
+    }
+    return fMessageSettings[category] - '0';
 }

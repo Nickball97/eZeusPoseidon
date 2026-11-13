@@ -6,6 +6,7 @@
 #include "edownbutton.h"
 #include "elanguage.h"
 #include "emainwindow.h"
+#include "emessages.h"
 
 #include <algorithm>
 
@@ -117,9 +118,16 @@ void eGameOptionsMenu::initialize(eWidget* const parent) {
     };
     const auto sound = makeButton(w, eLanguage::zeusText(2, 2)); // Sound options
     const auto speed = makeButton(w, eLanguage::zeusText(2, 3)); // Speed options
-    const int bw = std::max(sound->width(), speed->width());
+    const auto msgs = makeButton(w, eLanguage::zeusText(2, 13)); // Messages
+    const int bw = std::max({sound->width(), speed->width(), msgs->width()});
     sound->setWidth(bw);
     speed->setWidth(bw);
+    msgs->setWidth(bw);
+    msgs->setPressAction([w, open]() {
+        const auto d = new eMessageOptionsWidget(w);
+        d->initialize();
+        open(d);
+    });
     sound->setPressAction([w, open]() {
         const auto d = new eSoundOptionsWidget(w);
         d->initialize();
@@ -132,10 +140,12 @@ void eGameOptionsMenu::initialize(eWidget* const parent) {
     });
     cw->addWidget(sound);
     cw->addWidget(speed);
+    cw->addWidget(msgs);
     finish(this, cw, p, 2);
     title->align(eAlignment::hcenter);
     sound->align(eAlignment::hcenter);
     speed->align(eAlignment::hcenter);
+    msgs->align(eAlignment::hcenter);
 }
 
 void eSoundOptionsWidget::initialize() {
@@ -259,5 +269,70 @@ void eSpeedOptionsWidget::initialize() {
     finish(this, cw, p);
     title->align(eAlignment::hcenter);
     row->align(eAlignment::hcenter);
+    okCancel->align(eAlignment::hcenter);
+}
+
+void eMessageOptionsWidget::initialize() {
+    // as the original's Messages options (zeus.exe 0x0059BBE0, 0x004026C0):
+    // a row per category (text group 174) with its setting (group 183:
+    // Off, Condensed, Full); clicking a setting moves it to the next
+    setType(eFrameType::message);
+    const auto w = window();
+    const int p = padding();
+    const auto before = std::make_shared<eSettings>(w->settings());
+    const auto cur = std::make_shared<eSettings>(w->settings());
+
+    const auto cw = new eWidget(w);
+    cw->setNoPadding();
+    const auto title = makeLabel(w, eLanguage::zeusText(2, 13), true); // Messages
+    cw->addWidget(title);
+
+    int nameW = 0;
+    int valueW = 0;
+    for(int i = 0; i < eMessages::sCategoryCount; i++) {
+        const auto l = makeLabel(w, eLanguage::zeusText(174, i));
+        nameW = std::max(nameW, l->width());
+        l->deleteLater();
+    }
+    for(int v = 0; v < 3; v++) {
+        const auto b = makeButton(w, eLanguage::zeusText(183, v));
+        valueW = std::max(valueW, b->width());
+        b->deleteLater();
+    }
+
+    const auto list = new eWidget(w);
+    list->setNoPadding();
+    for(int i = 0; i < eMessages::sCategoryCount; i++) {
+        const auto row = new eWidget(w);
+        row->setNoPadding();
+        const auto name = makeLabel(w, eLanguage::zeusText(174, i));
+        name->setTextAlignment(eAlignment::left | eAlignment::vcenter);
+        name->setWidth(nameW);
+        row->addWidget(name);
+        const auto value = makeButton(w, eLanguage::zeusText(183,
+                                          cur->messageSetting(i)));
+        value->setWidth(valueW);
+        value->setPressAction([w, cur, i, value]() {
+            const int v = (cur->messageSetting(i) + 1) % 3;
+            cur->fMessageSettings[i] = static_cast<char>('0' + v);
+            value->setText(eLanguage::zeusText(183, v));
+            w->saveOptions(*cur);
+        });
+        row->addWidget(value);
+        row->stackHorizontally(4*p);
+        row->fitContent();
+        name->align(eAlignment::vcenter);
+        value->align(eAlignment::vcenter);
+        list->addWidget(row);
+    }
+    list->stackVertically();
+    list->fitContent();
+    cw->addWidget(list);
+
+    const auto okCancel = makeOkCancel(this, p, 46, 12, 46, 9, before);
+    cw->addWidget(okCancel);
+    finish(this, cw, p);
+    title->align(eAlignment::hcenter);
+    list->align(eAlignment::hcenter);
     okCancel->align(eAlignment::hcenter);
 }

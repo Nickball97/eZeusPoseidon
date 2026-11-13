@@ -26,4 +26,10 @@ public:
     void initialize();
 };
 
+class eMessageOptionsWidget : public eFramedWidget {
+public:
+    using eFramedWidget::eFramedWidget;
+    void initialize();
+};
+
 #endif // EGAMEOPTIONS_H

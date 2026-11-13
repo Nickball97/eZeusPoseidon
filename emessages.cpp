@@ -2,6 +2,9 @@
 
 #include "egamedir.h"
 
+#include <fstream>
+#include <cstdlib>
+
 #include "eloadtexthelper.h"
 #include "estringhelpers.h"
 
@@ -423,6 +426,7 @@ bool eMessages::loadImpl() {
 
     const std::string path = eGameDir::path("Model/Zeus eventmsg.txt");
     eLoadTextHelper::load(path, fMessages);
+    loadCategories();
 
     fPop100.fFull.fTitle = loadMessage("PHRASE_population_100_title");
     fPop100.fFull.fText = loadMessage("PHRASE_population_100_initial_announcement");
@@ -1283,4 +1287,36 @@ const eMonsterMessages* eMessages::monsterMessages(const eMonsterType monsterTyp
         return nullptr;
     }
     return nullptr;
+}
+
+void eMessages::loadCategories() {
+    // lines "PHRASE_<key>_title,<category>,<description>,,,"
+    const auto path = eGameDir::path("Model/Zeus event message categories.txt");
+    std::ifstream file(path);
+    if(!file.good()) {
+        printf("Could not read %s\n", path.c_str());
+        return;
+    }
+    std::string line;
+    while(std::getline(file, line)) {
+        if(line.rfind("PHRASE_", 0) != 0) continue;
+        const auto c1 = line.find(',');
+        if(c1 == std::string::npos) continue;
+        const auto c2 = line.find(',', c1 + 1);
+        const auto key = line.substr(0, c1);
+        const auto catStr = line.substr(c1 + 1, c2 == std::string::npos ?
+                                                    std::string::npos :
+                                                    c2 - c1 - 1);
+        const int cat = std::atoi(catStr.c_str());
+        const auto it = fMessages.find(key);
+        if(it == fMessages.end() || it->second.empty()) continue;
+        mTitleCategory[it->second] = cat;
+    }
+}
+
+int eMessages::sCategory(const std::string& title) {
+    const auto& m = instance.mTitleCategory;
+    const auto it = m.find(title);
+    if(it == m.end()) return -1;
+    return it->second;
 }
