@@ -446,7 +446,7 @@ void eFightingAction::goTo(const int fx, const int fy,
             moveWalkable = eWalkableObject::sCreateDefault();
         } else {
             pathFindWalkable =
-                eWalkableObject::sCreateDefault();
+                eWalkableObject::sCreateSoldier();
         }
     }
 

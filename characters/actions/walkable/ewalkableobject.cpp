@@ -10,6 +10,16 @@ bool eWalkableObject::walkable(eTileBase* const t) const {
     switch(mType) {
     case eWalkableObjectType::ddefault:
         return t->walkable();
+    case eWalkableObjectType::soldier: {
+        // companies gather on the palace grounds, which other walkers
+        // can't cross
+        const auto type = t->underBuildingType();
+        if(type == eBuildingType::palaceTile) {
+            const auto terr = t->terrain() & eTerrain::walkable;
+            return static_cast<bool>(terr);
+        }
+        return t->walkable();
+    } break;
     case eWalkableObjectType::artisan: {
         const auto type = t->underBuildingType();
         const bool p = eBuilding::sPyramidBuilding(type);
@@ -121,6 +131,10 @@ stdsptr<eWalkableObject> eWalkableObject::sCreate(
 
 stdsptr<eWalkableObject> eWalkableObject::sCreateDefault() {
     return sCreate(eWalkableObjectType::ddefault);
+}
+
+stdsptr<eWalkableObject> eWalkableObject::sCreateSoldier() {
+    return sCreate(eWalkableObjectType::soldier);
 }
 
 stdsptr<eWalkableObject> eWalkableObject::sCreateArtisan() {

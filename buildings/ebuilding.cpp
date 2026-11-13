@@ -77,7 +77,9 @@ bool eBuilding::sWalkableBuilding(const eBuildingType t) {
     if(t == eBuildingType::goat) return true;
     if(t == eBuildingType::cattle) return true;
     if(t == eBuildingType::templeTile) return true;
-    if(t == eBuildingType::palaceTile) return true;
+    // the palace grounds aren't walkable: in the original walkers go
+    // around the palace (upstream #53, with a video of the original);
+    // only the player's soldiers go there (eWalkableObject::sCreateSoldier)
     if(t == eBuildingType::godMonumentTile) return true;
     const int min = static_cast<int>(eBuildingType::templeAphrodite);
     const int max = static_cast<int>(eBuildingType::templeZeus);

@@ -268,7 +268,9 @@ void eBoardCity::incTime(const int by) {
             });
             const auto distance = [](eTileBase* const t) {
                 const auto type = t->underBuildingType();
-                const bool w = eBuilding::sWalkableBuilding(type);
+                // palace grounds: not walkable since #53, but never knocked down
+                const bool w = eBuilding::sWalkableBuilding(type) ||
+                               type == eBuildingType::palaceTile;
                 if(!w) return 200;
                 return 1;
             };
@@ -280,7 +282,8 @@ void eBoardCity::incTime(const int by) {
                 p.extractPath(path, mBoard);
                 for(const auto t : path) {
                     const auto type = t->underBuildingType();
-                    const bool w = eBuilding::sWalkableBuilding(type);
+                    const bool w = eBuilding::sWalkableBuilding(type) ||
+                                   type == eBuildingType::palaceTile;
                     if(w) continue;
                     const auto ub = t->underBuilding();
                     ub->collapse();
