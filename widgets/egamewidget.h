@@ -53,6 +53,8 @@ struct eSavedMessage {
 
 struct eGameWidgetSettings {
     bool fPaused = false;
+    // no longer used (game speed is in the Options menu, for all cities);
+    // kept so saves keep their layout
     int fSpeedId = 1;
     int fSpeed = 10;
     int fDX = 0;
@@ -150,6 +152,10 @@ protected:
     void paintEvent(ePainter& p) override;
 
     bool keyPressEvent(const eKeyPressEvent& e) override;
+    // game speed, Options > Speed options: 10-100%, saved in settings.txt
+    void changeGameSpeed(const int by);
+    // eZeus ticks to run this frame at the current game speed
+    int gameSpeedTicks();
     bool mousePressEvent(const eMouseEvent& e) override;
     bool mouseMoveEvent(const eMouseEvent& e) override;
     bool mouseReleaseEvent(const eMouseEvent& e) override;
@@ -310,9 +316,6 @@ private:
     bool mFreezeFootprint = false;
     int mRotateId = 0;
 
-    const int sSpeeds[6] = {2, 10, 25, 50, 100, 100};
-    const int sMaxSpeedId = int(std::size(sSpeeds)) - 1;
-
     bool mPaused = false;
     bool mCheatFireball = false; // "Fireballs from Heaven": next click
     eViewMode mLastSpecialView = eViewMode::defaultView; // for Space
@@ -321,8 +324,8 @@ private:
     int mRotateFrame{0};
     std::vector<int> mValiableHippodromePieces;
     int mTime{0};
-    int mSpeedId = 1;
-    int mSpeed = sSpeeds[mSpeedId];
+    // part of an eZeus tick carried to the next frame (game speed)
+    double mSpeedCarry = 0;
     std::map<int, std::pair<int, int>> mBookmarks;
     struct eCompanyBookmark {
         std::vector<stdptr<eSoldierBanner>> fBanners;

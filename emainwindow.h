@@ -65,6 +65,8 @@ public:
     bool saveGame(const std::string& path);
     bool loadGame(const std::string& path);
     void closeGame();
+    // the in-city Options (game speed and sounds): applied and saved at once
+    void saveOptions(const eSettings& s);
 
     // home page, as in the original: game chooser -> roster of leaders ->
     // player menu (showMainMenu) -> adventure lists

@@ -1,4 +1,5 @@
 ﻿#include "emusic.h"
+#include "eaudiosettings.h"
 
 #include <fstream>
 
@@ -126,6 +127,7 @@ void eMusic::playCampaignVictoryMusicImpl() {
 
 bool eMusic::playCampaignVoiceImpl(const std::string &path) {
     stopCampaignVoiceImpl();
+    if(!eAudioSettings::sOn(eSoundKind::speech)) return false; // speech is off
     std::ifstream file(path);
     if(!file.good()) return false;
     mCampaignVoice = Mix_LoadWAV(path.c_str());
@@ -134,6 +136,7 @@ bool eMusic::playCampaignVoiceImpl(const std::string &path) {
                path.c_str(), Mix_GetError());
         return false;
     }
+    Mix_Volume(sVoiceChannel, eAudioSettings::sMixVolume(eSoundKind::speech));
     Mix_PlayChannel(sVoiceChannel, mCampaignVoice, 0);
     return true;
 }

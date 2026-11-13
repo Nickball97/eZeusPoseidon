@@ -1,4 +1,5 @@
 #include "egamewidget.h"
+#include "egameoptions.h"
 #include "echeatwidget.h"
 
 #include "engine/egameboard.h"
@@ -183,8 +184,6 @@ void eGameWidget::setBoard(eGameBoard* const board) {
 eGameWidgetSettings eGameWidget::settings() const {
     eGameWidgetSettings r;
     r.fPaused = mPaused;
-    r.fSpeedId = mSpeedId;
-    r.fSpeed = mSpeed;
     r.fTileSize = mTileSize;
     r.fDX = mDX;
     r.fDY = mDY;
@@ -195,8 +194,6 @@ eGameWidgetSettings eGameWidget::settings() const {
 
 void eGameWidget::setSettings(const eGameWidgetSettings& s) {
     if(mPaused != s.fPaused) switchPause();
-    mSpeedId = s.fSpeedId;
-    mSpeed = s.fSpeed;
     setTileSize(s.fTileSize);
     if(mBoard) mBoard->setWorldDirection(s.fDir);
     setDX(s.fDX);
@@ -1898,12 +1895,10 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
     }
     if(k == SDL_Scancode::SDL_SCANCODE_KP_PLUS ||
        k == SDL_Scancode::SDL_SCANCODE_RIGHTBRACKET) {
-        mSpeedId = std::clamp(mSpeedId + 1, 0, sMaxSpeedId);
-        mSpeed = sSpeeds[mSpeedId];
+        changeGameSpeed(10);
     } else if(k == SDL_Scancode::SDL_SCANCODE_KP_MINUS ||
               k == SDL_Scancode::SDL_SCANCODE_LEFTBRACKET) {
-        mSpeedId = std::clamp(mSpeedId - 1, 0, sMaxSpeedId);
-        mSpeed = sSpeeds[mSpeedId];
+        changeGameSpeed(-10);
     } else if(k == SDL_Scancode::SDL_SCANCODE_R) {
         mRotate = !mRotate;
         mRotateFrame = (mRotateFrame/gRotateFrames + 1)*gRotateFrames;
@@ -2096,7 +2091,14 @@ bool eGameWidget::keyPressEvent(const eKeyPressEvent& e) {
             const auto exitAct = [w]() {
                 w->closeGame();
             };
-            menu->initialize(resumeAct, saveAct, loadAct, exitAct);
+            const auto optionsAct = [this, w, menu]() {
+                const auto om = new eGameOptionsMenu(w);
+                om->initialize(this);
+                w->execDialog(om, true, nullptr, this);
+                om->align(eAlignment::center);
+                menu->deleteLater();
+            };
+            menu->initialize(resumeAct, saveAct, loadAct, optionsAct, exitAct);
             addWidget(menu);
             menu->align(eAlignment::center);
             w->execDialog(menu);
@@ -2699,4 +2701,28 @@ bool eGameWidget::applyCheat(const std::string& code) {
         return true;
     }
     return false;
+}
+
+void eGameWidget::changeGameSpeed(const int by) {
+    // [ ] and keypad +/- change it by 10, from 10 to 100 (zeus.exe 0x00402430)
+    auto s = window()->settings();
+    s.fGameSpeed = std::clamp(s.fGameSpeed + by, 10, 100);
+    window()->saveOptions(s);
+}
+
+int eGameWidget::gameSpeedTicks() {
+    // The original runs one game tick at most every delay + 2 ms, the delay
+    // taken from table 0x0063DA1C by (100 - speed)/10 (zeus.exe 0x005168A0):
+    // 100%: 0, 90%: 20, 80%: 35, 70%: 55, 60%: 80, 50%: 110, 40%: 160,
+    // 30%: 240, 20%: 350, 10%: 500. Its month is 816 ticks, eZeus's
+    // 365*350/12, and eZeus draws 20 frames a second (eMainWindow::exec).
+    static const int sDelays[10] = {0, 20, 35, 55, 80, 110, 160, 240, 350, 500};
+    const int speed = std::clamp(window()->settings().fGameSpeed, 10, 100);
+    const int delay = sDelays[(100 - speed)/10] + 2;
+    const double eTicksPerOriginal = 365.*350./(12.*816.);
+    const double frameMs = 1000./20.;
+    mSpeedCarry += eTicksPerOriginal*frameMs/delay;
+    const int ticks = static_cast<int>(mSpeedCarry);
+    mSpeedCarry -= ticks;
+    return ticks;
 }

@@ -381,7 +381,10 @@ void eGameWidget::paintEvent(ePainter& p) {
     if(updateTips) updateTipPositions();
     mBoard->incFrame();
 
-    const bool iterate = mSpeedId == sMaxSpeedId;
+    // 100%: the original runs a tick every 2 ms or every frame, whichever is
+    // slower, and its frame rate isn't known, so 100% keeps eZeus's own
+    // fastest speed (5 x 100 ticks a frame)
+    const bool iterate = window()->settings().fGameSpeed >= 100;
     const int iMax = iterate ? 5 : 1;
     for(int i = 0; i < iMax; i++) {
         mBoard->scheduleDataUpdate();
@@ -396,8 +399,9 @@ void eGameWidget::paintEvent(ePainter& p) {
                 w->episodeLost();
                 return;
             } else {
-                mTime += mSpeed;
-                mBoard->incTime(mSpeed);
+                const int ticks = iterate ? 100 : gameSpeedTicks();
+                mTime += ticks;
+                mBoard->incTime(ticks);
             }
         }
         mBoard->emptyRubbish();

@@ -621,8 +621,8 @@ void eMainWindow::askToQuit() {
     if(dynamic_cast<eMenuLoadingWidget*>(mWidget)) return;
     if(dynamic_cast<eGameLoadingWidget*>(mWidget)) return;
     const auto q = new eQuestionWidget(this);
-    // "Exit game", the original's own wording (Zeus_Text group 1)
-    q->initialize(eLanguage::zeusText(1, 5) + "?", "",
+    // the original's own question, "Exit Game?" (Zeus_Text group 5, item 1)
+    q->initialize(eLanguage::zeusText(5, 1), "",
                   [this]() { mQuit = true; }, nullptr);
     execDialog(q);
     q->align(eAlignment::center);
@@ -870,4 +870,18 @@ int eMainWindow::exec() {
     }
 
     return 0;
+}
+
+void eMainWindow::saveOptions(const eSettings& s) {
+    mSettings.fGameSpeed = s.fGameSpeed;
+    mSettings.fMusicOn = s.fMusicOn;
+    mSettings.fSpeechOn = s.fSpeechOn;
+    mSettings.fSoundsOn = s.fSoundsOn;
+    mSettings.fAmbientOn = s.fAmbientOn;
+    mSettings.fMusicVolume = s.fMusicVolume;
+    mSettings.fSpeechVolume = s.fSpeechVolume;
+    mSettings.fSoundsVolume = s.fSoundsVolume;
+    mSettings.fAmbientVolume = s.fAmbientVolume;
+    mSettings.applyAudio();
+    mSettings.write();
 }

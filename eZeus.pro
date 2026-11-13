@@ -642,6 +642,7 @@ SOURCES += \
         widgets/efulfilldialog.cpp \
         widgets/egameloadingwidget.cpp \
         widgets/egamemainmenu.cpp \
+        widgets/egameoptions.cpp \
         widgets/egamemenu.cpp \
         widgets/egamemenubase.cpp \
         widgets/egamewidget.cpp \
@@ -750,6 +751,7 @@ HEADERS += \
     audio/emusicvector.h \
     audio/esounds.h \
     audio/esoundvector.h \
+    audio/eaudiosettings.h \
     buildings/allbuildings.h \
     buildings/eaestheticsbuilding.h \
     buildings/eagorabase.h \
@@ -2870,6 +2872,7 @@ HEADERS += \
     widgets/efulfilldialog.h \
     widgets/egameloadingwidget.h \
     widgets/egamemainmenu.h \
+    widgets/egameoptions.h \
     widgets/egamemenu.h \
     widgets/egamemenubase.h \
     widgets/egamewidget.h \

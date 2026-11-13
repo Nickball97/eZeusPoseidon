@@ -166,6 +166,7 @@ int main() {
     eNumbers::sLoad();
     eSettings settings;
     settings.read();
+    settings.applyAudio();
     bool found = false;
     const auto checkTextureSize = [&found](const std::string& path,
                                            bool& setting) {

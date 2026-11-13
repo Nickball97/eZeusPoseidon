@@ -81,6 +81,7 @@ add_executable(eZeus
     audio/esounds.h
     audio/esoundvector.cpp
     audio/esoundvector.h
+    audio/eaudiosettings.h
     buildings/allbuildings.h
     buildings/eaestheticsbuilding.cpp
     buildings/eaestheticsbuilding.h
@@ -2804,6 +2805,8 @@ add_executable(eZeus
     widgets/egameloadingwidget.h
     widgets/egamemainmenu.cpp
     widgets/egamemainmenu.h
+    widgets/egameoptions.cpp
+    widgets/egameoptions.h
     widgets/egamemenu.cpp
     widgets/egamemenu.h
     widgets/egamemenubase.cpp
