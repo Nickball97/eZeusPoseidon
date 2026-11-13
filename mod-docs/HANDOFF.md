@@ -230,6 +230,13 @@ safety net (same result on all seven adventures):
   `cleanup/safety-net` -> `save-load` -> `findings` -> `housekeeping` ->
   `sim-step` -> `split-board`. `main` is untouched (Nicolás, 13 Nov).
 - Next: step 4 (numbers into `enumbers.cpp`).
+- Step 4, first batch (branch `cleanup/numbers`): 20 values moved from the code
+  into `enumbers.cpp` / `numbers.txt`, defaults unchanged, net the same. See
+  "Numbers moved to numbers.txt" in `mod-docs/mod-features.md`. Engine
+  timers (coverage every 2,000 ticks, employment every 5,678, goals every
+  5,050 and so on) were left in the code: mods are not expected to tune them.
+  `farm_ripe_period_i` is still loaded but nothing uses it since farms
+  harvest once a year.
 
 Put the parts mods will touch first.
 

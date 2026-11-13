@@ -69,13 +69,15 @@ int eSmallHouse::provide(const eProvide p, const int n) {
         break;
     case eProvide::food:
         value = &mFood;
-        max = 2*mPeople;
+        max = eNumbers::sHouseFoodStorePerPerson*mPeople;
         break;
     case eProvide::fleece:
         value = &mFleece;
+        max = eNumbers::sCommonHouseFleeceStoreMax;
         break;
     case eProvide::oil:
         value = &mOil;
+        max = eNumbers::sCommonHouseOilStoreMax;
         break;
 
     case eProvide::philosopherInventor:
@@ -229,9 +231,12 @@ void eSmallHouse::nextMonth() {
     mSatisfactionProvidedThisMonth = false;
     // a quarter of the residents, rounded down, once a month; huts need no
     // food and eat none (original exe 0x0048B8D0, Model column i)
-    const int cfood = mLevel > 0 ? mPeople*25/100 : 0;
-    const int cfleece = (mLevel > 2 && mPeople > 0) ? 2 : 0;
-    const int coil = (mLevel > 4 && mPeople > 0) ? 2 : 0;
+    const int cfood = mLevel > 0 ?
+                          mPeople*eNumbers::sHouseFoodUsePercent/100 : 0;
+    const int cfleece = (mLevel > 2 && mPeople > 0) ?
+                            eNumbers::sCommonHouseFleeceUse : 0;
+    const int coil = (mLevel > 4 && mPeople > 0) ?
+                         eNumbers::sCommonHouseOilUse : 0;
     mFood = std::max(0, mFood - cfood);
     mFleece = std::max(0, mFleece - cfleece);
     mOil = std::max(0, mOil - coil);
@@ -275,7 +280,7 @@ void eSmallHouse::setDisgruntled(const bool d) {
 bool eSmallHouse::lowFood() const {
     if(mLevel == 0) return false;
     if(!mFood) return true;
-    const int cfood = mPeople*25/100;
+    const int cfood = mPeople*eNumbers::sHouseFoodUsePercent/100;
     return mFood < cfood;
 }
 

@@ -17,7 +17,7 @@ eFarmBase::eFarmBase(eGameBoard& board,
     mTextures(eGameTextures::buildings())  {
     eGameTextures::loadPlantation();
     // room for a blessed harvest (4 x 8 loads)
-    setMaxResource(32);
+    setMaxResource(4*eNumbers::sFarmHarvestLoads);
 }
 
 std::shared_ptr<eTexture> eFarmBase::getTexture(const eTileSize size) const {
@@ -76,10 +76,10 @@ void eFarmBase::timeChanged(const int by) {
     mRipe = std::clamp(int(5*mNextRipe/year), 0, 5);
 
     const auto& date = getBoard().date();
-    const auto harvestMonth = resourceType() == eResourceType::wheat ?
-                                  eMonth::july : eMonth::april;
+    const auto harvestMonth = this->harvestMonth();
     if(date.month() == harvestMonth && date.day() == 1) {
-        const int loads = int(std::round(8*mNextRipe/year));
+        const int loads = int(std::round(
+                              eNumbers::sFarmHarvestLoads*mNextRipe/year));
         if(loads > 0) {
             // a blessed farm brings in 4 times this harvest (sBlessMultiplier)
             addProduced(resourceType(), useBlessing(loads));
@@ -110,6 +110,9 @@ double eFarmBase::growth() const {
 }
 
 eMonth eFarmBase::harvestMonth() const {
-    return resourceType() == eResourceType::wheat ? eMonth::july :
-                                                    eMonth::april;
+    // numbers.txt holds the month as 1 (January) to 12
+    const int m = resourceType() == eResourceType::wheat ?
+                      eNumbers::sFarmWheatHarvestMonth :
+                      eNumbers::sFarmVegetableHarvestMonth;
+    return static_cast<eMonth>(m - 1);
 }

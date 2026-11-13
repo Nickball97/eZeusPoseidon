@@ -253,6 +253,29 @@ int eNumbers::sTriremeWharfMaxResourceTakeDistance;
 int eNumbers::sTriremeWharfBuildTime;
 int eNumbers::sTriremeWharfBuildStages;
 
+int eNumbers::sHouseFoodUsePercent;
+int eNumbers::sHouseFoodStorePerPerson;
+int eNumbers::sCommonHouseFleeceUse;
+int eNumbers::sCommonHouseOilUse;
+int eNumbers::sCommonHouseFleeceStoreMax;
+int eNumbers::sCommonHouseOilStoreMax;
+int eNumbers::sEliteHouseFoodStoreExtra;
+int eNumbers::sEliteHouseHorsesFoodUse;
+int eNumbers::sEliteHouseFleeceUse;
+int eNumbers::sEliteHouseOilUse;
+int eNumbers::sEliteHouseWineUse;
+int eNumbers::sEliteHouseFleeceStoreMax;
+int eNumbers::sEliteHouseOilStoreMax;
+int eNumbers::sEliteHouseWineStoreMax;
+
+int eNumbers::sFarmHarvestLoads;
+int eNumbers::sFarmWheatHarvestMonth;
+int eNumbers::sFarmVegetableHarvestMonth;
+
+int eNumbers::sVendorFoodStockLoads;
+int eNumbers::sVendorGoodsStockLoads;
+int eNumbers::sVendorGoodsRefillBelowLoads;
+
 void eNumbers::sLoad() {
     const auto path = eGameDir::numbersPath();
     sLoad(path);
@@ -615,4 +638,42 @@ void eNumbers::sLoad(const std::string& path) {
     // 32 cycles at full staff, 2 months (exe 0x0048CFB0, trireme wharf)
     loadI("trireme_wharf_build_time_i", sTriremeWharfBuildTime, (365*sDayLength)/12, 1, 1000000);
     loadI("trireme_wharf_build_stages_i", sTriremeWharfBuildStages, 2, 1, 10);
+
+    // Houses, each month. A quarter of the residents in food, rounded
+    // down (original exe 0x0048B8D0, Model column i); huts eat none.
+    loadI("house_food_use_percent_i", sHouseFoodUsePercent, 25, 0, 100);
+    // a house keeps up to 2 units of food per resident
+    loadI("house_food_store_per_person_i", sHouseFoodStorePerPerson, 2, 1, 100);
+    // common housing: 2 fleece from Homestead up, 2 oil from Apartment up,
+    // and up to 8 of each in store
+    loadI("common_house_fleece_use_i", sCommonHouseFleeceUse, 2, 0, 100);
+    loadI("common_house_oil_use_i", sCommonHouseOilUse, 2, 0, 100);
+    loadI("common_house_fleece_store_max_i", sCommonHouseFleeceStoreMax, 8, 1, 1000);
+    loadI("common_house_oil_store_max_i", sCommonHouseOilStoreMax, 8, 1, 1000);
+    // elite housing: food store counted as for 16 more residents; the
+    // horses eat 1 unit between them (original exe 0x0048B8D0)
+    loadI("elite_house_food_store_extra_i", sEliteHouseFoodStoreExtra, 16, 0, 1000);
+    loadI("elite_house_horses_food_use_i", sEliteHouseHorsesFoodUse, 1, 0, 100);
+    // fleece, oil and wine: 1 each twice a month (original 0x00484C50),
+    // wine from Manor up; up to 16 of each in store
+    loadI("elite_house_fleece_use_i", sEliteHouseFleeceUse, 2, 0, 100);
+    loadI("elite_house_oil_use_i", sEliteHouseOilUse, 2, 0, 100);
+    loadI("elite_house_wine_use_i", sEliteHouseWineUse, 2, 0, 100);
+    loadI("elite_house_fleece_store_max_i", sEliteHouseFleeceStoreMax, 16, 1, 1000);
+    loadI("elite_house_oil_store_max_i", sEliteHouseOilStoreMax, 16, 1, 1000);
+    loadI("elite_house_wine_store_max_i", sEliteHouseWineStoreMax, 16, 1, 1000);
+
+    // Farms: one harvest a year of 8 loads at full staff (HeavenGames,
+    // gameinfo/industry-production); wheat in July, carrots and onions in
+    // April (Zeus manual, Husbandry). Months are 1 (January) to 12.
+    loadI("farm_harvest_loads_i", sFarmHarvestLoads, 8, 1, 100);
+    loadI("farm_wheat_harvest_month_i", sFarmWheatHarvestMonth, 7, 1, 12);
+    loadI("farm_vegetable_harvest_month_i", sFarmVegetableHarvestMonth, 4, 1, 12);
+
+    // Agora stock (Citadel of Poseidon, walkers/agora.html): the food
+    // vendor holds up to 8 loads and takes 8 on its first trip; fleece, oil
+    // and wine vendors fetch 4 loads, and more when under 2 loads are left.
+    loadI("vendor_food_stock_loads_i", sVendorFoodStockLoads, 8, 1, 100);
+    loadI("vendor_goods_stock_loads_i", sVendorGoodsStockLoads, 4, 1, 100);
+    loadI("vendor_goods_refill_below_loads_i", sVendorGoodsRefillBelowLoads, 2, 0, 100);
 }

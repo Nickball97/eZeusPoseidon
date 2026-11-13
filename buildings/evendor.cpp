@@ -103,10 +103,12 @@ int eVendor::count(const eResourceType type) const {
 // another 2 when the stock drops below 200 units.
 int eVendor::maxStock() const {
     switch(mResType) {
-    case eResourceType::food: return 8*mResMult;
+    case eResourceType::food:
+        return eNumbers::sVendorFoodStockLoads*mResMult;
     case eResourceType::fleece:
     case eResourceType::oliveOil:
-    case eResourceType::wine: return 4*mResMult;
+    case eResourceType::wine:
+        return eNumbers::sVendorGoodsStockLoads*mResMult;
     default: return mMaxResource;
     }
 }
@@ -120,7 +122,7 @@ void eVendor::timeChanged(const int by) {
     if(enabled()) {
         if(mCart && mResType == eResourceType::food) {
             // "takes 8 loads on the very first trip" (walkers/agora.html)
-            mCart->setMaxCount(8);
+            mCart->setMaxCount(eNumbers::sVendorFoodStockLoads);
         }
         if(!mCart) {
             mCart = spawnCart(eCartActionTypeSupport::take);
@@ -175,7 +177,9 @@ std::vector<eCartTask> eVendor::cartTasks() const {
     case eResourceType::fleece:
     case eResourceType::oliveOil:
     case eResourceType::wine:
-        if(mResource >= 2*mResMult) return {};
+        if(mResource >= eNumbers::sVendorGoodsRefillBelowLoads*mResMult) {
+            return {};
+        }
         break;
     default: break;
     }

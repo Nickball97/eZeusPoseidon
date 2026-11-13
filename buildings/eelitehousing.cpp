@@ -153,19 +153,20 @@ int eEliteHousing::provide(const eProvide p, const int n) {
     switch(p) {
     case eProvide::food:
         value = &mFood;
-        max = 2*(16 + mPeople + mHorses);
+        max = eNumbers::sHouseFoodStorePerPerson*
+              (eNumbers::sEliteHouseFoodStoreExtra + mPeople + mHorses);
         break;
     case eProvide::fleece:
         value = &mFleece;
-        max = 16;
+        max = eNumbers::sEliteHouseFleeceStoreMax;
         break;
     case eProvide::oil:
         value = &mOil;
-        max = 16;
+        max = eNumbers::sEliteHouseOilStoreMax;
         break;
     case eProvide::wine:
         value = &mWine;
-        max = 16;
+        max = eNumbers::sEliteHouseWineStoreMax;
         break;
     case eProvide::arms: {
         // armor storage by level (Model "ALL HOUSES" rows)
@@ -266,16 +267,19 @@ void eEliteHousing::nextMonth() {
     // the residents eat a quarter of their number, rounded down, and the
     // horses 1 unit between them; with no food left for them a horse is
     // lost (original exe 0x0048B8D0)
-    const int cfood = mPeople*25/100;
+    const int cfood = mPeople*eNumbers::sHouseFoodUsePercent/100;
     mFood = std::max(0, mFood - cfood);
     if(mHorses > 0) {
-        if(mFood > 0) mFood--;
-        else removeHorse();
+        if(mFood > 0) {
+            mFood = std::max(0, mFood - eNumbers::sEliteHouseHorsesFoodUse);
+        } else {
+            removeHorse();
+        }
     }
     // fleece, oil and wine: 1 each twice a month (original 0x00484C50)
-    const int cfleece = 2;
-    const int coil = 2;
-    const int cwine = mLevel > 2 ? 2 : 0;
+    const int cfleece = eNumbers::sEliteHouseFleeceUse;
+    const int coil = eNumbers::sEliteHouseOilUse;
+    const int cwine = mLevel > 2 ? eNumbers::sEliteHouseWineUse : 0;
     mFleece = std::max(0, mFleece - cfleece);
     mOil = std::max(0, mOil - coil);
     mWine = std::max(0, mWine - cwine);
@@ -283,7 +287,8 @@ void eEliteHousing::nextMonth() {
 
 bool eEliteHousing::lowFood() const {
     if(!mFood) return true;
-    const int cfood = mPeople*25/100 + (mHorses > 0 ? 1 : 0);
+    const int cfood = mPeople*eNumbers::sHouseFoodUsePercent/100 +
+                      (mHorses > 0 ? eNumbers::sEliteHouseHorsesFoodUse : 0);
     return mFood < cfood;
 }
 

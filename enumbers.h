@@ -252,6 +252,37 @@ struct eNumbers {
     static int sTriremeWharfMaxResourceTakeDistance;
     static int sTriremeWharfBuildTime;
     static int sTriremeWharfBuildStages;
+
+    // What a house uses each month and how much it keeps in store.
+    // Food: this share of the residents, in units, rounded down.
+    static int sHouseFoodUsePercent;
+    // food kept at most: this many units per resident
+    static int sHouseFoodStorePerPerson;
+    static int sCommonHouseFleeceUse;
+    static int sCommonHouseOilUse;
+    static int sCommonHouseFleeceStoreMax;
+    static int sCommonHouseOilStoreMax;
+    // an elite house keeps food as if it had this many more residents
+    static int sEliteHouseFoodStoreExtra;
+    // food eaten by all the horses of one elite house together
+    static int sEliteHouseHorsesFoodUse;
+    static int sEliteHouseFleeceUse;
+    static int sEliteHouseOilUse;
+    static int sEliteHouseWineUse;
+    static int sEliteHouseFleeceStoreMax;
+    static int sEliteHouseOilStoreMax;
+    static int sEliteHouseWineStoreMax;
+
+    // Farms: loads in a full yearly harvest, and the month (1-12) of it.
+    static int sFarmHarvestLoads;
+    static int sFarmWheatHarvestMonth;
+    static int sFarmVegetableHarvestMonth;
+
+    // Agora stalls: loads kept in stock, and the stock (in loads) below
+    // which a fleece, oil or wine stall sends its cart for more.
+    static int sVendorFoodStockLoads;
+    static int sVendorGoodsStockLoads;
+    static int sVendorGoodsRefillBelowLoads;
 };
 
 #endif // ENUMBERS_H

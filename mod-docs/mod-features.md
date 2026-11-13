@@ -80,3 +80,45 @@ Note: Manor wine needs no fix. eZeus elite levels start at 0 (unevolved), so Man
 ## Saved ideas (not in scope)
 
 Wine vinegar building; plague triggers (crowding, trade ships, sieges); repression (too many watch posts lowers sentiment); silphium as an imported luxury; births and deaths (a small natural trickle on top of immigration, e.g. about 1 new resident a month in a house with room, with Hera's sanctuary raising the birth rate; the manual gives no number, eZeus has no births today; amounts need playtesting).
+
+## Numbers moved to numbers.txt (13 Nov 2026)
+
+These used to be written in the code. They are now read from `numbers.txt`
+in the game folder (`enumbers.cpp` holds the default and the source of each).
+A key that is missing from `numbers.txt` uses the default; to tune one, add
+a line like `house_food_use_percent_i "25"`. The defaults are the values the
+game had, so nothing plays differently until a line is added.
+
+For the goods economy (section 2):
+
+| Key | Default | Meaning |
+|---|---|---|
+| `house_food_use_percent_i` | 25 | food a house eats each month, as a share of its residents |
+| `house_food_store_per_person_i` | 2 | most food a house keeps, per resident |
+| `common_house_fleece_use_i` | 2 | fleece a common house uses each month (Homestead and up) |
+| `common_house_oil_use_i` | 2 | oil a common house uses each month (Apartment and up) |
+| `common_house_fleece_store_max_i` | 8 | most fleece a common house keeps |
+| `common_house_oil_store_max_i` | 8 | most oil a common house keeps |
+| `elite_house_food_store_extra_i` | 16 | an elite house stores food as for this many more residents |
+| `elite_house_horses_food_use_i` | 1 | food the horses of one elite house eat each month |
+| `elite_house_fleece_use_i` | 2 | fleece an elite house uses each month |
+| `elite_house_oil_use_i` | 2 | oil an elite house uses each month |
+| `elite_house_wine_use_i` | 2 | wine an elite house uses each month (Manor and up) |
+| `elite_house_fleece_store_max_i` | 16 | most fleece an elite house keeps |
+| `elite_house_oil_store_max_i` | 16 | most oil an elite house keeps |
+| `elite_house_wine_store_max_i` | 16 | most wine an elite house keeps |
+| `vendor_food_stock_loads_i` | 8 | loads a food stall holds (and takes on its first trip) |
+| `vendor_goods_stock_loads_i` | 4 | loads a fleece, oil or wine stall holds |
+| `vendor_goods_refill_below_loads_i` | 2 | such a stall sends for more below this many loads |
+
+For farm seasons (section 3; the yearly harvest itself is already built, in
+`buildings/efarmbase.cpp`):
+
+| Key | Default | Meaning |
+|---|---|---|
+| `farm_harvest_loads_i` | 8 | loads in a full yearly harvest |
+| `farm_wheat_harvest_month_i` | 7 | month of the wheat harvest (1 = January) |
+| `farm_vegetable_harvest_month_i` | 4 | month of the carrot and onion harvest |
+
+Not checked: that changing one of these in `numbers.txt` has the expected
+effect in play. The safety net only shows that the defaults behave as before.
