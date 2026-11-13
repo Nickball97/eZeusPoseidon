@@ -41,18 +41,24 @@ class eMythologyButton : public eButtonBase {
 public:
     using eButtonBase::eButtonBase;
 
-    void initialize(const std::string& txt) {
-        setYellowFontColor();
+    // coloured by level (yellow / dark / white); white on hover, or yellow
+    // when it's white already
+    void initialize(const std::string& txt,
+                    const eStatusLevel level = eStatusLevel::ok) {
+        eDataWidget::sSetStatusColor(this, level);
+        const auto base = fontColor();
+        const auto hover = base == eFontColor::light ? eFontColor::yellow :
+                                                       eFontColor::light;
         setNoPadding();
         setTinyFontSize();
         setText(txt);
         fitContent();
 
-        setMouseEnterAction([this]() {
-            setLightFontColor();
+        setMouseEnterAction([this, hover]() {
+            setFontColor(hover);
         });
-        setMouseLeaveAction([this]() {
-            setYellowFontColor();
+        setMouseLeaveAction([this, base]() {
+            setFontColor(base);
         });
     }
 };
@@ -205,7 +211,11 @@ void eMythologyDataWidget::paintEvent(ePainter& p) {
                     } else {
                         textId = 9; // needs materials
                     }
-                    stateB->initialize(eLanguage::zeusText(59, textId));
+                    // needs materials yellow, working dark, sacrificing white
+                    const auto level = textId == 9 ? eStatusLevel::bad :
+                                       textId == 3 ? eStatusLevel::good :
+                                                     eStatusLevel::ok;
+                    stateB->initialize(eLanguage::zeusText(59, textId), level);
                     w->addWidget(stateB);
                     stateB->align(eAlignment::hcenter);
                     stateB->setPressAction([this, sptr]() {
@@ -244,7 +254,7 @@ void eMythologyDataWidget::paintEvent(ePainter& p) {
                     const auto ct = g->type();
                     const auto gt = eGod::sCharacterToGodType(ct);
                     const auto name = eGod::sGodName(gt);
-                    nameB->initialize(name);
+                    nameB->initialize(name, eStatusLevel::bad); // attacking
                     w->addWidget(nameB);
                     nameB->align(eAlignment::hcenter);
                     const stdptr<eCharacter> gptr(g);
@@ -284,7 +294,7 @@ void eMythologyDataWidget::paintEvent(ePainter& p) {
                     const auto ct = m->type();
                     const auto mt = eMonster::sCharacterToMonsterType(ct);
                     const auto name = eMonster::sMonsterName(mt);
-                    nameB->initialize(name);
+                    nameB->initialize(name, eStatusLevel::bad); // attacking
                     w->addWidget(nameB);
                     nameB->align(eAlignment::hcenter);
                     const stdptr<eCharacter> mptr(m);

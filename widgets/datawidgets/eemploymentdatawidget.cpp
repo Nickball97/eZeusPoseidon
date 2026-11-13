@@ -41,7 +41,6 @@ void eEmploymentDataWidget::initialize() {
         cw1->addWidget(l);
 
         mWageLabel = new eLabel(window());
-        mWageLabel->setYellowFontColor();
         mWageLabel->setNoPadding();
         mWageLabel->setVerySmallFontSize();
         const auto wrn = eWageRateHelpers::name(eWageRate::normal);
@@ -95,7 +94,6 @@ void eEmploymentDataWidget::initialize() {
         mPensionsLabel = new eLabel(window());
         mPensionsLabel->setNoPadding();
         mPensionsLabel->setSmallFontSize();
-        mPensionsLabel->setYellowFontColor();
         mPensionsLabel->setText("0 dr");
         mPensionsLabel->fitContent();
         cw2->addWidget(mPensionsLabel);
@@ -134,7 +132,6 @@ void eEmploymentDataWidget::initialize() {
         mWorkforceLabel = new eLabel(window());
         mWorkforceLabel->setNoPadding();
         mWorkforceLabel->setSmallFontSize();
-        mWorkforceLabel->setYellowFontColor();
         mWorkforceLabel->setText("0");
         mWorkforceLabel->fitContent();
         cw3->addWidget(mWorkforceLabel);
@@ -163,7 +160,6 @@ void eEmploymentDataWidget::initialize() {
         mUnemployedNLabel = new eLabel(window());
         mUnemployedNLabel->setNoPadding();
         mUnemployedNLabel->setSmallFontSize();
-        mUnemployedNLabel->setYellowFontColor();
         mUnemployedNLabel->setText("0");
         mUnemployedNLabel->fitContent();
         cw4->addWidget(mUnemployedNLabel);
@@ -198,7 +194,6 @@ void eEmploymentDataWidget::initialize() {
         mVacanciesNLabel = new eLabel(window());
         mVacanciesNLabel->setNoPadding();
         mVacanciesNLabel->setSmallFontSize();
-        mVacanciesNLabel->setYellowFontColor();
         mVacanciesNLabel->setText("0");
         mVacanciesNLabel->fitContent();
         cw5->addWidget(mVacanciesNLabel);
@@ -245,6 +240,10 @@ void eEmploymentDataWidget::paintEvent(ePainter& p) {
             mWorkforceLabel->align(eAlignment::hcenter);
 
             const int v = emplData->freeJobVacancies();
+            // yellow past 10% of the jobs unfilled
+            const int j = emplData->totalJobVacancies();
+            sSetStatusColor(mVacanciesNLabel, 10*v > j ? eStatusLevel::bad :
+                                                         eStatusLevel::ok);
             mVacanciesNLabel->setText(std::to_string(v));
             mVacanciesNLabel->fitContent();
             mVacanciesNLabel->align(eAlignment::hcenter);
@@ -252,6 +251,9 @@ void eEmploymentDataWidget::paintEvent(ePainter& p) {
             const int u = emplData->unemployed();
             const int e = emplData->employable();
             const auto perStr = e ? " (" + std::to_string(100*u/e) + "%)" : "";
+            // yellow past 10% of the workforce out of work
+            sSetStatusColor(mUnemployedNLabel, 10*u > e ? eStatusLevel::bad :
+                                                          eStatusLevel::ok);
             mUnemployedNLabel->setText(std::to_string(u) + perStr);
             mUnemployedNLabel->fitContent();
             mUnemployedNLabel->align(eAlignment::hcenter);

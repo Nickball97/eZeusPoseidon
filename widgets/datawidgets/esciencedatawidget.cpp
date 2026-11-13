@@ -22,7 +22,6 @@ public:
         mLabel = new eLabel(window());
         mLabel->setNoPadding();
         mLabel->setTinyFontSize();
-        mLabel->setYellowFontColor();
         mLabel->setText(title);
         mLabel->fitContent();
         mLabel->setText("");
@@ -124,6 +123,7 @@ void eScienceDataWidget::updateCoverage() {
         const int pc = mBoard.philosophyResearchCoverage(cid);
         const auto pt = sCoverageToText(pc);
         const auto ptt = eLanguage::zeusText(58, pt);
+        sSetStatusColor(mResearchCoverage, sCoverageLevel(pt));
         mResearchCoverage->setText(ptt);
         mResearchCoverage->fitContent();
     }
@@ -132,6 +132,7 @@ void eScienceDataWidget::updateCoverage() {
         const int ac = mBoard.athleticsLearningCoverage(cid);
         const auto at = sCoverageToText(ac);
         const auto att = eLanguage::zeusText(58, at);
+        sSetStatusColor(mLearningCoverage, sCoverageLevel(at));
         mLearningCoverage->setText(att);
         mLearningCoverage->fitContent();
     }
@@ -140,6 +141,7 @@ void eScienceDataWidget::updateCoverage() {
         const int dc = mBoard.dramaAstronomyCoverage(cid);
         const auto dt = sCoverageToText(dc);
         const auto dtt = eLanguage::zeusText(58, dt);
+        sSetStatusColor(mAstronomyCoverage, sCoverageLevel(dt));
         mAstronomyCoverage->setText(dtt);
         mAstronomyCoverage->fitContent();
     }

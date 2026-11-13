@@ -44,7 +44,6 @@ void eAppealDataWidget::initialize() {
     mNoMonumentsWidget = new eLabel(window());
     mNoMonumentsWidget->setWrapWidth(iw);
     mNoMonumentsWidget->setWrapAlignment(eAlignment::hcenter);
-    mNoMonumentsWidget->setYellowFontColor();
     mNoMonumentsWidget->setNoPadding();
     mNoMonumentsWidget->setTinyFontSize();
     const auto text = eLanguage::zeusText(133, 2); // no commemorative monuments
@@ -64,7 +63,7 @@ public:
                     eGameWidget* const gw) {
         mTiles = tiles;
 
-        setYellowFontColor();
+        setDarkFontColor();
         setNoPadding();
         setTinyFontSize();
         setText(txt);
@@ -74,7 +73,7 @@ public:
             setLightFontColor();
         });
         setMouseLeaveAction([this]() {
-            setYellowFontColor();
+            setDarkFontColor();
         });
         setPressAction([this, gw]() {
             const int ts = mTiles.size();

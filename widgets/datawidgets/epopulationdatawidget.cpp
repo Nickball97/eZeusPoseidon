@@ -35,7 +35,6 @@ void ePopulationDataWidget::initialize() {
 
         mVacLabel = new eLabel("0", window());
         mVacLabel->setNoPadding();
-        mVacLabel->setYellowFontColor();
         mVacLabel->fitContent();
         cw1->addWidget(mVacLabel);
 
@@ -127,7 +126,6 @@ void ePopulationDataWidget::initialize() {
 
         mNewcomersLabel = new eLabel("0", window());
         mNewcomersLabel->setNoPadding();
-        mNewcomersLabel->setYellowFontColor();
         mNewcomersLabel->fitContent();
         cw4->addWidget(mNewcomersLabel);
 
@@ -177,12 +175,16 @@ void ePopulationDataWidget::paintEvent(ePainter& p) {
                 pdtxt = eLanguage::zeusText(55, 20); // people wish to come to the city
             }
             if(!pdtxt.empty()) {
+                sSetStatusColor(mPeopleDirection, l > a ? eStatusLevel::bad :
+                                                          eStatusLevel::ok);
                 mPeopleDirection->setText(pdtxt);
                 mPeopleDirection->fitContent();
                 mPeopleDirection->align(eAlignment::hcenter);
             }
 
             const int v = popData->vacancies();
+            sSetStatusColor(mVacLabel, v <= 0 ? eStatusLevel::bad :
+                                                eStatusLevel::ok);
             mVacLabel->setText(std::to_string(v));
             mVacLabel->fitContent();
             mVacLabel->align(eAlignment::hcenter);

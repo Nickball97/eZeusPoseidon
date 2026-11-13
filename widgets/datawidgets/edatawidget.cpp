@@ -2,6 +2,7 @@
 
 #include "eviewmodebutton.h"
 #include "widgets/ebasicbutton.h"
+#include "widgets/elabelbase.h"
 #include "elanguage.h"
 #include "engine/egameboard.h"
 
@@ -95,6 +96,24 @@ int eDataWidget::sCoverageToText(const int c) {
     if(c < 60) return 12; // ok
     if(c < 80) return 11; // not bad
     return 10; // good
+}
+
+eStatusLevel eDataWidget::sCoverageLevel(const int textId) {
+    if(textId >= 13) return eStatusLevel::bad; // poor, terrible
+    if(textId == 10) return eStatusLevel::good; // good
+    return eStatusLevel::ok; // ok, not bad
+}
+
+void eDataWidget::sSetStatusColor(eLabelBase* const l, const eStatusLevel s) {
+    if(!l) return;
+    eFontColor c = eFontColor::dark;
+    switch(s) {
+    case eStatusLevel::bad: c = eFontColor::yellow; break;
+    case eStatusLevel::ok: c = eFontColor::dark; break;
+    case eStatusLevel::good: c = eFontColor::light; break;
+    }
+    if(l->fontColor() == c) return;
+    l->setFontColor(c);
 }
 
 eCityId eDataWidget::viewedCity() {

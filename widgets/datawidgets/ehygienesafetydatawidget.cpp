@@ -51,7 +51,6 @@ void eHygieneSafetyDataWidget::initialize() {
 
     mHygieneLabel = new eLabel(window());
     mHygieneLabel->setNoPadding();
-    mHygieneLabel->setYellowFontColor();
     mHygieneLabel->setVerySmallFontSize();
     mHygieneLabel->setText(eLanguage::zeusText(56, 10)); // excellent
     mHygieneLabel->fitContent();
@@ -87,7 +86,6 @@ void eHygieneSafetyDataWidget::initialize() {
         mUnrestLabel->setWrapAlignment(eAlignment::hcenter);
         mUnrestLabel->setNoPadding();
         mUnrestLabel->setVerySmallFontSize();
-        mUnrestLabel->setYellowFontColor();
         mUnrestLabel->setText(eLanguage::zeusText(56, 23)); // no unrest
         mUnrestLabel->fitContent();
 
@@ -126,6 +124,10 @@ void eHygieneSafetyDataWidget::paintEvent(ePainter& p) {
         } else {
             hString = 2;
         }
+        // yellow from not good down, white for near perfect and perfect
+        sSetStatusColor(mHygieneLabel, hygiene > 85 ? eStatusLevel::good :
+                                       hygiene > 65 ? eStatusLevel::ok :
+                                                      eStatusLevel::bad);
         mHygieneLabel->setText(eLanguage::zeusText(56, hString));
         mHygieneLabel->fitContent();
         mHygieneLabel->align(eAlignment::hcenter);
@@ -143,6 +145,10 @@ void eHygieneSafetyDataWidget::paintEvent(ePainter& p) {
         } else {
             uString = 23;
         }
+        // "a lot" and "some" unrest yellow, stirrings dark, none white
+        sSetStatusColor(mUnrestLabel, uString == 23 ? eStatusLevel::good :
+                                      uString == 22 ? eStatusLevel::ok :
+                                                      eStatusLevel::bad);
         mUnrestLabel->setText(eLanguage::zeusText(56, uString));
         mUnrestLabel->fitContent();
         mUnrestLabel->align(eAlignment::hcenter);

@@ -41,7 +41,6 @@ eWidget* eCultureDataWidget::createCoverageWidget(
     covLabel->fitContent();
     ccw->addWidget(covLabel);
     covLabel->setX(disciplineLabel->width() + p);
-    covLabel->setYellowFontColor();
 
     ccw->fitContent();
 
@@ -147,6 +146,7 @@ void eCultureDataWidget::updateCoverage() {
         const int pc = mBoard.philosophyResearchCoverage(cid);
         const auto pt = toText(pc, eGames::isthmian);
         const auto ptt = eLanguage::zeusText(58, pt);
+        sSetStatusColor(mPhilosophyCoverage, sCoverageLevel(pt));
         mPhilosophyCoverage->setText(ptt);
         mPhilosophyCoverage->fitContent();
     }
@@ -155,6 +155,7 @@ void eCultureDataWidget::updateCoverage() {
         const int ac = mBoard.athleticsLearningCoverage(cid);
         const auto at = toText(ac, eGames::nemean);
         const auto att = eLanguage::zeusText(58, at);
+        sSetStatusColor(mAthleticsCoverage, sCoverageLevel(at));
         mAthleticsCoverage->setText(att);
         mAthleticsCoverage->fitContent();
     }
@@ -163,6 +164,7 @@ void eCultureDataWidget::updateCoverage() {
         const int dc = mBoard.dramaAstronomyCoverage(cid);
         const auto dt = toText(dc, eGames::pythian);
         const auto dtt = eLanguage::zeusText(58, dt);
+        sSetStatusColor(mDramaCoverage, sCoverageLevel(dt));
         mDramaCoverage->setText(dtt);
         mDramaCoverage->fitContent();
     }
@@ -171,6 +173,7 @@ void eCultureDataWidget::updateCoverage() {
         const int ddc = mBoard.allCultureScienceCoverage(cid);
         const auto ddt = toText(ddc, eGames::olympian);
         const auto ddtt = eLanguage::zeusText(58, ddt);
+        sSetStatusColor(mAllCoverage, sCoverageLevel(ddt));
         mAllCoverage->setText(ddtt);
         mAllCoverage->fitContent();
     }

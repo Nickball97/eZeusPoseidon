@@ -34,7 +34,6 @@ void eHusbandryDataWidget::initialize() {
 
     mCanSupportLabel = new eLabel("0", window());
     mCanSupportLabel->setNoPadding();
-    mCanSupportLabel->setYellowFontColor();
     mCanSupportLabel->fitContent();
     iw->addWidget(mCanSupportLabel);
     mCanSupportLabel->align(eAlignment::hcenter);
@@ -51,7 +50,6 @@ void eHusbandryDataWidget::initialize() {
 
     mOpinionLabel = new eLabel(window());
     mOpinionLabel->setNoPadding();
-    mOpinionLabel->setYellowFontColor();
     mOpinionLabel->setTinyFontSize();
     mOpinionLabel->setText(eLanguage::zeusText(57, 3)); // far too little
     mOpinionLabel->fitContent();
@@ -84,7 +82,6 @@ void eHusbandryDataWidget::initialize() {
 
     mStoredFoodLabel = new eLabel("0", window());
     mStoredFoodLabel->setNoPadding();
-    mStoredFoodLabel->setYellowFontColor();
     mStoredFoodLabel->fitContent();
     iw->addWidget(mStoredFoodLabel);
     mStoredFoodLabel->align(eAlignment::hcenter);
@@ -111,9 +108,6 @@ void eHusbandryDataWidget::paintEvent(ePainter& p) {
 
         if(husbData) {
             const int a = husbData->canSupport();
-            mCanSupportLabel->setText(std::to_string(a));
-            mCanSupportLabel->fitContent();
-            mCanSupportLabel->align(eAlignment::hcenter);
 
             std::string txt;
             const int pop = mBoard.population(cid);
@@ -130,6 +124,15 @@ void eHusbandryDataWidget::paintEvent(ePainter& p) {
             } else {
                 txt = eLanguage::zeusText(57, 8); // surplus
             }
+            // too little in yellow, just enough dark, plenty and surplus white
+            const auto level = (pop == 0 || a < 0.95*pop) ? eStatusLevel::bad :
+                               a < 1.10*pop ? eStatusLevel::ok :
+                                              eStatusLevel::good;
+            sSetStatusColor(mOpinionLabel, level);
+            sSetStatusColor(mCanSupportLabel, level);
+            mCanSupportLabel->setText(std::to_string(a));
+            mCanSupportLabel->fitContent();
+            mCanSupportLabel->align(eAlignment::hcenter);
             mOpinionLabel->setText(txt);
             mOpinionLabel->fitContent();
             mOpinionLabel->align(eAlignment::hcenter);

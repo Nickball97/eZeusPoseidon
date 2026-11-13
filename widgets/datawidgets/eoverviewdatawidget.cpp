@@ -30,7 +30,6 @@ public:
         addWidget(mTitleLabel);
 
         mValueLabel = new eLabel(window());
-        mValueLabel->setYellowFontColor();
         mValueLabel->setNoPadding();
         mValueLabel->setTinyFontSize();
         addWidget(mValueLabel);
@@ -47,6 +46,13 @@ public:
         mValueLabel->setText(txt);
         mValueLabel->fitContent();
         mValueLabel->align(eAlignment::right);
+    }
+
+    // yellow / dark / white; withTitle also colours the title, for the
+    // employment entry whose title is the status
+    void setLevel(const eStatusLevel l, const bool withTitle = false) {
+        eDataWidget::sSetStatusColor(mValueLabel, l);
+        eDataWidget::sSetStatusColor(mTitleLabel, withTitle ? l : eStatusLevel::ok);
     }
 private:
     eLabel* mTitleLabel = nullptr;
@@ -332,6 +338,10 @@ void eOverviewDataWidget::paintEvent(ePainter& p) {
             }else {
                 string = 27; // terrible
             }
+            // yellow from poor down, white only for superb
+            mPopularity->setLevel(pop > 90 ? eStatusLevel::good :
+                                  pop > 70 ? eStatusLevel::ok :
+                                             eStatusLevel::bad);
             mPopularity->setText(eLanguage::zeusText(61, string));
         }
         {
@@ -347,6 +357,10 @@ void eOverviewDataWidget::paintEvent(ePainter& p) {
                 } else {
                     string = 97; // good
                 }
+                // white when the Husbandry tab would say plenty or surplus
+                mFoodLevel->setLevel(string != 97 ? eStatusLevel::bad :
+                                     a >= 1.10*pop ? eStatusLevel::good :
+                                                     eStatusLevel::ok);
                 mFoodLevel->setText(eLanguage::zeusText(61, string));
             }
         }
@@ -356,17 +370,25 @@ void eOverviewDataWidget::paintEvent(ePainter& p) {
                 const int f = emplData->freeJobVacancies();
                 const int w = emplData->employable();
                 const int u = emplData->unemployed();
-                if(u == 0) {
-                    mUnemployment->setTitle(eLanguage::zeusText(61, 115)); // employment good
-                    mUnemployment->setText("");
-                } else if(f > 0) {
+                const int j = emplData->totalJobVacancies();
+                // yellow only past 10% of the jobs unfilled or of the
+                // workforce out of work
+                if(f > 0) {
                     mUnemployment->setTitle(eLanguage::zeusText(61, 111)); // workers needed
                     mUnemployment->setText(std::to_string(f));
-                } else {
+                    mUnemployment->setLevel(10*f > j ? eStatusLevel::bad :
+                                                       eStatusLevel::ok, true);
+                } else if(u > 0) {
                     mUnemployment->setTitle(eLanguage::zeusText(61, 107)); // unemployment
                     int per = w == 0 ? 0 : std::round(100.*u/w);
                     per = std::clamp(per, 0, 100);
                     mUnemployment->setText(std::to_string(per) + "%");
+                    mUnemployment->setLevel(10*u > w ? eStatusLevel::bad :
+                                                       eStatusLevel::ok, true);
+                } else {
+                    mUnemployment->setTitle(eLanguage::zeusText(61, 115)); // employment good
+                    mUnemployment->setText("");
+                    mUnemployment->setLevel(eStatusLevel::good, true);
                 }
             }
         }
@@ -396,6 +418,10 @@ void eOverviewDataWidget::paintEvent(ePainter& p) {
             } else {
                 string = 127; // appalling
             }
+            // yellow from not good down, white for great and perfect
+            mHygiene->setLevel(hygiene > 85 ? eStatusLevel::good :
+                               hygiene > 65 ? eStatusLevel::ok :
+                                              eStatusLevel::bad);
             mHygiene->setText(eLanguage::zeusText(61, string));
         }
         {
@@ -410,6 +436,9 @@ void eOverviewDataWidget::paintEvent(ePainter& p) {
             } else {
                 string = 148; // low
             }
+            mUnrest->setLevel(unrest == 0 ? eStatusLevel::good :
+                              unrest > 5 ? eStatusLevel::bad :
+                                           eStatusLevel::ok);
             mUnrest->setText(eLanguage::zeusText(61, string));
         }
         {
@@ -424,6 +453,9 @@ void eOverviewDataWidget::paintEvent(ePainter& p) {
                 string = 154; // ok
             }
 
+            mFinances->setLevel(string == 153 ? eStatusLevel::good :
+                                string == 155 ? eStatusLevel::bad :
+                                                eStatusLevel::ok);
             mFinances->setText(eLanguage::zeusText(61, string));
         }
     }

@@ -40,7 +40,6 @@ void eAdminDataWidget::initialize() {
 
         mTaxLabel = new eLabel(window());
         mTaxLabel->setNoPadding();
-        mTaxLabel->setYellowFontColor();
         mTaxLabel->setVerySmallFontSize();
         mTaxLabel->setText(eTaxRateHelpers::name(eTaxRate::normal));
         mTaxLabel->fitContent();
@@ -105,6 +104,10 @@ void eAdminDataWidget::setTaxRate(const eTaxRate tr) {
     const auto cid = viewedCity();
     mBoard.setTaxRate(cid, tr);
     mTaxRate = tr;
+    // high taxes put immigrants off: yellow from high up
+    sSetStatusColor(mTaxLabel, (tr == eTaxRate::high || tr == eTaxRate::veryHigh ||
+                                tr == eTaxRate::outrageous) ?
+                                   eStatusLevel::bad : eStatusLevel::ok);
     mTaxLabel->setText(eTaxRateHelpers::name(tr));
     mTaxLabel->fitContent();
     mTaxLabel->align(eAlignment::hcenter);

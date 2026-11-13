@@ -8,7 +8,12 @@ class eViewModeButton;
 class eGameWidget;
 class eGameBoard;
 class eBasicButton;
+class eLabelBase;
 enum class eCityId;
+
+// How a side-panel status reads: yellow when it needs the player's
+// attention, dark when it's fine, white when it's very good.
+enum class eStatusLevel { bad, ok, good };
 
 class eDataWidget : public eWidget {
 public:
@@ -34,6 +39,12 @@ protected:
     void showMoreInfoButton();
 
     static int sCoverageToText(const int c);
+    // the level of a coverage word (text 58, 10 to 14)
+    static eStatusLevel sCoverageLevel(const int textId);
+public:
+    // colours a status label by its level (only redraws when it changes)
+    static void sSetStatusColor(eLabelBase* const l, const eStatusLevel s);
+protected:
 
     eCityId viewedCity();
 
