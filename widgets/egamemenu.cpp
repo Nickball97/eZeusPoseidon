@@ -1064,14 +1064,19 @@ void eGameMenu::initialize(eGameBoard* const b,
         const auto butts = new eWidget(window());
         const auto info = eCheckableButton::sCreate(coll.fShowInfo, window(), butts);
         const auto map = eCheckableButton::sCreate(coll.fShowMap, window(), butts);
+        // Zeus manual, "Overview Map Tab" / "Information Tab": the map
+        // button shows the overview map instead of the tab's information,
+        // the info button brings the information back (upstream #37)
         info->setChecked(true);
-        info->setCheckAction([info, map](const bool c) {
+        info->setCheckAction([this, info, map](const bool c) {
             if(!c) return info->setChecked(true);
             map->setChecked(false);
+            setMapMode(false);
         });
-        map->setCheckAction([info, map](const bool c) {
+        map->setCheckAction([this, info, map](const bool c) {
             if(!c) return map->setChecked(true);
             info->setChecked(false);
+            setMapMode(true);
         });
         butts->resize(info->width() + map->width(), info->height());
         butts->layoutHorizontally();
@@ -1239,4 +1244,29 @@ void eGameMenu::setMode(const eBuildingMode mode) {
 bool eGameMenu::mousePressEvent(const eMouseEvent& e) {
     closeBuildWidget();
     return eGameMenuBase::mouseEnterEvent(e);
+}
+
+void eGameMenu::setMapMode(const bool m) {
+    if(m == mMapMode) return;
+    if(mWidgets.size() < 12 || !mMiniMap) return;
+    mMapMode = m;
+    // every tab's information gives way to the map, or comes back
+    for(const auto& w : mWidgets) {
+        if(w.fDW) w.fDW->setVisible(!m);
+    }
+    const auto overview = mWidgets[11].fW;
+    if(m) {
+        mMapHomeX = mMiniMap->x();
+        mMapHomeY = mMiniMap->y();
+        overview->removeWidget(mMiniMap);
+        addWidget(mMiniMap);
+        // where the tabs show their information
+        const auto& first = mWidgets[0];
+        mMiniMap->move(first.fW->x() + first.fDW->x(),
+                       first.fW->y() + first.fDW->y());
+    } else {
+        removeWidget(mMiniMap);
+        overview->addWidget(mMiniMap);
+        mMiniMap->move(mMapHomeX, mMapHomeY);
+    }
 }

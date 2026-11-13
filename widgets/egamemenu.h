@@ -129,6 +129,11 @@ private:
     eButton* mWorldButton = nullptr;
 
     eMiniMap* mMiniMap = nullptr;
+    // the info/map buttons: the map in place of the tab's information
+    void setMapMode(const bool m);
+    bool mMapMode = false;
+    int mMapHomeX = 0;
+    int mMapHomeY = 0;
 
     int mTradeCityId = -1;
     eBuildingMode mMode{eBuildingMode::none};
