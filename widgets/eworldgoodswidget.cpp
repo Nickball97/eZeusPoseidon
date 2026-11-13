@@ -1,5 +1,7 @@
 #include "eworldgoodswidget.h"
 
+#include <algorithm>
+
 #include "elabel.h"
 #include "ebutton.h"
 #include "textures/egametextures.h"
@@ -56,8 +58,11 @@ void eTradeTypesWidget::setTrade(const ePlayerId pid,
         nameLabel->align(eAlignment::vcenter | eAlignment::left);
         nameLabel->setX(iconLabel->x() + iconLabel->width());
 
-        const auto used = std::to_string(t.used(pid));
-        const auto max = std::to_string(t.fMax);
+        // as the original (zeus.exe 0x005981B0): the yearly amount
+        // shown is never below what was already traded this year
+        const int u = t.used(pid);
+        const auto used = std::to_string(u);
+        const auto max = std::to_string(std::max(u, t.fMax));
         const auto str = used + "/" + max;
         const auto usedLabel = new eLabel(str, window());
         usedLabel->setTinyFontSize();

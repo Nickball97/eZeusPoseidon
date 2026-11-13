@@ -26,7 +26,7 @@ Fixed here: #28 (11 Nov 2026, adventures in their own folder lost their text on 
 
 | Issue | Problem |
 |---|---|
-| #59 | Trade fails with some cities (not re-checked) |
+| #59 | Trade "buys nothing for years" with some cities. Re-checked 12 Nov 2026: the one cause found in the code (yearly amounts going negative after decrease events, which stopped trade with that city for good) was fixed on 6 Nov. A commenter says the original does the same in some Poseidon cases (rival Atlantean cities reconquered). Needs a save that shows it to look further. #30 (0/0 and 0/-n): negative amounts fixed 6 Nov; 0/0 is what the original shows too for a good the city stopped trading; since 12 Nov the shown yearly amount is never below the amount already traded, as in the original (0x005981B0) |
 | #73, #61 | Military overview misses soldiers in houses; overlays by category |
 | #4 | Building over sheep or goats was fixed on 8 Nov 2026 (they move to free meadow). Still open, not verified against the original: erasing removes them, and the original may let many animals share one meadow |
 | #58, #37 | Undo, minimap (#51 message inbox and #62 audio settings were done on 12 Nov 2026) |
