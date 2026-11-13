@@ -3822,10 +3822,26 @@ std::vector<eGameBoard::eAvenuePiece> eGameBoard::avenuePieces(
                      alongX ? std::min(rx, ex) : std::min(ry, ey);
     const int to = startOnly ? from :
                    alongX ? std::max(rx, ex) : std::max(ry, ey);
+    // In the original a piece takes its road tile too: it is built only
+    // where the road tile and the tree tiles have no building yet
+    // (0x00419F90). eZeus keeps the road tile a road, so a road tile that
+    // already has Avenue or Boulevard trees beside it, on either side
+    // across the road, counts as taken: a road gets one Avenue or one
+    // Boulevard, never two Avenues facing each other.
+    const auto taken = [&](const int x, const int y) {
+        const int ax = sides[0].first;
+        const int ay = sides[0].second;
+        for(const int d : {-1, 1}) {
+            const auto t = tile(x + d*ax, y + d*ay);
+            if(t && eAvenue::sAvenueType(t->underBuildingType())) return true;
+        }
+        return false;
+    };
     for(int i = from; i <= to; i++) {
         const int x = alongX ? i : rx;
         const int y = alongX ? ry : i;
         if(!road(x, y)) continue;
+        if(taken(x, y)) continue;
         eAvenuePiece p;
         p.fRoad = tile(x, y);
         bool ok = true;
