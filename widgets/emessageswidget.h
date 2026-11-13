@@ -58,6 +58,7 @@ private:
     int mIndex = 0;
     int mRevision = -1;
     int mCount = 0;
+    std::vector<int> mPanel; // history indices shown in the box
 };
 
 #endif // EMESSAGESWIDGET_H

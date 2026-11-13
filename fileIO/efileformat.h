@@ -35,6 +35,7 @@ namespace eFileFormat {
         godCurseCount,
         sanctuaryActive,
         messageHistory,
+        messagePanel,
 
         nextVersion
     };

@@ -250,7 +250,7 @@ void eCondensedMessages::initialize(eGameBoard* const board,
         refresh();
     });
     down->setPressAction([this]() { // older
-        const int n = mBoard ? mBoard->messageHistory().count() : 0;
+        const int n = static_cast<int>(mPanel.size());
         mIndex = std::clamp(mIndex + 1, 0, std::max(0, n - 1));
         refresh();
     });
@@ -264,8 +264,8 @@ void eCondensedMessages::initialize(eGameBoard* const board,
     mText->resize(width() - up->width() - 2, height());
     mText->setPressAction([this]() {
         if(!mBoard) return;
-        const int n = mBoard->messageHistory().count();
-        if(mIndex < n && mOpen) mOpen(mIndex);
+        const int n = static_cast<int>(mPanel.size());
+        if(mIndex < n && mOpen) mOpen(mPanel[mIndex]);
     });
     addWidget(mText);
     refresh();
@@ -298,12 +298,18 @@ void eCondensedMessages::refresh() {
                           (bh - mCountLabel->height())/2 + bh/8);
         mCountLabel->setVisible(mCount > 0);
     }
-    mIndex = std::clamp(mIndex, 0, std::max(0, mCount - 1));
-    if(mCount == 0) {
+    // the box goes through the messages that may show there (not Off)
+    mPanel.clear();
+    for(int i = 0; i < mCount; i++) {
+        if(h.at(i).fPanel) mPanel.push_back(i);
+    }
+    const int n = static_cast<int>(mPanel.size());
+    mIndex = std::clamp(mIndex, 0, std::max(0, n - 1));
+    if(n == 0) {
         mText->setText("");
         return;
     }
-    mText->setText(h.at(mIndex).fCondensed);
+    mText->setText(h.at(mPanel[mIndex]).fCondensed);
 }
 
 void eCondensedMessages::setCountLabel(eLabel* const l, eWidget* const button) {

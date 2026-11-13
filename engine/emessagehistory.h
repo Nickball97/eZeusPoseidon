@@ -16,6 +16,8 @@ struct eMessageRecord {
     std::string fCondensed; // the short version shown in the side panel
     std::string fCityName; // the "To" line's city, when there is one
     bool fRead = false;
+    // shown in the side panel box; not for a category set to Off
+    bool fPanel = true;
 };
 
 // The city's message history, as in the original (zeus.exe 0x00521A70,

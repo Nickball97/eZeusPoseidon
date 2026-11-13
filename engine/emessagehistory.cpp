@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include "fileIO/efileformat.h"
+
 int eMessageHistory::add(eMessageRecord r) {
     if(count() >= sMax) return -1;
     r.fId = mNextId++;
@@ -48,6 +50,9 @@ void eMessageHistory::read(eReadStream& src) {
         src >> r.fCondensed;
         src >> r.fCityName;
         src >> r.fRead;
+        if(src.formatVersion() >= eFileFormat::messagePanel) {
+            src >> r.fPanel;
+        }
     }
     mRevision++;
 }
@@ -63,5 +68,6 @@ void eMessageHistory::write(eWriteStream& dst) const {
         dst << r.fCondensed;
         dst << r.fCityName;
         dst << r.fRead;
+        dst << r.fPanel;
     }
 }
