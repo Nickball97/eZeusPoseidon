@@ -334,8 +334,11 @@ public:
     void collapse();
 
     bool isEmptyHome() const;
-    bool isOnFire();
-    void setOnFire(const bool f);
+    // Virtual for the stalls of an agora: the agora burns as one building
+    // (it alone has a fire risk), so its stalls answer for it. That way
+    // the fire shows, firefighters find it and can put it out.
+    virtual bool isOnFire();
+    virtual void setOnFire(const bool f);
 
     bool spreadFire();
 

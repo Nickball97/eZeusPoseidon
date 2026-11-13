@@ -2403,7 +2403,7 @@ void eBuilding::incTime(const int by) {
             mBlessed = 0;
         }
     }
-    if(isOnFire()) {
+    if(mOnFire) { // its own fire; a stall answers isOnFire() for its agora
         if(eRand::rand() % 100 == 0) {
             b.ifVisible(centerTile(), []() {
                 eSounds::playFireSound();

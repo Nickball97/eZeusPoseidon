@@ -31,6 +31,12 @@ public:
 
     void erase() override;
 
+    // A stall is part of its agora: the agora has the fire risk and the
+    // wear, so fire and maintenance at a stall go to the agora.
+    bool isOnFire() override;
+    void setOnFire(const bool f) override;
+    int provide(const eProvide p, const int n) override;
+
     void timeChanged(const int by) override;
 
     int add(const eResourceType type, const int count) override;

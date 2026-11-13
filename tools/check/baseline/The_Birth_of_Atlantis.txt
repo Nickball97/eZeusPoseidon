@@ -5,40 +5,40 @@ seed: 1
 threads: no
 save format version: 34
 numbers.txt fingerprint: eaeed2c124d7b865
-test city: at 156,-16, streets 4, built 82 of 82, farms 3 (road tiles to them: 8), sheep 6, goats 6, lost and built again 53
+test city: at 156,-16, streets 4, built 86 of 86, farms 6 (road tiles to them and the palace: 20), palace yes, sheep 6, goats 6, lost and built again 90
 
 [year by year, on 1 January]
-year -3499: people 748, workers 314, jobs 186, food 1, buildings 288, walkers 99, drachmas 997397
-year -3498: people 952, workers 399, jobs 255, food 0, buildings 293, walkers 87, drachmas 995807
-year -3497: people 872, workers 366, jobs 251, food 6, buildings 293, walkers 90, drachmas 994819
-year -3496: people 1013, workers 425, jobs 255, food 2, buildings 293, walkers 92, drachmas 993755
-year -3495: people 894, workers 375, jobs 255, food 3, buildings 293, walkers 136, drachmas 992762
-year -3494: people 839, workers 352, jobs 255, food 3, buildings 293, walkers 144, drachmas 991769
-year -3493: people 872, workers 366, jobs 255, food 1, buildings 293, walkers 84, drachmas 990572
-year -3492: people 832, workers 349, jobs 255, food 1, buildings 293, walkers 107, drachmas 989579
-year -3491: people 864, workers 362, jobs 255, food 0, buildings 293, walkers 97, drachmas 988479
-year -3490: people 1008, workers 423, jobs 255, food 1, buildings 293, walkers 89, drachmas 987486
+year -3499: people 665, workers 279, jobs 226, food 2, buildings 324, walkers 144, drachmas 997468
+year -3498: people 848, workers 356, jobs 295, food 1, buildings 329, walkers 100, drachmas 995990
+year -3497: people 864, workers 362, jobs 295, food 2, buildings 329, walkers 98, drachmas 994815
+year -3496: people 859, workers 360, jobs 295, food 4, buildings 329, walkers 109, drachmas 993977
+year -3495: people 881, workers 370, jobs 295, food 3, buildings 329, walkers 144, drachmas 993140
+year -3494: people 890, workers 373, jobs 295, food 2, buildings 329, walkers 151, drachmas 992193
+year -3493: people 890, workers 373, jobs 295, food 0, buildings 329, walkers 89, drachmas 991287
+year -3492: people 893, workers 375, jobs 295, food 0, buildings 329, walkers 84, drachmas 990406
+year -3491: people 871, workers 365, jobs 295, food 0, buildings 329, walkers 85, drachmas 989512
+year -3490: people 870, workers 365, jobs 295, food 0, buildings 329, walkers 79, drachmas 988584
 
 ===== after 10 year(s) =====
 date: 1/1/-3490
 total ticks: 1277500
 episode lost: no
-drachmas: 987486
+drachmas: 988584
 
 [city 0 (the player's)]
-population: 1008
-popularity: 91
+population: 870
+popularity: 43
 hygiene: 94
 unrest: 0
-mood: 91
-maintenance: 93
+mood: 44
+maintenance: 96
 taxes paid this year: 0
-taxes paid last year: 0
-culture coverage: 62 87 68 72
-workers: 423, jobs: 255, unemployed: 168
+taxes paid last year: 410
+culture coverage: 69 60 90 73
+workers: 365, jobs: 295, unemployed: 70
 buildings:
-  1 Road: 196
-  2 Common Housing: 55
+  1 Road: 206
+  2 Common Housing: 53
   4 Gymnasium: 1
   5 College: 1
   6 Drama School: 1
@@ -48,9 +48,9 @@ buildings:
   17 Infirmary: 1
   18 Goat: 6
   19 Sheep: 6
-  24 Wheat Farm: 1
-  25 Carrot Farm: 1
-  26 Onion Farm: 1
+  24 Wheat Farm: 2
+  25 Carrot Farm: 2
+  26 Onion Farm: 2
   27 Hunting Lodge: 1
   30 Carding Shed: 1
   31 Dairy: 1
@@ -63,16 +63,17 @@ buildings:
   49 Timber Mill: 1
   50 Masonry Shop: 1
   51 Mint: 1
-  65 Maintenance Office: 3
+  65 Maintenance Office: 5
   66 Tax Office: 1
   67 Watchpost: 2
+  68 Palace: 1
+  69 : 22
 stored goods:
-  Meat: 1
-  Wood: 64
+  Fleece: 8
+  Wood: 56
 
 [walkers by type number]
-  1: 10
-  3: 10
+  3: 8
   4: 9
   5: 8
   6: 1
@@ -83,122 +84,173 @@ stored goods:
   18: 1
   20: 1
   23: 3
-  27: 3
-  30: 2
+  27: 1
+  29: 1
   31: 1
   37: 1
-  38: 2
+  38: 1
   39: 2
-  40: 3
-  76: 18
-walkers in all: 89
+  40: 5
+  76: 21
+  77: 1
+walkers in all: 79
+[walkers by city]
+  -2: 8
+  -1: 29
+  0: 42
+[walkers out for more than a year, by type number]
+  3: 8
+  4: 4
+  5: 8
+  8: 6
+  9: 6
+  18: 1
+  20: 1
+  23: 3
+  76: 15
 
 [events by event number]
-  0: 5
-  1: 54
-  63: 4
+  0: 3
+  1: 90
+  63: 6
   210: 2
   213: 1
   215: 1
   308: 1
-events in all: 68
-other messages: 10
+events in all: 104
+other messages: 11
 times all goals were met: 0
 [events as they happened]
-  30/4/-3500: event 1 at 170,-7 (Granary)
   10/7/-3500: event 1 at 166,-19 (Carrot Farm)
   10/7/-3500: event 1 at 163,-19 (Onion Farm)
+  10/7/-3500: event 1 at 160,-19 (Carrot Farm)
+  10/7/-3500: event 1 at 160,22 (Onion Farm)
   2/10/-3500: event 308
-  31/12/-3500: event 0 at 160,-14 (Road)
-  7/1/-3499: event 1 at 160,-14 (Road)
   16/1/-3499: event 1 at 160,19 (Wheat Farm)
+  16/1/-3499: event 1 at 157,19 (Wheat Farm)
   16/1/-3499: event 1 at 166,-19 (Carrot Farm)
   16/1/-3499: event 1 at 163,-19 (Onion Farm)
+  16/1/-3499: event 1 at 160,-19 (Carrot Farm)
+  16/1/-3499: event 1 at 160,22 (Onion Farm)
   2/7/-3499: event 210
   25/7/-3499: event 1 at 166,-19 (Carrot Farm)
   25/7/-3499: event 1 at 163,-19 (Onion Farm)
-  31/1/-3498: event 1 at 160,19 (Wheat Farm)
+  25/7/-3499: event 1 at 160,-19 (Carrot Farm)
+  25/7/-3499: event 1 at 160,22 (Onion Farm)
+  12/12/-3499: event 0 at 160,19 (Wheat Farm)
+  9/1/-3498: event 1 at 160,22 (Onion Farm)
+  14/1/-3498: event 1 at 165,15 (Masonry Shop)
+  14/1/-3498: event 1 at 167,15 (Mint)
   31/1/-3498: event 1 at 166,-19 (Carrot Farm)
   31/1/-3498: event 1 at 163,-19 (Onion Farm)
+  31/1/-3498: event 1 at 160,-19 (Carrot Farm)
   2/4/-3498: event 63
-  5/6/-3498: event 0 at 160,-14 (Road)
   9/8/-3498: event 1 at 166,-19 (Carrot Farm)
   9/8/-3498: event 1 at 163,-19 (Onion Farm)
-  29/8/-3498: event 1 at 157,-12 (Food Vendor)
-  18/1/-3497: event 1 at 160,-14 (Road)
-  15/2/-3497: event 1 at 160,19 (Wheat Farm)
+  9/8/-3498: event 1 at 160,-19 (Carrot Farm)
+  10/8/-3498: event 1 at 160,22 (Onion Farm)
+  15/1/-3497: event 0 at 157,19 (Wheat Farm)
   15/2/-3497: event 1 at 166,-19 (Carrot Farm)
   15/2/-3497: event 1 at 163,-19 (Onion Farm)
-  16/5/-3497: event 63
+  15/2/-3497: event 1 at 160,-19 (Carrot Farm)
+  17/2/-3497: event 1 at 160,22 (Onion Farm)
+  9/5/-3497: event 63
   24/8/-3497: event 1 at 166,-19 (Carrot Farm)
   24/8/-3497: event 1 at 163,-19 (Onion Farm)
+  24/8/-3497: event 1 at 160,-19 (Carrot Farm)
+  26/8/-3497: event 1 at 160,22 (Onion Farm)
   2/10/-3497: event 210
-  2/3/-3496: event 1 at 160,19 (Wheat Farm)
+  27/1/-3496: event 0 at 157,19 (Wheat Farm)
   2/3/-3496: event 1 at 166,-19 (Carrot Farm)
   2/3/-3496: event 1 at 163,-19 (Onion Farm)
+  2/3/-3496: event 1 at 160,-19 (Carrot Farm)
+  4/3/-3496: event 1 at 160,22 (Onion Farm)
+  24/6/-3496: event 63
   8/9/-3496: event 1 at 166,-19 (Carrot Farm)
   8/9/-3496: event 1 at 163,-19 (Onion Farm)
-  22/1/-3495: event 0 at 160,-14 (Road)
-  17/3/-3495: event 1 at 160,19 (Wheat Farm)
+  8/9/-3496: event 1 at 160,-19 (Carrot Farm)
+  10/9/-3496: event 1 at 160,22 (Onion Farm)
+  12/3/-3495: event 1 at 157,19 (Wheat Farm)
+  13/3/-3495: event 1 at 160,19 (Wheat Farm)
   17/3/-3495: event 1 at 166,-19 (Carrot Farm)
   17/3/-3495: event 1 at 163,-19 (Onion Farm)
+  17/3/-3495: event 1 at 160,-19 (Carrot Farm)
+  19/3/-3495: event 1 at 160,22 (Onion Farm)
   23/9/-3495: event 1 at 166,-19 (Carrot Farm)
   23/9/-3495: event 1 at 163,-19 (Onion Farm)
-  29/10/-3495: event 63
-  28/2/-3494: event 1 at 170,-7 (Granary)
-  28/2/-3494: event 1 at 160,-14 (Road)
-  1/4/-3494: event 1 at 160,19 (Wheat Farm)
+  23/9/-3495: event 1 at 160,-19 (Carrot Farm)
+  25/9/-3495: event 1 at 160,22 (Onion Farm)
+  16/12/-3495: event 63
+  28/3/-3494: event 1 at 160,19 (Wheat Farm)
+  28/3/-3494: event 1 at 157,19 (Wheat Farm)
   1/4/-3494: event 1 at 166,-19 (Carrot Farm)
   1/4/-3494: event 1 at 163,-19 (Onion Farm)
+  1/4/-3494: event 1 at 160,-19 (Carrot Farm)
+  3/4/-3494: event 1 at 160,22 (Onion Farm)
   8/10/-3494: event 1 at 166,-19 (Carrot Farm)
   8/10/-3494: event 1 at 163,-19 (Onion Farm)
-  16/4/-3493: event 1 at 160,19 (Wheat Farm)
+  8/10/-3494: event 1 at 160,-19 (Carrot Farm)
+  10/10/-3494: event 1 at 160,22 (Onion Farm)
+  12/4/-3493: event 1 at 160,19 (Wheat Farm)
+  12/4/-3493: event 1 at 157,19 (Wheat Farm)
   16/4/-3493: event 1 at 166,-19 (Carrot Farm)
   16/4/-3493: event 1 at 163,-19 (Onion Farm)
-  30/5/-3493: event 0 at 160,-14 (Road)
-  28/8/-3493: event 213
-  29/9/-3493: event 215
+  16/4/-3493: event 1 at 160,-19 (Carrot Farm)
+  18/4/-3493: event 1 at 160,22 (Onion Farm)
+  3/5/-3493: event 213
+  4/6/-3493: event 215
   23/10/-3493: event 1 at 166,-19 (Carrot Farm)
   23/10/-3493: event 1 at 163,-19 (Onion Farm)
-  20/4/-3492: event 1 at 160,-14 (Road)
-  28/4/-3492: event 63
-  1/5/-3492: event 1 at 160,19 (Wheat Farm)
+  23/10/-3493: event 1 at 160,-19 (Carrot Farm)
+  25/10/-3493: event 1 at 160,22 (Onion Farm)
+  27/4/-3492: event 1 at 160,19 (Wheat Farm)
+  27/4/-3492: event 1 at 157,19 (Wheat Farm)
   1/5/-3492: event 1 at 166,-19 (Carrot Farm)
   1/5/-3492: event 1 at 163,-19 (Onion Farm)
+  1/5/-3492: event 1 at 160,-19 (Carrot Farm)
+  3/5/-3492: event 1 at 160,22 (Onion Farm)
+  22/5/-3492: event 63
   7/11/-3492: event 1 at 166,-19 (Carrot Farm)
   7/11/-3492: event 1 at 163,-19 (Onion Farm)
-  15/5/-3491: event 0 at 160,-14 (Road)
-  16/5/-3491: event 1 at 160,19 (Wheat Farm)
+  7/11/-3492: event 1 at 160,-19 (Carrot Farm)
+  9/11/-3492: event 1 at 160,22 (Onion Farm)
+  12/5/-3491: event 1 at 160,19 (Wheat Farm)
+  12/5/-3491: event 1 at 157,19 (Wheat Farm)
   16/5/-3491: event 1 at 166,-19 (Carrot Farm)
   16/5/-3491: event 1 at 163,-19 (Onion Farm)
+  16/5/-3491: event 1 at 160,-19 (Carrot Farm)
+  18/5/-3491: event 1 at 160,22 (Onion Farm)
+  31/5/-3491: event 63
   22/11/-3491: event 1 at 166,-19 (Carrot Farm)
   22/11/-3491: event 1 at 163,-19 (Onion Farm)
+  22/11/-3491: event 1 at 160,-19 (Carrot Farm)
+  24/11/-3491: event 1 at 160,22 (Onion Farm)
 
 ===== save and reload =====
-save fingerprint: 5735c364e82be917 (1116214 bytes)
+save fingerprint: 25b5d08d17be737f (1154820 bytes)
 city after reload: SAME as before saving
-saved again right away: DIFFERENT file (02f0a4b6b5b67246, 1116214 bytes)
+saved again right away: DIFFERENT file (cbe0aba822407795, 1154820 bytes)
 
 ===== reloaded city, 60 days later =====
 date: 2/3/-3490
 total ticks: 1298500
 episode lost: no
-drachmas: 987358
+drachmas: 988495
 
 [city 0 (the player's)]
-population: 768
-popularity: 91
-hygiene: 76
-unrest: 0
-mood: 91
-maintenance: 90
-taxes paid this year: 0
-taxes paid last year: 0
-culture coverage: 73 58 80 70
-workers: 322, jobs: 255, unemployed: 67
+population: 854
+popularity: 45
+hygiene: 99
+unrest: 4
+mood: 45
+maintenance: 93
+taxes paid this year: 59
+taxes paid last year: 410
+culture coverage: 67 62 90 73
+workers: 358, jobs: 295, unemployed: 63
 buildings:
-  1 Road: 196
-  2 Common Housing: 55
+  1 Road: 206
+  2 Common Housing: 53
   4 Gymnasium: 1
   5 College: 1
   6 Drama School: 1
@@ -208,9 +260,9 @@ buildings:
   17 Infirmary: 1
   18 Goat: 6
   19 Sheep: 6
-  24 Wheat Farm: 1
-  25 Carrot Farm: 1
-  26 Onion Farm: 1
+  24 Wheat Farm: 2
+  25 Carrot Farm: 2
+  26 Onion Farm: 2
   27 Hunting Lodge: 1
   30 Carding Shed: 1
   31 Dairy: 1
@@ -223,17 +275,18 @@ buildings:
   49 Timber Mill: 1
   50 Masonry Shop: 1
   51 Mint: 1
-  65 Maintenance Office: 3
+  65 Maintenance Office: 5
   66 Tax Office: 1
   67 Watchpost: 2
+  68 Palace: 1
+  69 : 22
 stored goods:
-  Wood: 64
+  Fleece: 8
+  Wood: 56
 
 [walkers by type number]
-  1: 10
-  2: 24
   3: 9
-  4: 10
+  4: 8
   5: 8
   6: 1
   7: 1
@@ -244,22 +297,32 @@ stored goods:
   20: 1
   23: 3
   27: 2
-  29: 1
-  30: 2
+  30: 1
   31: 1
   37: 1
   38: 2
   39: 2
-  40: 3
+  40: 5
   75: 1
-  76: 18
-  77: 1
-walkers in all: 115
+  76: 21
+walkers in all: 81
+[walkers by city]
+  -2: 8
+  -1: 29
+  0: 44
+[walkers out for more than a year, by type number]
+  3: 8
+  4: 3
+  5: 8
+  8: 6
+  9: 6
+  18: 1
+  20: 1
+  23: 3
+  76: 15
 
 [events by event number]
-  63: 1
-events in all: 1
-other messages: 1
+events in all: 0
+other messages: 0
 times all goals were met: 0
 [events as they happened]
-  23/2/-3490: event 63

@@ -5,41 +5,41 @@ seed: 1
 threads: no
 save format version: 34
 numbers.txt fingerprint: eaeed2c124d7b865
-test city: at 109,-6, streets 4, built 81 of 82, farms 3 (road tiles to them: 64), sheep 6, goats 6, lost and built again 51
-  not built: Common Agora at 1,2
+test city: at 109,-6, streets 4, built 85 of 86, farms 6 (road tiles to them and the palace: 69), palace yes, sheep 6, goats 6, lost and built again 94
+  not built: Wheat Farm at 40,33
 
 [year by year, on 1 January]
-year -1238: people 720, workers 302, jobs 174, food 0, buildings 464, walkers 105, drachmas 997473
-year -1237: people 619, workers 259, jobs 255, food 1, buildings 461, walkers 111, drachmas 995893
-year -1236: people 567, workers 238, jobs 255, food 1, buildings 461, walkers 109, drachmas 994927
-year -1235: people 440, workers 184, jobs 243, food 7, buildings 469, walkers 91, drachmas 993664
-year -1234: people 440, workers 184, jobs 243, food 18, buildings 468, walkers 84, drachmas 992887
-year -1233: people 440, workers 184, jobs 243, food 29, buildings 468, walkers 82, drachmas 992110
-year -1232: people 440, workers 184, jobs 243, food 32, buildings 467, walkers 86, drachmas 991333
-year -1231: people 440, workers 184, jobs 243, food 32, buildings 467, walkers 87, drachmas 990556
-year -1230: people 440, workers 184, jobs 243, food 32, buildings 467, walkers 82, drachmas 989779
-year -1229: people 440, workers 184, jobs 243, food 32, buildings 467, walkers 81, drachmas 989002
+year -1238: people 699, workers 293, jobs 226, food 1, buildings 467, walkers 134, drachmas 997449
+year -1237: people 572, workers 240, jobs 285, food 0, buildings 477, walkers 115, drachmas 996010
+year -1236: people 754, workers 316, jobs 285, food 2, buildings 477, walkers 107, drachmas 994857
+year -1235: people 703, workers 295, jobs 285, food 1, buildings 477, walkers 115, drachmas 993680
+year -1234: people 593, workers 249, jobs 285, food 1, buildings 477, walkers 127, drachmas 992506
+year -1233: people 661, workers 277, jobs 285, food 0, buildings 477, walkers 122, drachmas 991304
+year -1232: people 576, workers 241, jobs 285, food 1, buildings 477, walkers 103, drachmas 990095
+year -1231: people 500, workers 210, jobs 285, food 1, buildings 477, walkers 133, drachmas 988938
+year -1230: people 664, workers 278, jobs 285, food 1, buildings 477, walkers 107, drachmas 987791
+year -1229: people 805, workers 338, jobs 285, food 2, buildings 477, walkers 108, drachmas 986590
 
 ===== after 10 year(s) =====
 date: 1/1/-1229
 total ticks: 1277500
 episode lost: no
-drachmas: 989002
+drachmas: 986590
 
 [city 0 (the player's)]
-population: 440
-popularity: 87
+population: 805
+popularity: 61
 hygiene: 100
 unrest: 0
-mood: 87
-maintenance: 93
+mood: 61
+maintenance: 96
 taxes paid this year: 0
-taxes paid last year: 0
-culture coverage: 53 76 85 71
-workers: 184, jobs: 243, unemployed: 0
+taxes paid last year: 243
+culture coverage: 56 68 63 62
+workers: 338, jobs: 285, unemployed: 53
 buildings:
-  1 Road: 365
-  2 Common Housing: 55
+  1 Road: 368
+  2 Common Housing: 53
   4 Gymnasium: 1
   5 College: 1
   6 Drama School: 1
@@ -47,171 +47,237 @@ buildings:
   8 Theater: 1
   16 Fountain: 2
   17 Infirmary: 1
-  18 Goat: 5
-  19 Sheep: 4
+  18 Goat: 6
+  19 Sheep: 5
   24 Wheat Farm: 1
-  25 Carrot Farm: 1
-  26 Onion Farm: 1
+  25 Carrot Farm: 2
+  26 Onion Farm: 2
   27 Hunting Lodge: 1
   30 Carding Shed: 1
   31 Dairy: 1
   35 Granary: 1
   36 Storehouse: 2
+  39 Common Agora: 1
+  42 Food Vendor: 1
+  43 Fleece Vendor: 1
+  44 Oil Vendor: 1
   49 Timber Mill: 1
   50 Masonry Shop: 1
   51 Mint: 1
-  65 Maintenance Office: 3
+  65 Maintenance Office: 5
   66 Tax Office: 1
   67 Watchpost: 2
-  123 Ruin: 12
+  68 Palace: 1
+  69 : 1
+  123 Ruin: 9
 stored goods:
-  Meat: 32
+  Meat: 2
   Wood: 64
 
 [walkers by type number]
-  2: 2
-  3: 18
+  1: 17
+  3: 17
   5: 16
   6: 1
   7: 1
-  8: 4
-  9: 5
+  8: 5
+  9: 6
+  17: 1
   18: 1
   19: 1
   20: 1
   23: 3
   27: 3
   29: 1
-  30: 2
+  30: 1
+  31: 1
   37: 1
-  38: 1
-  39: 1
-  40: 3
-  76: 15
+  38: 2
+  39: 2
+  40: 5
+  75: 1
+  76: 20
   89: 1
-walkers in all: 81
+walkers in all: 108
+[walkers by city]
+  -2: 16
+  -1: 29
+  0: 63
+[walkers out for more than a year, by type number]
+  3: 10
+  5: 11
+  6: 1
+  7: 1
+  8: 5
+  9: 6
+  18: 1
+  19: 1
+  20: 1
+  23: 3
+  76: 15
 
 [events by event number]
-  0: 2
-  1: 51
+  0: 1
+  1: 94
   2: 8
-  63: 8
+  63: 7
   119: 1
   147: 3
   175: 1
   210: 8
-events in all: 82
+events in all: 123
 other messages: 26
 times all goals were met: 0
 [events as they happened]
   2/7/-1239: event 210
   10/7/-1239: event 1 at 153,27 (Carrot Farm)
   10/7/-1239: event 1 at 156,25 (Onion Farm)
+  10/7/-1239: event 1 at 157,28 (Carrot Farm)
+  10/7/-1239: event 1 at 135,48 (Onion Farm)
   2/8/-1239: event 210
   2/9/-1239: event 210
   2/11/-1239: event 210
-  13/12/-1239: event 0 at 113,-4 (Road)
-  1/1/-1238: event 1 at 113,-4 (Road)
+  24/12/-1239: event 0 at 150,28 (Wheat Farm)
   2/1/-1238: event 210
-  16/1/-1238: event 1 at 150,28 (Wheat Farm)
+  16/1/-1238: event 1 at 154,31 (Wheat Farm)
   16/1/-1238: event 1 at 153,27 (Carrot Farm)
   16/1/-1238: event 1 at 156,25 (Onion Farm)
+  16/1/-1238: event 1 at 157,28 (Carrot Farm)
+  16/1/-1238: event 1 at 135,48 (Onion Farm)
   2/3/-1238: event 210
+  8/3/-1238: event 1 at 150,28 (Wheat Farm)
   2/4/-1238: event 210
-  8/4/-1238: event 2 at 70,45 (Road)
+  8/4/-1238: event 2 at 109,-4 (Road)
   25/7/-1238: event 1 at 153,27 (Carrot Farm)
   25/7/-1238: event 1 at 156,25 (Onion Farm)
+  25/7/-1238: event 1 at 157,28 (Carrot Farm)
+  25/7/-1238: event 1 at 135,48 (Onion Farm)
   2/9/-1238: event 63
   2/10/-1238: event 210
-  31/1/-1237: event 1 at 150,28 (Wheat Farm)
+  31/1/-1237: event 1 at 154,31 (Wheat Farm)
   31/1/-1237: event 1 at 153,27 (Carrot Farm)
   31/1/-1237: event 1 at 156,25 (Onion Farm)
+  31/1/-1237: event 1 at 157,28 (Carrot Farm)
+  31/1/-1237: event 1 at 135,48 (Onion Farm)
   2/3/-1237: event 147
+  19/4/-1237: event 1 at 123,31 (Palace)
   2/6/-1237: event 147
-  8/6/-1237: event 0 at 113,-4 (Road)
   2/7/-1237: event 119
-  2/7/-1237: event 2 at 109,-4 (Road)
+  2/7/-1237: event 2 at 130,84 (Road)
   9/8/-1237: event 1 at 153,27 (Carrot Farm)
   9/8/-1237: event 1 at 156,25 (Onion Farm)
-  15/2/-1236: event 1 at 150,28 (Wheat Farm)
+  9/8/-1237: event 1 at 157,28 (Carrot Farm)
+  9/8/-1237: event 1 at 135,48 (Onion Farm)
+  15/2/-1236: event 1 at 154,31 (Wheat Farm)
   15/2/-1236: event 1 at 153,27 (Carrot Farm)
   15/2/-1236: event 1 at 156,25 (Onion Farm)
-  15/2/-1236: event 1 at 118,25 (Masonry Shop)
-  15/2/-1236: event 1 at 120,25 (Mint)
+  15/2/-1236: event 1 at 157,28 (Carrot Farm)
+  15/2/-1236: event 1 at 135,48 (Onion Farm)
   2/5/-1236: event 147
-  11/5/-1236: event 1 at 113,-4 (Road)
+  4/5/-1236: event 1 at 123,31 (Palace)
   24/8/-1236: event 1 at 153,27 (Carrot Farm)
   24/8/-1236: event 1 at 156,25 (Onion Farm)
-  25/9/-1236: event 2 at 93,78 (Road)
+  24/8/-1236: event 1 at 157,28 (Carrot Farm)
+  24/8/-1236: event 1 at 135,48 (Onion Farm)
+  25/9/-1236: event 2 at 155,27 (Road)
   2/11/-1236: event 175
-  2/3/-1235: event 1 at 150,28 (Wheat Farm)
+  2/3/-1235: event 1 at 154,31 (Wheat Farm)
   2/3/-1235: event 1 at 153,27 (Carrot Farm)
   2/3/-1235: event 1 at 156,25 (Onion Farm)
+  2/3/-1235: event 1 at 157,28 (Carrot Farm)
+  2/3/-1235: event 1 at 135,48 (Onion Farm)
+  19/5/-1235: event 1 at 123,31 (Palace)
   8/9/-1235: event 1 at 153,27 (Carrot Farm)
   8/9/-1235: event 1 at 156,25 (Onion Farm)
-  19/12/-1235: event 2 at 96,86 (Road)
-  17/3/-1234: event 1 at 150,28 (Wheat Farm)
+  8/9/-1235: event 1 at 157,28 (Carrot Farm)
+  8/9/-1235: event 1 at 135,48 (Onion Farm)
+  19/12/-1235: event 2 at 121,27 (Road)
+  17/3/-1234: event 1 at 154,31 (Wheat Farm)
   17/3/-1234: event 1 at 153,27 (Carrot Farm)
   17/3/-1234: event 1 at 156,25 (Onion Farm)
+  17/3/-1234: event 1 at 157,28 (Carrot Farm)
+  17/3/-1234: event 1 at 135,48 (Onion Farm)
   2/4/-1234: event 63
+  3/6/-1234: event 1 at 123,31 (Palace)
   2/7/-1234: event 63
   2/9/-1234: event 63
   23/9/-1234: event 1 at 153,27 (Carrot Farm)
   23/9/-1234: event 1 at 156,25 (Onion Farm)
+  23/9/-1234: event 1 at 157,28 (Carrot Farm)
+  23/9/-1234: event 1 at 135,48 (Onion Farm)
   2/10/-1234: event 63
   2/12/-1234: event 63
-  14/3/-1233: event 2 at 109,-4 (Road)
-  1/4/-1233: event 1 at 150,28 (Wheat Farm)
+  14/3/-1233: event 2 at 70,42 (Road)
+  1/4/-1233: event 1 at 154,31 (Wheat Farm)
   1/4/-1233: event 1 at 153,27 (Carrot Farm)
   1/4/-1233: event 1 at 156,25 (Onion Farm)
+  1/4/-1233: event 1 at 157,28 (Carrot Farm)
+  1/4/-1233: event 1 at 135,48 (Onion Farm)
+  18/6/-1233: event 1 at 123,31 (Palace)
   8/10/-1233: event 1 at 153,27 (Carrot Farm)
   8/10/-1233: event 1 at 156,25 (Onion Farm)
-  16/4/-1232: event 1 at 150,28 (Wheat Farm)
+  8/10/-1233: event 1 at 157,28 (Carrot Farm)
+  8/10/-1233: event 1 at 135,48 (Onion Farm)
+  16/4/-1232: event 1 at 154,31 (Wheat Farm)
   16/4/-1232: event 1 at 153,27 (Carrot Farm)
   16/4/-1232: event 1 at 156,25 (Onion Farm)
-  7/6/-1232: event 2 at 122,5 (Road)
+  16/4/-1232: event 1 at 157,28 (Carrot Farm)
+  16/4/-1232: event 1 at 135,48 (Onion Farm)
+  7/6/-1232: event 2 at 109,-4 (Road)
+  3/7/-1232: event 1 at 123,31 (Palace)
   2/8/-1232: event 63
   23/10/-1232: event 1 at 153,27 (Carrot Farm)
   23/10/-1232: event 1 at 156,25 (Onion Farm)
-  8/3/-1231: event 63
-  1/5/-1231: event 1 at 150,28 (Wheat Farm)
+  23/10/-1232: event 1 at 157,28 (Carrot Farm)
+  23/10/-1232: event 1 at 135,48 (Onion Farm)
+  1/5/-1231: event 1 at 154,31 (Wheat Farm)
   1/5/-1231: event 1 at 153,27 (Carrot Farm)
   1/5/-1231: event 1 at 156,25 (Onion Farm)
-  31/8/-1231: event 2 at 109,-4 (Road)
+  1/5/-1231: event 1 at 157,28 (Carrot Farm)
+  1/5/-1231: event 1 at 135,48 (Onion Farm)
+  18/7/-1231: event 1 at 123,31 (Palace)
+  31/8/-1231: event 2 at 72,39 (Road)
   7/11/-1231: event 1 at 153,27 (Carrot Farm)
   7/11/-1231: event 1 at 156,25 (Onion Farm)
-  16/5/-1230: event 1 at 150,28 (Wheat Farm)
+  7/11/-1231: event 1 at 157,28 (Carrot Farm)
+  7/11/-1231: event 1 at 135,48 (Onion Farm)
+  16/5/-1230: event 1 at 154,31 (Wheat Farm)
   16/5/-1230: event 1 at 153,27 (Carrot Farm)
   16/5/-1230: event 1 at 156,25 (Onion Farm)
+  16/5/-1230: event 1 at 157,28 (Carrot Farm)
+  16/5/-1230: event 1 at 135,48 (Onion Farm)
+  2/8/-1230: event 1 at 123,31 (Palace)
   22/11/-1230: event 1 at 153,27 (Carrot Farm)
   22/11/-1230: event 1 at 156,25 (Onion Farm)
-  24/11/-1230: event 2 at 72,39 (Road)
+  22/11/-1230: event 1 at 157,28 (Carrot Farm)
+  22/11/-1230: event 1 at 135,48 (Onion Farm)
+  24/11/-1230: event 2 at 72,40 (Road)
 
 ===== save and reload =====
-save fingerprint: e2463ef5622b8f2f (1326409 bytes)
+save fingerprint: 6fb6e3d2cd892b0a (1443330 bytes)
 city after reload: SAME as before saving
-saved again right away: DIFFERENT file (04107645d51ddb87, 1326409 bytes)
+saved again right away: DIFFERENT file (b9119025497f6b68, 1443330 bytes)
 
 ===== reloaded city, 60 days later =====
 date: 2/3/-1229
 total ticks: 1298500
 episode lost: no
-drachmas: 988910
+drachmas: 986500
 
 [city 0 (the player's)]
-population: 440
-popularity: 87
+population: 656
+popularity: 61
 hygiene: 100
 unrest: 0
-mood: 87
-maintenance: 92
-taxes paid this year: 0
-taxes paid last year: 0
-culture coverage: 56 89 75 73
-workers: 184, jobs: 243, unemployed: 0
+mood: 61
+maintenance: 95
+taxes paid this year: 51
+taxes paid last year: 243
+culture coverage: 70 78 74 74
+workers: 275, jobs: 285, unemployed: 0
 buildings:
-  1 Road: 365
-  2 Common Housing: 55
+  1 Road: 368
+  2 Common Housing: 53
   4 Gymnasium: 1
   5 College: 1
   6 Drama School: 1
@@ -219,50 +285,77 @@ buildings:
   8 Theater: 1
   16 Fountain: 2
   17 Infirmary: 1
-  18 Goat: 5
-  19 Sheep: 4
+  18 Goat: 6
+  19 Sheep: 5
   24 Wheat Farm: 1
-  25 Carrot Farm: 1
-  26 Onion Farm: 1
+  25 Carrot Farm: 2
+  26 Onion Farm: 2
   27 Hunting Lodge: 1
   30 Carding Shed: 1
   31 Dairy: 1
   35 Granary: 1
   36 Storehouse: 2
+  39 Common Agora: 1
+  42 Food Vendor: 1
+  43 Fleece Vendor: 1
+  44 Oil Vendor: 1
   49 Timber Mill: 1
   50 Masonry Shop: 1
   51 Mint: 1
-  65 Maintenance Office: 3
+  65 Maintenance Office: 5
   66 Tax Office: 1
   67 Watchpost: 2
-  123 Ruin: 12
+  68 Palace: 1
+  69 : 1
+  123 Ruin: 9
 stored goods:
-  Meat: 32
   Wood: 64
 
 [walkers by type number]
-  3: 20
+  1: 13
+  2: 22
+  3: 21
   5: 16
   6: 1
   7: 1
-  8: 4
-  9: 5
+  8: 5
+  9: 6
+  17: 1
   18: 1
   19: 1
   20: 1
   23: 3
   27: 3
   29: 1
-  30: 2
+  30: 1
   37: 1
   38: 2
   39: 2
-  40: 3
+  40: 5
+  75: 1
+  76: 20
+walkers in all: 128
+[walkers by city]
+  -2: 16
+  -1: 54
+  0: 58
+[walkers out for more than a year, by type number]
+  3: 9
+  5: 11
+  6: 1
+  7: 1
+  8: 5
+  9: 6
+  18: 1
+  19: 1
+  20: 1
+  23: 3
   76: 15
-walkers in all: 82
 
 [events by event number]
-events in all: 0
+  63: 1
+events in all: 1
 other messages: 0
 times all goals were met: 0
 [events as they happened]
+  1/3/-1229: event 63

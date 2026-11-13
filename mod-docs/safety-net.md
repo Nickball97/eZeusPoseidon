@@ -151,16 +151,15 @@ before deciding anything):
    of at the next regular moment (a building can show one worker more or
    fewer than before saving), and the save numbers things in a different
    order after a load. Neither loses anything.
-2. **Taxes paid last year is 0** in six of the seven test cities although
-   each has a tax office (2,002 in The Sands of Betrayal). May be the test
-   city (all houses are huts or shacks), may be a bug.
-3. **The Sands of Betrayal ends with 555 walkers on the map**, against 50
-   to 150 elsewhere, and the number keeps growing. Something is piling up.
-4. **The test city's food supply is weak everywhere:** stored food stays
-   near 0, houses stay at the lowest levels and population swings. The
-   agora and granary burn or collapse now and then even with three
-   maintenance offices. Could be the test city's layout, could be the
-   game; worth a look in a real city.
+2. **Taxes paid last year is 0.** Not a bug: as in the original, houses
+   pay no tax until the city has a palace, and the test city had none. It
+   has one now.
+3. **555 walkers on The Sands of Betrayal.** Not a bug: that map has a
+   computer-run rival city with some 170 delivery carts of its own. The
+   check now lists walkers by city, and those out for more than a year.
+4. **Agoras burning down.** A real bug, fixed; see "Other findings" below.
+   The rest of the weak food supply was the test city's own layout (too
+   few farms, a street out of reach of any maintenance office).
 5. `eGameBoard::canBuildBase` takes (minX, maxX, minY, maxY) but the AI's
    pier code in `eaidistrict.cpp` passes (minX, minY, maxX, maxY). Only
    affects AI-built trade piers.
@@ -206,3 +205,23 @@ A fourth hunting tool came out of this: `--save-who N` (and `--save2-who N`
 for the save made after reloading) prints the exact code path that writes
 byte N of the save. With a byte-by-byte comparison of two saves it tells
 at once which value differs.
+
+## Other findings (13 Nov 2026, branch `cleanup/findings`)
+
+- **Every agora burned down sooner or later, and nobody could stop it.**
+  When the fire risk was put on the agora as one building (to match the
+  original's numbers), nothing told the game that the agora's stalls stand
+  for it. Maintenance walkers passing by only "saw" the stalls and the
+  road, so the agora's fire counter was never lowered and it caught fire
+  after about 14 months on Hero, whatever the coverage. The fire was not
+  drawn, and firefighters could not find it, so it burned until the agora
+  collapsed. Now a stall (or an empty stall space) answers for its agora:
+  maintenance reaches it, the fire shows on the stalls, firefighters put it
+  out. No number changed (`eVendor`, `eAgoraSpace`: `isOnFire`,
+  `setOnFire`, `provide`). In the check, the rival city on The Sands of
+  Betrayal went from 1,512 to 3,302 people in ten years once its agora
+  stopped burning.
+- The test city changed with this step, on purpose: a palace (so taxes are
+  paid), six farms instead of three, and a maintenance office on each of
+  the two middle streets. The baseline was made again; results from before
+  this step cannot be compared with it.

@@ -5,70 +5,79 @@ seed: 1
 threads: no
 save format version: 34
 numbers.txt fingerprint: eaeed2c124d7b865
-test city: at 115,39, streets 4, built 77 of 82, farms 3 (road tiles to them: 6), sheep 6, goats 6, lost and built again 39
-  not built: Common Agora at 1,2
+test city: at 115,39, streets 4, built 80 of 86, farms 6 (road tiles to them and the palace: 16), palace yes, sheep 6, goats 6, lost and built again 23
+  not built: Maintenance Office at 1,0
+  not built: Common Housing at 3,0
+  not built: Common Housing at 5,0
+  not built: Common Housing at 7,0
+  not built: Common Housing at 9,0
   not built: Theater at 1,6
-  not built: Drama School at 6,8
-  not built: Common Housing at 5,12
-  not built: Common Housing at 7,12
 
 [year by year, on 1 January]
-year -1499: people 655, workers 275, jobs 186, food 0, buildings 242, walkers 92, drachmas 997423
-year -1498: people 848, workers 356, jobs 255, food 3, buildings 247, walkers 184, drachmas 996126
-year -1497: people 881, workers 370, jobs 255, food 1, buildings 247, walkers 206, drachmas 994766
-year -1496: people 887, workers 372, jobs 255, food 4, buildings 247, walkers 248, drachmas 993955
-year -1495: people 873, workers 366, jobs 255, food 0, buildings 247, walkers 241, drachmas 992553
-year -1494: people 898, workers 377, jobs 255, food 0, buildings 247, walkers 300, drachmas 991633
-year -1493: people 835, workers 350, jobs 227, food 1, buildings 235, walkers 416, drachmas 990841
-year -1492: people 704, workers 295, jobs 227, food 0, buildings 235, walkers 548, drachmas 989500
-year -1491: people 696, workers 292, jobs 227, food 0, buildings 233, walkers 455, drachmas 988461
-year -1490: people 708, workers 297, jobs 215, food 0, buildings 238, walkers 555, drachmas 987580
+year -1499: people 760, workers 319, jobs 226, food 0, buildings 278, walkers 92, drachmas 997625
+year -1498: people 421, workers 176, jobs 295, food 33, buildings 283, walkers 228, drachmas 996709
+year -1497: people 792, workers 332, jobs 295, food 53, buildings 283, walkers 271, drachmas 996260
+year -1496: people 788, workers 330, jobs 295, food 70, buildings 283, walkers 214, drachmas 995856
+year -1495: people 760, workers 319, jobs 295, food 72, buildings 283, walkers 296, drachmas 995263
+year -1494: people 776, workers 325, jobs 295, food 71, buildings 283, walkers 399, drachmas 994670
+year -1493: people 696, workers 292, jobs 272, food 72, buildings 264, walkers 382, drachmas 994110
+year -1492: people 392, workers 164, jobs 272, food 72, buildings 264, walkers 466, drachmas 993635
+year -1491: people 303, workers 127, jobs 272, food 72, buildings 264, walkers 446, drachmas 993228
+year -1490: people 159, workers 66, jobs 272, food 72, buildings 262, walkers 460, drachmas 992085
 
 ===== after 10 year(s) =====
 date: 1/1/-1490
 total ticks: 1277500
 episode lost: no
-drachmas: 987580
+drachmas: 992085
 
 [city 0 (the player's)]
-population: 708
-popularity: 70
-hygiene: 78
-unrest: 0
-mood: 70
-maintenance: 88
-taxes paid this year: 0
-taxes paid last year: 0
-culture coverage: 66 35 0 33
-workers: 297, jobs: 215, unemployed: 82
+population: 159
+popularity: 37
+hygiene: 100
+unrest: 54
+mood: 36
+maintenance: 92
+taxes paid this year: 4
+taxes paid last year: 80
+culture coverage: 28 61 0 29
+workers: 66, jobs: 272, unemployed: 0
 buildings:
-  1 Road: 142
-  2 Common Housing: 53
+  1 Road: 147
+  2 Common Housing: 49
   4 Gymnasium: 1
   5 College: 1
+  6 Drama School: 1
   7 Podium: 1
   16 Fountain: 2
   17 Infirmary: 1
-  18 Goat: 4
-  19 Sheep: 3
-  24 Wheat Farm: 1
-  25 Carrot Farm: 1
-  26 Onion Farm: 1
+  18 Goat: 5
+  19 Sheep: 5
+  24 Wheat Farm: 2
+  25 Carrot Farm: 2
+  26 Onion Farm: 2
   27 Hunting Lodge: 1
   30 Carding Shed: 1
   31 Dairy: 1
   35 Granary: 1
   36 Storehouse: 2
+  39 Common Agora: 1
+  42 Food Vendor: 1
+  43 Fleece Vendor: 1
+  44 Oil Vendor: 1
   49 Timber Mill: 1
   50 Masonry Shop: 1
   51 Mint: 1
-  65 Maintenance Office: 3
+  65 Maintenance Office: 4
   66 Tax Office: 1
   67 Watchpost: 2
-  123 Ruin: 12
+  68 Palace: 1
+  69 : 22
 stored goods:
-  Fleece: 4
-  Wood: 60
+  Carrots: 20
+  Onions: 12
+  Wheat: 40
+  Wood: 24
 
 [city 2]
 population: 0
@@ -85,16 +94,16 @@ buildings:
 stored goods:
 
 [city 5]
-population: 1512
+population: 3302
 popularity: 81
 hygiene: 48
 unrest: 0
 mood: 81
-maintenance: 96
+maintenance: 97
 taxes paid this year: 0
-taxes paid last year: 2002
-culture coverage: 88 84 52 74
-workers: 635, jobs: 1750, unemployed: 0
+taxes paid last year: 4531
+culture coverage: 89 86 100 91
+workers: 1386, jobs: 1762, unemployed: 0
 buildings:
   1 Road: 552
   2 Common Housing: 97
@@ -108,7 +117,7 @@ buildings:
   17 Infirmary: 2
   19 Sheep: 72
   21 Olive Tree: 224
-  22 Grapevine: 69
+  22 Grapevine: 77
   25 Carrot Farm: 28
   27 Hunting Lodge: 7
   30 Carding Shed: 9
@@ -116,10 +125,10 @@ buildings:
   35 Granary: 3
   36 Storehouse: 14
   37 Trading Post: 1
-  39 Common Agora: 1
-  42 Food Vendor: 1
-  43 Fleece Vendor: 1
-  44 Oil Vendor: 1
+  39 Common Agora: 2
+  42 Food Vendor: 2
+  43 Fleece Vendor: 2
+  44 Oil Vendor: 2
   49 Timber Mill: 2
   50 Masonry Shop: 4
   52 Foundry: 11
@@ -144,246 +153,208 @@ buildings:
   112 : 2
   113 : 1
   114 : 1
-  123 Ruin: 12
-  124 : 8
 stored goods:
-  Carrots: 93
-  Grapes: 9
-  Wine: 9
-  Olive oil: 58
-  Fleece: 112
+  Meat: 4
+  Carrots: 100
+  Wine: 12
+  Olive oil: 86
+  Fleece: 120
   Wood: 16
-  Bronze: 26
+  Bronze: 44
   Marble: 48
   Armor: 68
   Sculpture: 4
 
 [walkers by type number]
-  1: 112
-  2: 37
-  6: 2
+  1: 20
+  3: 1
+  6: 3
   7: 1
-  8: 75
-  9: 4
-  16: 33
+  8: 77
+  9: 5
+  16: 41
+  17: 1
   18: 10
   19: 10
-  20: 2
-  21: 3
-  22: 17
+  20: 1
+  21: 2
+  22: 6
   23: 3
-  24: 2
-  25: 4
+  24: 1
+  25: 2
   26: 1
   27: 24
   29: 2
-  30: 2
+  30: 4
   31: 3
-  32: 2
-  37: 3
+  32: 3
+  37: 2
   38: 3
   39: 2
-  40: 12
-  42: 3
-  75: 1
-  76: 179
-  81: 1
+  40: 16
+  41: 2
+  42: 17
+  75: 2
+  76: 188
   82: 1
+  88: 2
+  92: 1
   107: 1
-walkers in all: 555
+  124: 1
+  125: 1
+walkers in all: 460
+[walkers by city]
+  -2: 6
+  -1: 87
+  0: 42
+  4: 1
+  5: 324
+[walkers out for more than a year, by type number]
+  8: 77
+  9: 5
+  18: 8
+  19: 8
+  27: 5
+  76: 179
+  107: 1
 
 [events by event number]
-  0: 15
-  1: 37
+  1: 7
   2: 16
+  3: 1
   7: 1
-  59: 1
-  60: 12
-  62: 29
-  222: 6
+  8: 1
+  59: 3
+  60: 8
+  61: 1
+  62: 9
+  222: 4
   284: 4
-  285: 3
+  285: 4
   294: 1
-events in all: 125
-other messages: 46
+events in all: 60
+other messages: 50
 times all goals were met: 0
 [events as they happened]
-  27/7/-1500: event 1 at 129,48 (Granary)
-  15/2/-1499: event 0 at 184,-112 (Road)
-  31/3/-1499: event 0 at 119,41 (Road)
-  8/4/-1499: event 1 at 184,-112 (Road)
-  2/5/-1499: event 2 at 115,54 (Road)
-  3/5/-1499: event 2 at 165,-106 (Road)
-  17/6/-1499: event 1 at 144,49 (Carrot Farm)
-  15/2/-1498: event 1 at 119,41 (Road)
+  2/5/-1499: event 2 at 115,41 (Road)
+  3/5/-1499: event 2 at 174,-106 (Road)
   11/3/-1498: event 284
-  8/5/-1498: event 1 at 124,70 (Masonry Shop)
-  8/5/-1498: event 1 at 126,70 (Mint)
-  26/7/-1498: event 2 at 116,41 (Road)
-  27/7/-1498: event 2 at 171,-97 (Road)
-  9/8/-1498: event 0 at 184,-112 (Road)
-  13/8/-1498: event 1 at 129,48 (Granary)
-  17/8/-1498: event 1 at 122,48 (Drama School)
+  8/5/-1498: event 1 at 144,49 (Carrot Farm)
+  26/7/-1498: event 2 at 142,42 (Road)
+  27/7/-1498: event 2 at 195,-106 (Road)
   8/9/-1498: event 285
-  27/3/-1497: event 1 at 184,-112 (Road)
-  30/6/-1497: event 1 at 144,49 (Carrot Farm)
-  8/7/-1497: event 0 at 119,41 (Road)
-  2/8/-1497: event 222 at 170,-131 (Common Housing)
+  8/10/-1498: event 222 at 185,-115 (Common Housing)
   19/10/-1497: event 2 at 115,41 (Road)
-  20/10/-1497: event 2 at 179,-106 (Road)
-  24/1/-1496: event 1 at 119,41 (Road)
-  3/3/-1496: event 1 at 124,70 (Masonry Shop)
-  3/3/-1496: event 1 at 126,70 (Mint)
-  26/5/-1496: event 284
-  20/7/-1496: event 1 at 144,49 (Carrot Farm)
-  28/8/-1496: event 1 at 129,48 (Granary)
-  30/8/-1496: event 1 at 122,48 (Drama School)
-  4/10/-1496: event 222 at 185,-115 (Common Housing)
-  20/11/-1496: event 0 at 184,-112 (Road)
-  23/11/-1496: event 285
-  29/12/-1496: event 0 at 119,41 (Road)
-  1/1/-1495: event 222 at 188,-115 (Common Housing)
-  12/1/-1495: event 2 at 115,68 (Road)
-  13/1/-1495: event 2 at 195,-106 (Road)
-  16/4/-1495: event 1 at 184,-112 (Road)
-  19/7/-1495: event 1 at 144,49 (Carrot Farm)
-  10/8/-1495: event 1 at 119,41 (Road)
-  7/4/-1494: event 2 at 115,52 (Road)
-  8/4/-1494: event 2 at 262,-98 (Road)
-  28/7/-1494: event 1 at 144,49 (Carrot Farm)
-  31/7/-1494: event 60
-  31/8/-1494: event 60
-  30/9/-1494: event 60
+  20/10/-1497: event 2 at 187,-115 (Road)
+  15/10/-1496: event 284
+  12/1/-1495: event 2 at 115,41 (Road)
+  13/1/-1495: event 2 at 165,-110 (Road)
+  11/3/-1495: event 222 at 173,-129 (Common Housing)
+  14/4/-1495: event 285
+  31/10/-1495: event 60
+  7/4/-1494: event 2 at 143,42 (Road)
+  8/4/-1494: event 2 at 171,-97 (Road)
   17/10/-1494: event 294 at 116,50 (Road)
-  31/10/-1494: event 62
-  1/12/-1494: event 62
-  1/12/-1494: event 0 at 184,-112 (Road)
-  20/12/-1494: event 284
-  22/12/-1494: event 1 at 184,-112 (Road)
-  31/12/-1494: event 62
-  24/1/-1493: event 1 at 129,48 (Granary)
-  31/1/-1493: event 0 at 119,41 (Road)
+  31/12/-1494: event 60
   31/1/-1493: event 60
-  15/2/-1493: event 1 at 119,41 (Road)
   2/3/-1493: event 60
-  13/3/-1493: event 1 at 190,-136 (Theater)
+  29/3/-1493: event 284
   2/4/-1493: event 60
-  4/4/-1493: event 0 at 244,-106 (Road)
-  12/4/-1493: event 1 at 126,70 (Mint)
-  14/4/-1493: event 1 at 124,70 (Masonry Shop)
   3/5/-1493: event 62
-  31/5/-1493: event 62
-  19/6/-1493: event 285
-  1/7/-1493: event 2 at 125,41 (Road)
+  12/5/-1493: event 222 at 185,-115 (Common Housing)
+  31/5/-1493: event 61
+  1/7/-1493: event 2 at 115,61 (Road)
   1/7/-1493: event 62
-  2/7/-1493: event 2 at 240,-135 (Road)
+  2/7/-1493: event 2 at 253,-48 (Road)
   31/7/-1493: event 62
-  24/8/-1493: event 1 at 129,48 (Granary)
   31/8/-1493: event 62
-  1/9/-1493: event 0 at 118,52 (Common Housing)
-  11/9/-1493: event 1 at 244,-106 (Road)
-  30/9/-1493: event 222 at 185,-115 (Common Housing)
+  26/9/-1493: event 285
   30/9/-1493: event 62
-  3/10/-1493: event 1 at 237,-134 (Theater)
   31/10/-1493: event 62
-  22/11/-1493: event 0 at 134,52 (Common Housing)
   1/12/-1493: event 62
-  31/12/-1493: event 62
+  31/12/-1493: event 59
   31/1/-1492: event 60
   2/3/-1492: event 60
-  2/4/-1492: event 60
-  3/5/-1492: event 62
-  15/5/-1492: event 0 at 119,41 (Road)
-  31/5/-1492: event 62
-  10/6/-1492: event 1 at 144,49 (Carrot Farm)
+  2/4/-1492: event 59
+  3/5/-1492: event 60
+  31/5/-1492: event 59
   17/6/-1492: event 7 at 90,60
   1/7/-1492: event 62
   31/7/-1492: event 62
-  7/8/-1492: event 222 at 188,-115 (Common Housing)
-  22/8/-1492: event 1 at 129,48 (Granary)
-  31/8/-1492: event 62
-  24/9/-1492: event 2 at 115,41 (Road)
-  25/9/-1492: event 2 at 249,-131 (Road)
-  30/9/-1492: event 62
-  29/10/-1492: event 1 at 125,48 (Infirmary)
-  31/10/-1492: event 62
-  1/12/-1492: event 62
-  1/12/-1492: event 0 at 124,52 (Common Housing)
-  20/12/-1492: event 1 at 129,48 (Granary)
-  31/12/-1492: event 62
-  31/1/-1491: event 60
-  2/3/-1491: event 60
-  23/3/-1491: event 0 at 244,-106 (Road)
-  2/4/-1491: event 60
-  3/5/-1491: event 62
-  10/5/-1491: event 222 at 185,-115 (Common Housing)
-  31/5/-1491: event 62
-  21/6/-1491: event 0 at 118,52 (Common Housing)
-  1/7/-1491: event 62
-  9/7/-1491: event 1 at 244,-106 (Road)
-  31/7/-1491: event 62
-  30/8/-1491: event 1 at 237,-134 (Theater)
-  31/8/-1491: event 62
-  10/9/-1491: event 284
-  30/9/-1491: event 59
-  31/10/-1491: event 62
-  11/11/-1491: event 1 at 129,48 (Granary)
-  1/12/-1491: event 62
-  17/12/-1491: event 1 at 119,41 (Road)
-  18/12/-1491: event 2 at 115,41 (Road)
-  19/12/-1491: event 2 at 240,-126 (Road)
-  31/12/-1491: event 62
+  24/9/-1492: event 2 at 114,63 (Road)
+  25/9/-1492: event 2 at 206,-133 (Road)
+  9/3/-1491: event 1 at 124,70 (Masonry Shop)
+  9/3/-1491: event 1 at 126,70 (Mint)
+  30/3/-1491: event 1 at 122,48 (Drama School)
+  30/5/-1491: event 1 at 144,49 (Carrot Farm)
+  30/6/-1491: event 284
+  5/8/-1491: event 222 at 188,-115 (Common Housing)
+  17/10/-1491: event 1 at 126,70 (Mint)
+  19/10/-1491: event 1 at 124,70 (Masonry Shop)
+  7/12/-1491: event 8 at 198,-100 (Grove of Dionysus)
+  18/12/-1491: event 2 at 122,41 (Road)
+  19/12/-1491: event 2 at 180,-123 (Road)
+  28/12/-1491: event 285
+  1/1/-1490: event 3 at 122,41 (Road)
 
 ===== save and reload =====
-save fingerprint: dbb04aeb48ee9fd7 (2472135 bytes)
+save fingerprint: 14c72201c30242db (2414408 bytes)
 city after reload: SAME as before saving
-saved again right away: DIFFERENT file (721357b37d1f700d, 2472135 bytes)
+saved again right away: DIFFERENT file (01ff3354c090c208, 2414408 bytes)
 
 ===== reloaded city, 60 days later =====
 date: 2/3/-1490
 total ticks: 1298500
 episode lost: no
-drachmas: 987472
+drachmas: 992063
 
 [city 0 (the player's)]
-population: 696
-popularity: 67
-hygiene: 89
-unrest: 0
-mood: 67
-maintenance: 93
-taxes paid this year: 0
-taxes paid last year: 0
-culture coverage: 69 45 0 38
-workers: 292, jobs: 215, unemployed: 77
+population: 115
+popularity: 34
+hygiene: 100
+unrest: 77
+mood: 34
+maintenance: 90
+taxes paid this year: 9
+taxes paid last year: 80
+culture coverage: 39 66 0 35
+workers: 48, jobs: 268, unemployed: 0
 buildings:
-  1 Road: 142
-  2 Common Housing: 53
+  1 Road: 147
+  2 Common Housing: 49
   4 Gymnasium: 1
   5 College: 1
+  6 Drama School: 1
   7 Podium: 1
   16 Fountain: 2
   17 Infirmary: 1
-  18 Goat: 4
-  19 Sheep: 3
-  24 Wheat Farm: 1
-  25 Carrot Farm: 1
-  26 Onion Farm: 1
+  18 Goat: 5
+  19 Sheep: 5
+  24 Wheat Farm: 2
+  25 Carrot Farm: 2
+  26 Onion Farm: 2
   27 Hunting Lodge: 1
   30 Carding Shed: 1
   31 Dairy: 1
   35 Granary: 1
   36 Storehouse: 2
+  39 Common Agora: 1
+  41 : 1
+  42 Food Vendor: 1
+  44 Oil Vendor: 1
   49 Timber Mill: 1
   50 Masonry Shop: 1
   51 Mint: 1
-  65 Maintenance Office: 3
+  65 Maintenance Office: 4
   66 Tax Office: 1
   67 Watchpost: 2
-  123 Ruin: 12
+  68 Palace: 1
+  69 : 22
 stored goods:
-  Fleece: 4
-  Wood: 60
+  Carrots: 20
+  Onions: 12
+  Wheat: 40
+  Wood: 24
 
 [city 2]
 population: 0
@@ -400,16 +371,16 @@ buildings:
 stored goods:
 
 [city 5]
-population: 1912
+population: 3362
 popularity: 81
 hygiene: 48
 unrest: 0
 mood: 81
-maintenance: 96
-taxes paid this year: 397
-taxes paid last year: 2002
-culture coverage: 90 88 100 92
-workers: 803, jobs: 1750, unemployed: 0
+maintenance: 98
+taxes paid this year: 984
+taxes paid last year: 4531
+culture coverage: 89 86 100 91
+workers: 1412, jobs: 1762, unemployed: 0
 buildings:
   1 Road: 552
   2 Common Housing: 97
@@ -423,7 +394,7 @@ buildings:
   17 Infirmary: 2
   19 Sheep: 72
   21 Olive Tree: 224
-  22 Grapevine: 69
+  22 Grapevine: 77
   25 Carrot Farm: 28
   27 Hunting Lodge: 7
   30 Carding Shed: 9
@@ -431,10 +402,10 @@ buildings:
   35 Granary: 3
   36 Storehouse: 14
   37 Trading Post: 1
-  39 Common Agora: 1
-  42 Food Vendor: 1
-  43 Fleece Vendor: 1
-  44 Oil Vendor: 1
+  39 Common Agora: 2
+  42 Food Vendor: 2
+  43 Fleece Vendor: 2
+  44 Oil Vendor: 2
   49 Timber Mill: 2
   50 Masonry Shop: 4
   52 Foundry: 11
@@ -459,61 +430,74 @@ buildings:
   112 : 2
   113 : 1
   114 : 1
-  123 Ruin: 12
-  124 : 8
 stored goods:
-  Meat: 2
-  Carrots: 90
-  Grapes: 11
-  Olives: 6
-  Wine: 12
-  Olive oil: 57
+  Carrots: 104
+  Olives: 4
+  Wine: 14
+  Olive oil: 82
   Fleece: 118
   Wood: 16
-  Bronze: 32
+  Bronze: 39
   Marble: 48
   Armor: 68
   Sculpture: 4
 
 [walkers by type number]
-  1: 41
+  1: 4
   3: 1
   6: 2
   7: 1
-  8: 75
-  9: 4
-  16: 26
-  17: 1
+  8: 77
+  9: 5
+  16: 31
+  17: 2
   18: 10
   19: 10
   20: 1
-  21: 3
-  22: 12
+  21: 2
+  22: 9
   23: 3
-  24: 4
-  25: 8
+  24: 3
+  25: 6
   26: 1
-  27: 24
-  29: 3
-  30: 2
-  31: 1
+  27: 23
+  29: 2
+  30: 4
+  31: 4
   32: 2
   37: 3
-  38: 4
-  39: 1
-  40: 12
-  75: 2
-  76: 179
-  77: 3
+  38: 2
+  39: 2
+  40: 10
+  41: 1
+  42: 4
+  76: 187
+  77: 4
+  82: 1
+  88: 1
+  92: 1
   107: 1
-walkers in all: 440
+  124: 1
+  125: 3
+  126: 1
+walkers in all: 425
+[walkers by city]
+  -2: 7
+  -1: 91
+  0: 37
+  4: 3
+  5: 287
+[walkers out for more than a year, by type number]
+  8: 77
+  9: 5
+  18: 8
+  19: 8
+  27: 4
+  76: 178
+  107: 1
 
 [events by event number]
-  0: 1
-  60: 1
-events in all: 2
+events in all: 0
 other messages: 1
 times all goals were met: 0
 [events as they happened]
-  31/1/-1490: event 60
-  18/2/-1490: event 0 at 118,52 (Common Housing)

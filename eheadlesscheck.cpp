@@ -231,6 +231,7 @@ private:
     void add(const int stage, const eBuildingType type,
              const int lx, const int ly, const int w, const int h);
     void buildFarms();
+    void buildPalace();
     bool roadTo(const int x, const int y, const int w, const int h);
     void buildHerd(const eBuildingType type, int& placed);
     bool free(const int x, const int y, const int w, const int h,
@@ -251,6 +252,7 @@ private:
     std::vector<eItem> mItems;
     int mFarms = 0;
     int mFarmRoads = 0;
+    bool mPalace = false;
     int mSheep = 0;
     int mGoats = 0;
     int mRebuilt = 0;
@@ -333,12 +335,20 @@ void eTestCity::plan() {
     add(1, eBT::warehouse, 17, 8, 3, 3);
     add(1, eBT::college, 20, 8, 3, 3);
     // below the second street
-    for(int i = 0; i < 11; i++) add(0, eBT::commonHouse, 1 + 2*i, 12, 2, 2);
+    // (a maintenance office in the middle: walkers from the other streets
+    // do not reach this far)
+    for(int i = 0; i < 11; i++) {
+        const auto type = i == 5 ? eBT::maintenanceOffice : eBT::commonHouse;
+        add(0, type, 1 + 2*i, 12, 2, 2);
+    }
     // above the third street
     add(1, eBT::gymnasium, 1, 17, 3, 3);
     for(int i = 0; i < 9; i++) add(0, eBT::commonHouse, 4 + 2*i, 18, 2, 2);
     // below the third street
-    for(int i = 0; i < 11; i++) add(0, eBT::commonHouse, 1 + 2*i, 21, 2, 2);
+    for(int i = 0; i < 11; i++) {
+        const auto type = i == 5 ? eBT::maintenanceOffice : eBT::commonHouse;
+        add(0, type, 1 + 2*i, 21, 2, 2);
+    }
     // above the fourth street
     for(int i = 0; i < 11; i++) add(0, eBT::commonHouse, 1 + 2*i, 27, 2, 2);
     // below the fourth street
@@ -402,7 +412,8 @@ bool eTestCity::roadTo(const int x, const int y, const int w, const int h) {
 void eTestCity::buildFarms() {
     using eBT = eBuildingType;
     // on the nearest meadow, wherever the map has it
-    for(const auto farm : {eBT::wheatFarm, eBT::carrotsFarm, eBT::onionsFarm}) {
+    for(const auto farm : {eBT::wheatFarm, eBT::carrotsFarm, eBT::onionsFarm,
+                           eBT::wheatFarm, eBT::carrotsFarm, eBT::onionsFarm}) {
         for(const auto t : mTiles) {
             const int x = t->x();
             const int y = t->y();
@@ -423,6 +434,33 @@ void eTestCity::buildFarms() {
             mItems.push_back(i);
             break;
         }
+    }
+}
+
+// A palace on the nearest free land outside the block (houses pay no tax
+// without one), with a road to it. It takes a ring of tiles around it.
+void eTestCity::buildPalace() {
+    for(const auto t : mTiles) {
+        const int x = t->x();
+        const int y = t->y();
+        if(inBlock(x, y, 10, 6)) continue;
+        if(!free(x, y, 10, 6)) continue;
+        if(!place(eBuildingType::palace, x + 1 - mX0, y + 1 - mY0, 8, 4)) {
+            continue;
+        }
+        mPalace = true;
+        // on the list like the rest, so it is rebuilt if lost
+        eItem i{};
+        i.fStage = 0;
+        i.fType = eBuildingType::palace;
+        i.fLX = x + 1 - mX0;
+        i.fLY = y + 1 - mY0;
+        i.fW = 8;
+        i.fH = 4;
+        i.fBuilt = true;
+        mItems.push_back(i);
+        roadTo(x, y, 10, 6);
+        return;
     }
 }
 
@@ -484,6 +522,7 @@ void eTestCity::start() {
 
     sortTiles(mX0 + gBlockW/2, mY0 + mBlockH/2);
     buildFarms();
+    buildPalace();
     buildHerd(eBuildingType::sheep, mSheep);
     buildHerd(eBuildingType::goat, mGoats);
 
@@ -534,7 +573,8 @@ std::string eTestCity::report() const {
       << ", streets " << mStreets
       << ", built " << built << " of " << mItems.size()
       << ", farms " << mFarms
-      << " (road tiles to them: " << mFarmRoads << ")"
+      << " (road tiles to them and the palace: " << mFarmRoads << ")"
+      << ", palace " << (mPalace ? "yes" : "no")
       << ", sheep " << mSheep
       << ", goats " << mGoats
       << ", lost and built again " << mRebuilt << "\n";
@@ -655,6 +695,25 @@ std::string summary(eGameBoard& board) {
         total += c.second;
     }
     o << "walkers in all: " << total << "\n";
+
+    // which city they belong to, and the ones that have been out for more
+    // than a year (a walker that never gets where it is going shows here)
+    std::map<int, int> byCity;
+    std::map<int, int> old;
+    for(const auto c : board.characters()) {
+        byCity[static_cast<int>(c->cityId())]++;
+        if(c->time() > gDaysPerYear*gTicksPerDay) {
+            old[static_cast<int>(c->type())]++;
+        }
+    }
+    o << "[walkers by city]\n";
+    for(const auto& c : byCity) {
+        o << "  " << c.first << ": " << c.second << "\n";
+    }
+    o << "[walkers out for more than a year, by type number]\n";
+    for(const auto& c : old) {
+        o << "  " << c.first << ": " << c.second << "\n";
+    }
     return o.str();
 }
 

@@ -226,3 +226,18 @@ void eVendor::write(eWriteStream& dst) const {
     dst << mVendorEnabled;
     dst.writeCharacter(mCart);
 }
+
+bool eVendor::isOnFire() {
+    if(mAgora) return mAgora->isOnFire();
+    return eEmployingBuilding::isOnFire();
+}
+
+void eVendor::setOnFire(const bool f) {
+    if(mAgora) mAgora->setOnFire(f);
+    else eEmployingBuilding::setOnFire(f);
+}
+
+int eVendor::provide(const eProvide p, const int n) {
+    if(p == eProvide::maintanance && mAgora) return mAgora->provide(p, n);
+    return eEmployingBuilding::provide(p, n);
+}
