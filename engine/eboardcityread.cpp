@@ -222,4 +222,8 @@ void eBoardCity::read(eReadStream& src) {
     if(src.formatVersion() >= eFileFormat::cityPeaceMonths) {
         src >> mPeaceMonths;
     }
+    if(src.formatVersion() >= eFileFormat::cityMaintenance) {
+        src >> mMaintanance;
+        src >> mCoverageUpdate;
+    }
 }

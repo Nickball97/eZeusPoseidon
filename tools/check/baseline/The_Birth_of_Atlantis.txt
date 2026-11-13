@@ -3,7 +3,7 @@ adventure: #The Birth of Atlantis
 years: 10
 seed: 1
 threads: no
-save format version: 33
+save format version: 34
 numbers.txt fingerprint: eaeed2c124d7b865
 test city: at 156,-16, streets 4, built 82 of 82, farms 3 (road tiles to them: 8), sheep 6, goats 6, lost and built again 53
 
@@ -175,81 +175,9 @@ times all goals were met: 0
   22/11/-3491: event 1 at 163,-19 (Onion Farm)
 
 ===== save and reload =====
-save fingerprint: 77d86986411c5af4 (1116190 bytes)
-city after reload: DIFFERENT from before saving
-date: 1/1/-3490
-total ticks: 1277500
-episode lost: no
-drachmas: 987486
-
-[city 0 (the player's)]
-population: 1008
-popularity: 91
-hygiene: 94
-unrest: 0
-mood: 91
-maintenance: 0
-taxes paid this year: 0
-taxes paid last year: 0
-culture coverage: 62 87 68 72
-workers: 423, jobs: 255, unemployed: 168
-buildings:
-  1 Road: 196
-  2 Common Housing: 55
-  4 Gymnasium: 1
-  5 College: 1
-  6 Drama School: 1
-  7 Podium: 1
-  8 Theater: 1
-  16 Fountain: 2
-  17 Infirmary: 1
-  18 Goat: 6
-  19 Sheep: 6
-  24 Wheat Farm: 1
-  25 Carrot Farm: 1
-  26 Onion Farm: 1
-  27 Hunting Lodge: 1
-  30 Carding Shed: 1
-  31 Dairy: 1
-  35 Granary: 1
-  36 Storehouse: 2
-  39 Common Agora: 1
-  42 Food Vendor: 1
-  43 Fleece Vendor: 1
-  44 Oil Vendor: 1
-  49 Timber Mill: 1
-  50 Masonry Shop: 1
-  51 Mint: 1
-  65 Maintenance Office: 3
-  66 Tax Office: 1
-  67 Watchpost: 2
-stored goods:
-  Meat: 1
-  Wood: 64
-
-[walkers by type number]
-  1: 10
-  3: 10
-  4: 9
-  5: 8
-  6: 1
-  7: 1
-  8: 6
-  9: 6
-  17: 1
-  18: 1
-  20: 1
-  23: 3
-  27: 3
-  30: 2
-  31: 1
-  37: 1
-  38: 2
-  39: 2
-  40: 3
-  76: 18
-walkers in all: 89
-saved again right away: DIFFERENT file (b58d0b51a1a286e2, 1218542 bytes)
+save fingerprint: 5735c364e82be917 (1116214 bytes)
+city after reload: SAME as before saving
+saved again right away: DIFFERENT file (02f0a4b6b5b67246, 1116214 bytes)
 
 ===== reloaded city, 60 days later =====
 date: 2/3/-3490
@@ -263,10 +191,10 @@ popularity: 91
 hygiene: 76
 unrest: 0
 mood: 91
-maintenance: 89
+maintenance: 90
 taxes paid this year: 0
 taxes paid last year: 0
-culture coverage: 54 58 80 64
+culture coverage: 73 58 80 70
 workers: 322, jobs: 255, unemployed: 67
 buildings:
   1 Road: 196

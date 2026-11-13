@@ -148,6 +148,7 @@ void eGameBoard::read(eReadStream& src) {
     for(int i = 0; i < nd; i++) {
         eCityId cid;
         src >> cid;
+        mDefeatedBy[cid]; // also when its list is empty, as it was saved
         int nc;
         src >> nc;
         for(int j = 0; j < nc; j++) {

@@ -145,13 +145,12 @@ behave or save differently from one run to the next. Fixed along the way
 Seen but not fixed yet (for the bug-fixing phase; to check in the game
 before deciding anything):
 
-1. **A loaded save is not quite the city that was saved.**
-   - The city's maintenance figure reads 0 right after loading (it
-     recovers later).
-   - On The Sands of Betrayal the stored carrots were 101 before saving and
-     93 after loading.
-   - Saving a just-loaded game gives a file about 10% bigger than the one
-     it was loaded from. Something is added or doubled on loading.
+1. **A loaded save is not quite the city that was saved.** Fixed on
+   13 Nov 2026 (branch `cleanup/save-load`), see the next section. What is
+   left: loading re-deals the workers among the buildings at once instead
+   of at the next regular moment (a building can show one worker more or
+   fewer than before saving), and the save numbers things in a different
+   order after a load. Neither loses anything.
 2. **Taxes paid last year is 0** in six of the seven test cities although
    each has a tax office (2,002 in The Sands of Betrayal). May be the test
    city (all houses are huts or shacks), may be a bug.
@@ -169,3 +168,41 @@ before deciding anything):
    declaration. Most are set in a constructor; the five above were not. A
    sweep for the rest is worth doing during cleanup (`--fill` shows the
    ones that reach a save).
+
+## Save and load fixes (13 Nov 2026, branch `cleanup/save-load`)
+
+The check showed that a loaded save was not the city that had been saved.
+What was behind it:
+
+- **Patrol walkers lost their memory on every load** (in eZeus since
+  upstream). Each building that sends walkers along the roads (maintenance,
+  water, tax, agora, culture, infirmary...) keeps a note of which way its
+  walkers last turned at each crossing, so the next one goes the other way.
+  Loading a save wiped those notes (they were read into the wrong place),
+  so after every load walkers chose their way as if nobody had walked
+  before. The save file also grew with every save and load, by about 10%
+  each time. Fixed in `eDirectionLastUseTime::read`; saves made with the
+  mistake are repaired when loaded.
+- **Walkers out on the road and their building no longer shared those
+  notes after a load**; each had its own copy. They are joined up again
+  (`ePatrolAction::read`).
+- **Agora stalls doubled their list of tiles on every load**
+  (`eAgoraBase::setBuilding`).
+- **The city's maintenance figure was not saved**, so it read 0 after a
+  load until the next update, and that update came at once instead of when
+  it was due. Both are saved now. This adds two numbers to the save: saves
+  from older builds still load, saves from this build do not load in older
+  builds (save format version 34).
+- **Empty lists were not restored** (`mDefeatedBy`, an episode's events).
+  Harmless, but it made a re-saved file differ.
+- The "carrots 101, then 93 after loading" was not lost food. The city
+  keeps a figure of its stored goods that it only refreshes now and then;
+  the check now counts what is really in the storehouses.
+
+On all seven adventures the reloaded city is now the same as the saved
+one, and a re-saved file has the same size as the original.
+
+A fourth hunting tool came out of this: `--save-who N` (and `--save2-who N`
+for the save made after reloading) prints the exact code path that writes
+byte N of the save. With a byte-by-byte comparison of two saves it tells
+at once which value differs.

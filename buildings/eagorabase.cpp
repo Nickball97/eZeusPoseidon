@@ -1,5 +1,7 @@
 #include "eagorabase.h"
 
+#include <algorithm>
+
 #include "eagoraspace.h"
 #include "engine/egameboard.h"
 
@@ -142,7 +144,12 @@ void eAgoraBase::setBuilding(const int id, const stdsptr<eBuilding>& b) {
     for(int i = minX; i < maxX; i++) {
         for(int j = minY; j < maxY; j++) {
             const auto t = brd.tile(i, j);
-            b->addUnderBuilding(t);
+            // a stall read from a save already knows its tiles; adding
+            // them again made its list longer with every load
+            const auto& under = b->tilesUnder();
+            const bool has = std::find(under.begin(), under.end(), t) !=
+                             under.end();
+            if(!has) b->addUnderBuilding(t);
             t->setUnderBuilding(b);
         }
     }

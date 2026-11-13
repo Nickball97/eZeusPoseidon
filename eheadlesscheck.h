@@ -1,6 +1,8 @@
 #ifndef EHEADLESSCHECK_H
 #define EHEADLESSCHECK_H
 
+#include <cstddef>
+
 // The safety net (developer build only; see mod-docs/safety-net.md).
 //
 // Runs an adventure with no window and nobody playing: it loads the
@@ -32,5 +34,9 @@ void* eHeadlessProgramStart();
 // compares two --rand-log files and prints the first place where the two
 // runs asked for a random number from different code
 int eHeadlessRandDiff(const char* const a, const char* const b);
+// --save-who: prints the code path that writes the given bytes of the
+// next save; eHeadlessSaveWatch is what eWriteTarget::sWatch is set to
+void eHeadlessSaveWatchSet(const long long* const offsets, const int n);
+void eHeadlessSaveWatch(const size_t len);
 
 #endif // EHEADLESSCHECK_H

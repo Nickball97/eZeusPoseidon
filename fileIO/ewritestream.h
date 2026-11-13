@@ -36,7 +36,13 @@ public:
     eWriteTarget(void* mem) :
         fMem(mem) {}
 
+    // Headless check, for finding out which code writes a given byte of a
+    // save: called with the length of every piece written. The game
+    // leaves it unset.
+    static void (*sWatch)(size_t len);
+
     inline size_t write(const void* const data, const size_t len) {
+        if(sWatch) sWatch(len);
         assert(fFile || fMem);
         if(fFile) {
             fFile->write(static_cast<const char*>(data), len);

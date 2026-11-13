@@ -159,4 +159,8 @@ void eBoardCity::write(eWriteStream& dst) const {
     dst << mOutbreaksThisYear;
     dst << mOutbreakThisMonth;
     dst << mPeaceMonths;
+    // not saved before: a loaded city showed maintenance 0 until its next
+    // update, and that update came at once instead of when it was due
+    dst << mMaintanance;
+    dst << mCoverageUpdate;
 }

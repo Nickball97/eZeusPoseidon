@@ -42,6 +42,16 @@ void ePatrolAction::read(eReadStream& src) {
     }
     src.readBuilding(&board(), [this](eBuilding* const b) {
         mBuilding = static_cast<ePatrolBuildingBase*>(b);
+        // A walker and its building share one memory of the directions
+        // taken, so the next walker goes where the last one did not. A
+        // save holds a copy for each; join them up again.
+        if(!mBuilding) return;
+        const auto& times = mBuilding->dirTimes();
+        if(!times) return;
+        mDirTimes = times;
+        const auto ca = currentAction();
+        const auto move = dynamic_cast<ePatrolMoveAction*>(ca);
+        if(move) move->setDirectionTimes(times);
     });
     src >> mDone;
     mDirTimes = src.readDirectionTimes(board());

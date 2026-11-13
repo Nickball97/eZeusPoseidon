@@ -35,6 +35,7 @@ void eEpisode::read(eReadStream& src) {
         for(int i = 0; i < ncs; i++) {
             eCityId cid;
             src >> cid;
+            fEvents[cid]; // also when its list is empty, as it was saved
             int ne;
             src >> ne;
             for(int j = 0; j < ne; j++) {

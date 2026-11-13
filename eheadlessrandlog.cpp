@@ -125,3 +125,54 @@ int eHeadlessRandDiff(const char* const, const char* const) {
 }
 
 #endif
+
+// ---- which code writes a given byte of a save (--save-who) ----
+
+namespace {
+std::vector<long long> gWatchOffsets;
+long long gWatchPos = 0;
+}
+
+void eHeadlessSaveWatchSet(const long long* const offsets, const int n) {
+    gWatchOffsets.assign(offsets, offsets + n);
+    gWatchPos = 0;
+}
+
+#ifdef _WIN32
+
+void eHeadlessSaveWatch(const size_t len) {
+    const long long from = gWatchPos;
+    const long long to = gWatchPos + static_cast<long long>(len);
+    gWatchPos = to;
+    for(const auto o : gWatchOffsets) {
+        if(o < from || o >= to) continue;
+        static bool init = false;
+        if(!init) {
+            init = true;
+            SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME |
+                          SYMOPT_DEFERRED_LOADS);
+            SymInitialize(GetCurrentProcess(), nullptr, TRUE);
+        }
+        std::printf("save byte %lld (in a piece of %zu bytes at %lld) "
+                    "is written by:\n", o, len, from);
+        void* frames[14];
+        const auto n = CaptureStackBackTrace(1, 14, frames, nullptr);
+        const auto base = reinterpret_cast<DWORD64>(GetModuleHandleA(nullptr));
+        for(int i = 0; i < n; i++) {
+            const auto addr = reinterpret_cast<DWORD64>(frames[i]);
+            if(addr < base) continue;
+            const auto p = place(static_cast<std::uint32_t>(addr - base));
+            std::printf("    %s\n", p.c_str());
+            if(p.find("eHeadlessCheckRun") != std::string::npos) break;
+        }
+        std::fflush(stdout);
+    }
+}
+
+#else
+
+void eHeadlessSaveWatch(const size_t len) {
+    gWatchPos += static_cast<long long>(len);
+}
+
+#endif

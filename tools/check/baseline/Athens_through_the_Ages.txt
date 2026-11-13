@@ -3,7 +3,7 @@ adventure: @Athens through the Ages
 years: 10
 seed: 1
 threads: no
-save format version: 33
+save format version: 34
 numbers.txt fingerprint: eaeed2c124d7b865
 test city: at 158,14, streets 4, built 82 of 82, farms 3 (road tiles to them: 8), sheep 6, goats 6, lost and built again 76
 
@@ -245,81 +245,9 @@ times all goals were met: 0
   1/1/-22: event 45
 
 ===== save and reload =====
-save fingerprint: f87c6703e8836ca7 (1088189 bytes)
-city after reload: DIFFERENT from before saving
-date: 1/1/-22
-total ticks: 1277500
-episode lost: no
-drachmas: 987027
-
-[city 0 (the player's)]
-population: 525
-popularity: 76
-hygiene: 100
-unrest: 0
-mood: 76
-maintenance: 0
-taxes paid this year: 0
-taxes paid last year: 0
-culture coverage: 52 79 33 54
-workers: 220, jobs: 255, unemployed: 0
-buildings:
-  1 Road: 417
-  2 Common Housing: 55
-  4 Gymnasium: 1
-  5 College: 1
-  6 Drama School: 1
-  7 Podium: 1
-  8 Theater: 1
-  16 Fountain: 2
-  17 Infirmary: 1
-  18 Goat: 6
-  19 Sheep: 6
-  24 Wheat Farm: 1
-  25 Carrot Farm: 1
-  26 Onion Farm: 1
-  27 Hunting Lodge: 1
-  30 Carding Shed: 1
-  31 Dairy: 1
-  35 Granary: 1
-  36 Storehouse: 2
-  39 Common Agora: 1
-  42 Food Vendor: 1
-  43 Fleece Vendor: 1
-  44 Oil Vendor: 1
-  49 Timber Mill: 1
-  50 Masonry Shop: 1
-  51 Mint: 1
-  65 Maintenance Office: 3
-  66 Tax Office: 1
-  67 Watchpost: 2
-stored goods:
-  Wood: 48
-
-[walkers by type number]
-  1: 8
-  6: 1
-  7: 1
-  8: 6
-  9: 6
-  17: 1
-  18: 1
-  19: 1
-  20: 1
-  21: 2
-  23: 3
-  27: 3
-  29: 1
-  30: 2
-  31: 1
-  37: 1
-  38: 2
-  39: 2
-  40: 3
-  76: 18
-  107: 1
-walkers in all: 65
-saved again right away: DIFFERENT file (01ad6f5b03ca8e48, 1232365 bytes)
+save fingerprint: 1a3adf8ce9ccb5af (1088213 bytes)
+city after reload: SAME as before saving
+saved again right away: DIFFERENT file (0334542c7537f44d, 1088213 bytes)
 
 ===== reloaded city, 60 days later =====
 date: 2/3/-22
@@ -333,10 +261,10 @@ popularity: 76
 hygiene: 100
 unrest: 0
 mood: 76
-maintenance: 80
+maintenance: 92
 taxes paid this year: 0
 taxes paid last year: 0
-culture coverage: 53 53 66 57
+culture coverage: 58 77 53 62
 workers: 215, jobs: 255, unemployed: 0
 buildings:
   1 Road: 417
@@ -387,13 +315,13 @@ stored goods:
   30: 2
   31: 1
   37: 1
-  38: 2
+  38: 1
   39: 2
   40: 3
   75: 1
   76: 18
   107: 1
-walkers in all: 59
+walkers in all: 58
 
 [events by event number]
 events in all: 0

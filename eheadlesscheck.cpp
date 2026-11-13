@@ -26,6 +26,7 @@
 #include "audio/esounds.h"
 
 #include "buildings/ebuilding.h"
+#include "buildings/estoragebuilding.h"
 #include "buildings/sanctuaries/esanctuaryblueprint.h"
 #include "characters/echaracter.h"
 
@@ -90,6 +91,8 @@ struct eArgs {
     std::string fRandLog; // file for eRand::setLog
     std::string fRandDiffA;
     std::string fRandDiffB;
+    std::vector<long long> fSaveWho; // bytes of the first save to explain
+    std::vector<long long> fSave2Who; // and of the save made after reloading
 };
 
 bool parseArgs(const int argc, char** const argv, eArgs& args) {
@@ -109,6 +112,10 @@ bool parseArgs(const int argc, char** const argv, eArgs& args) {
             args.fCity = false;
         } else if(a == "--reload-days") {
             args.fReloadDays = std::stoi(next());
+        } else if(a == "--save-who") {
+            args.fSaveWho.push_back(std::stoll(next()));
+        } else if(a == "--save2-who") {
+            args.fSave2Who.push_back(std::stoll(next()));
         } else if(a == "--rand-log") {
             args.fRandLog = next();
         } else if(a == "--rand-diff") {
@@ -542,10 +549,21 @@ std::string eTestCity::report() const {
 
 // ---- what the city looks like ----
 
+// What is really in the storage buildings. (eBoardCity::resourceCount is
+// a figure the city only refreshes now and then.)
+int stored(const eBoardCity& c, const eResourceType type) {
+    int count = 0;
+    for(const auto b : c.allBuildings()) {
+        const auto s = dynamic_cast<const eStorageBuilding*>(b);
+        if(s) count += s->count(type);
+    }
+    return count;
+}
+
 int foodStored(const eBoardCity& c) {
     int food = 0;
     for(int i = 0; i < 8; i++) {
-        food += c.resourceCount(static_cast<eResourceType>(1 << i));
+        food += stored(c, static_cast<eResourceType>(1 << i));
     }
     return food;
 }
@@ -619,7 +637,7 @@ std::string summary(eGameBoard& board) {
         for(int i = 0; i < 24; i++) {
             const auto type = static_cast<eResourceType>(1 << i);
             if(type == eResourceType::drachmas) continue;
-            const int count = c->resourceCount(type);
+            const int count = stored(*c, type);
             if(count == 0) continue;
             o << "  " << eResourceTypeHelpers::typeName(type)
               << ": " << count << "\n";
@@ -919,7 +937,14 @@ int eHeadlessCheckRun(const int argc, char** const argv) {
     const auto save1 = saveBase + ".save1.ez";
     const auto save2 = saveBase + ".save2.ez";
     o << "\n===== save and reload =====\n";
-    if(!saveCampaign(*c, save1)) {
+    if(!args.fSaveWho.empty()) {
+        eHeadlessSaveWatchSet(args.fSaveWho.data(),
+                              static_cast<int>(args.fSaveWho.size()));
+        eWriteTarget::sWatch = eHeadlessSaveWatch;
+    }
+    const bool saved1 = saveCampaign(*c, save1);
+    eWriteTarget::sWatch = nullptr;
+    if(!saved1) {
         o << "save: FAILED\n";
     } else {
         std::string fp1;
@@ -947,7 +972,14 @@ int eHeadlessCheckRun(const int argc, char** const argv) {
                 o << reloaded;
             }
 
-            if(saveCampaign(*c, save2)) {
+            if(!args.fSave2Who.empty()) {
+                eHeadlessSaveWatchSet(args.fSave2Who.data(),
+                                      static_cast<int>(args.fSave2Who.size()));
+                eWriteTarget::sWatch = eHeadlessSaveWatch;
+            }
+            const bool saved2 = saveCampaign(*c, save2);
+            eWriteTarget::sWatch = nullptr;
+            if(saved2) {
                 std::string fp2;
                 long long size2 = 0;
                 fileFingerprint(save2, fp2, size2);

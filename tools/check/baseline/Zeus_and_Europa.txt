@@ -3,7 +3,7 @@ adventure: #Zeus and Europa
 years: 10
 seed: 1
 threads: no
-save format version: 33
+save format version: 34
 numbers.txt fingerprint: eaeed2c124d7b865
 test city: at 119,53, streets 4, built 82 of 82, farms 3 (road tiles to them: 41), sheep 6, goats 6, lost and built again 47
 
@@ -163,88 +163,18 @@ times all goals were met: 0
   7/11/-117: event 63
 
 ===== save and reload =====
-save fingerprint: 88b217aaffdacef2 (968882 bytes)
-city after reload: DIFFERENT from before saving
-date: 1/1/-116
-total ticks: 1277500
-episode lost: no
-drachmas: 986702
-
-[city 0 (the player's)]
-population: 736
-popularity: 82
-hygiene: 98
-unrest: 0
-mood: 82
-maintenance: 0
-taxes paid this year: 0
-taxes paid last year: 0
-culture coverage: 71 50 89 70
-workers: 309, jobs: 255, unemployed: 54
-buildings:
-  1 Road: 411
-  2 Common Housing: 55
-  4 Gymnasium: 1
-  5 College: 1
-  6 Drama School: 1
-  7 Podium: 1
-  8 Theater: 1
-  16 Fountain: 2
-  17 Infirmary: 1
-  18 Goat: 6
-  19 Sheep: 6
-  24 Wheat Farm: 1
-  25 Carrot Farm: 1
-  26 Onion Farm: 1
-  27 Hunting Lodge: 1
-  30 Carding Shed: 1
-  31 Dairy: 1
-  35 Granary: 1
-  36 Storehouse: 2
-  39 Common Agora: 1
-  42 Food Vendor: 1
-  43 Fleece Vendor: 1
-  44 Oil Vendor: 1
-  49 Timber Mill: 1
-  50 Masonry Shop: 1
-  51 Mint: 1
-  65 Maintenance Office: 3
-  66 Tax Office: 1
-  67 Watchpost: 2
-stored goods:
-  Wood: 64
-
-[walkers by type number]
-  5: 16
-  6: 1
-  7: 1
-  8: 6
-  9: 6
-  17: 1
-  18: 1
-  19: 1
-  20: 1
-  23: 3
-  27: 3
-  29: 1
-  30: 1
-  37: 1
-  38: 2
-  39: 2
-  40: 3
-  76: 18
-  103: 1
-walkers in all: 69
-saved again right away: DIFFERENT file (e32de39f2aa157e3, 1087938 bytes)
+save fingerprint: 2b63399207b8b96d (968898 bytes)
+city after reload: SAME as before saving
+saved again right away: DIFFERENT file (11e3b9c8b51b38d9, 968898 bytes)
 
 ===== reloaded city, 60 days later =====
 date: 2/3/-116
 total ticks: 1298500
 episode lost: no
-drachmas: 986574
+drachmas: 986577
 
 [city 0 (the player's)]
-population: 688
+population: 680
 popularity: 82
 hygiene: 100
 unrest: 0
@@ -252,8 +182,8 @@ mood: 82
 maintenance: 92
 taxes paid this year: 0
 taxes paid last year: 0
-culture coverage: 72 51 88 70
-workers: 288, jobs: 255, unemployed: 33
+culture coverage: 72 61 88 73
+workers: 285, jobs: 243, unemployed: 42
 buildings:
   1 Road: 411
   2 Common Housing: 55
@@ -274,26 +204,23 @@ buildings:
   31 Dairy: 1
   35 Granary: 1
   36 Storehouse: 2
-  39 Common Agora: 1
-  42 Food Vendor: 1
-  43 Fleece Vendor: 1
-  44 Oil Vendor: 1
   49 Timber Mill: 1
   50 Masonry Shop: 1
   51 Mint: 1
   65 Maintenance Office: 3
   66 Tax Office: 1
   67 Watchpost: 2
+  123 Ruin: 12
 stored goods:
   Wood: 64
 
 [walkers by type number]
+  2: 1
   5: 16
   6: 1
   7: 1
   8: 6
   9: 6
-  17: 1
   18: 1
   19: 1
   20: 1
@@ -307,12 +234,14 @@ stored goods:
   39: 2
   40: 3
   75: 1
-  76: 18
+  76: 15
   103: 1
-walkers in all: 71
+walkers in all: 68
 
 [events by event number]
-events in all: 0
+  1: 1
+events in all: 1
 other messages: 0
 times all goals were met: 0
 [events as they happened]
+  20/2/-116: event 1 at 123,55 (Road)

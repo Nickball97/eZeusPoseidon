@@ -37,6 +37,7 @@ namespace eFileFormat {
         messageHistory,
         messagePanel,
         godCurseVisit,
+        cityMaintenance,
 
         nextVersion
     };

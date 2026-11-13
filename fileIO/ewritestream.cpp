@@ -13,6 +13,8 @@
 #include "spawners/ebanner.h"
 #include "einvasionhandler.h"
 
+void (*eWriteTarget::sWatch)(size_t) = nullptr;
+
 eWriteStream::eWriteStream(const eWriteTarget& dst) :
     mDst(dst) {}
 
