@@ -262,6 +262,9 @@ void eMessageBox::initialize(eGameBoard& board,
 
         addWidget(wid);
     } else if(ed.fType == eMessageEventType::requestTributeGranted) {
+        // Decline, Postpone, then Accept on the right, where the check
+        // mark usually is (prependWidget puts the later buttons first);
+        // the same for the goods and troops requests below
         const auto c = ed.fCity;
         if(!c) return;
         eLabel* spaceLabel = nullptr;
@@ -334,7 +337,7 @@ void eMessageBox::initialize(eGameBoard& board,
         postponeB->setUnderline(false);
         postponeB->setText(eLanguage::zeusText(44, 211));
         postponeB->fitContent();
-        wid->addWidget(postponeB);
+        wid->prependWidget(postponeB);
         postponeB->setPressAction([this, ed]() {
             if(ed.fA1) ed.fA1();
             close();
@@ -346,7 +349,7 @@ void eMessageBox::initialize(eGameBoard& board,
         declineB->setUnderline(false);
         declineB->setText(eLanguage::zeusText(44, 210));
         declineB->fitContent();
-        wid->addWidget(declineB);
+        wid->prependWidget(declineB);
         declineB->setPressAction([this, ed]() {
             if(ed.fA2) ed.fA2();
             close();
@@ -433,7 +436,7 @@ void eMessageBox::initialize(eGameBoard& board,
         a1B->setUnderline(false);
         a1B->setText(eLanguage::zeusText(44, 211));
         a1B->fitContent();
-        wid->addWidget(a1B);
+        wid->prependWidget(a1B);
         a1B->setPressAction([this, ed]() {
             if(ed.fA1) ed.fA1();
             close();
@@ -445,7 +448,7 @@ void eMessageBox::initialize(eGameBoard& board,
         a2B->setUnderline(false);
         a2B->setText(eLanguage::zeusText(44, 212));
         a2B->fitContent();
-        wid->addWidget(a2B);
+        wid->prependWidget(a2B);
         a2B->setPressAction([this, ed]() {
             if(ed.fA2) ed.fA2();
             close();
@@ -491,7 +494,7 @@ void eMessageBox::initialize(eGameBoard& board,
         a1B->setUnderline(false);
         a1B->setText(eLanguage::zeusText(44, 211));
         a1B->fitContent();
-        wid->addWidget(a1B);
+        wid->prependWidget(a1B);
         a1B->setPressAction([this, ed]() {
             if(ed.fA1) ed.fA1();
             close();
@@ -503,7 +506,7 @@ void eMessageBox::initialize(eGameBoard& board,
         a2B->setUnderline(false);
         a2B->setText(eLanguage::zeusText(44, 212));
         a2B->fitContent();
-        wid->addWidget(a2B);
+        wid->prependWidget(a2B);
         a2B->setPressAction([this, ed]() {
             if(ed.fA2) ed.fA2();
             close();
