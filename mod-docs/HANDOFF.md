@@ -63,8 +63,8 @@ to try after each step.
 |---|---|
 | Repository | `C:\Users\LENOVO\source\repos\eZeusPoseidon` (GitHub `Nickball97/eZeusPoseidon`) |
 | Work branch | `ccr-3448c71b-u8j6yh`. Holds about 195 commits that are not on `main`. See "Decisions for Nicolás". |
-| Build | `cmd //c 'C:\Users\LENOVO\source\repos\eZeus-tools\build.cmd'`. Then search `C:\Users\LENOVO\source\repos\eZeus-build\build.log` for `error C\|error LNK`. Uses Ninja and MSVC (VS 18), Release, with `EZEUS_DEV_CHEATS=ON`. |
-| Install | `powershell -ExecutionPolicy Bypass -File C:/Users/LENOVO/source/repos/eZeus-tools/deploy.ps1`. Copies the exe as `Bin\eZeus-dev.exe` with its `.pdb`, plus `text/language.txt` and `sanctuaries/*.txt`. It also strips keys our code now owns from the installed `numbers.txt` (backup at `numbers.txt.orig`) and cuts sprite sheets with `tools/sgextract`. |
+| Build | `cmd //c 'C:/Users/LENOVO/source/repos/eZeusPoseidon/tools/build.cmd'` (in the repo since 13 Nov 2026). Then search `C:\Users\LENOVO\source\repos\eZeus-build\build.log` for `error C\|error LNK`. Uses Ninja and MSVC (VS 18), Release, with `EZEUS_DEV_CHEATS=ON`. |
+| Install | `powershell -ExecutionPolicy Bypass -File C:/Users/LENOVO/source/repos/eZeusPoseidon/tools/deploy.ps1`. Copies the exe as `Bin\eZeus-dev.exe` with its `.pdb`, plus `text/language.txt` and `sanctuaries/*.txt`. It also strips keys our code now owns from the installed `numbers.txt` (backup at `numbers.txt.orig`) and cuts sprite sheets with `tools/sgextract`. |
 | Game data | `D:\Steam\steamapps\common\Zeus + Poseidon\eZeus-0.8.2-beta` (the original game is one folder up) |
 | Game text | `Zeus_Text.xml` in the data folder (readable copy of `Zeus_Text.eng`); `eLanguage::zeusText(group, id)` reads it |
 | Dev shortcuts and crash stack traces | `mod-docs/dev-shortcuts.md`, `edevcrash.cpp` (dev build only; stack printed to stdout) |
@@ -73,8 +73,9 @@ to try after each step.
 | Bugs from playtests | `mod-docs/playtest-bugs.md` |
 | Mod roadmap (after this work) | `mod-docs/mod-features.md` |
 
-The build and install scripts live in `eZeus-tools`, outside the repo, so
-they aren't versioned. The first cleanup step below moves them in.
+The build and install scripts were in `eZeus-tools`, outside the repo, so
+they weren't versioned. They are now `tools/build.cmd` and `tools/deploy.ps1`
+(the old copies in `eZeus-tools` still work for older branches).
 
 ## Priority 1: the safety net (do this before touching any code)
 

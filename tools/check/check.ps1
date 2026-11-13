@@ -6,7 +6,7 @@
 #   check.ps1 -Twice     also run each one a second time; both must match
 #   check.ps1 -Update    keep the new results as the baseline
 #
-# Build first (eZeus-tools\build.cmd). The game may be running: the check
+# Build first (tools/build.cmd). The game may be running: the check
 # uses its own copy of the program, Bin\eZeus-check.exe.
 param(
     [switch]$Update,

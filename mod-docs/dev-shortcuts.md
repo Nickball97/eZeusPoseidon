@@ -1,7 +1,7 @@
 # Test shortcuts (developer build only)
 
 These only exist in builds made with `EZEUS_DEV_CHEATS=ON` (the
-`eZeus-dev.exe` that `eZeus-tools\build.cmd` makes). They act on the city
+`eZeus-dev.exe` that `tools/build.cmd` makes). They act on the city
 you are viewing.
 
 | Keys | What it does |

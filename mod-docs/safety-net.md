@@ -26,7 +26,7 @@ adventure. They are plain text and can be read.
 
 ## How to run it
 
-1. Build: `eZeus-tools\build.cmd`.
+1. Build: `tools/build.cmd`.
 2. Run: `powershell -ExecutionPolicy Bypass -File tools\check\check.ps1`
 
 It prints one line per adventure: `SAME`, `CHANGED` (with the first lines
