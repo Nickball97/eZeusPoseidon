@@ -853,6 +853,40 @@ void eGameWidget::paintEvent(ePainter& p) {
                     const int a = ch->allCultureScience();
                     drawColumn(tp, a, rx + cdx, ry + cdy, builTexs.fColumn1);
                 }
+            } else if(mViewMode == eViewMode::security) {
+                // As the original's See Security (upstream #73, with a
+                // screenshot of the original): on each elite house's
+                // floor stand the soldiers it gives the army, one figure
+                // each, horsemen first, in a row facing the same way.
+                if(bt != eBuildingType::eliteHousing) return;
+                const auto eh = static_cast<eEliteHousing*>(ub);
+                int hoplites;
+                int horsemen;
+                eh->soldiers(hoplites, horsemen);
+                if(hoplites + horsemen <= 0) return;
+                if(horsemen > 0) eGameTextures::loadGreekHorseman();
+                if(hoplites > 0) eGameTextures::loadGreekHoplite();
+                const int o = static_cast<int>(eOrientation::bottomLeft);
+                const auto standing = [&](const eFightingCharacterTextures& t) {
+                    std::shared_ptr<eTexture> tex;
+                    if(o < static_cast<int>(t.fWalk.size()) &&
+                       t.fWalk[o].size() > 0) {
+                        tex = t.fWalk[o].getTexture(0);
+                    }
+                    return tex;
+                };
+                const auto horseTex = standing(charTexs.fGreekHorseman);
+                const auto hopliteTex = standing(charTexs.fGreekHoplite);
+                // the row climbs to the upper right, as in the original;
+                // drawn from the back so nearer figures overlap the others
+                const double xx = rx - 2.6;
+                const double yy = ry - 0.4;
+                const double step = 0.45;
+                const int n = horsemen + hoplites;
+                for(int i = n - 1; i >= 0; i--) {
+                    const auto& tex = i < horsemen ? horseTex : hopliteTex;
+                    if(tex) tp.scheduleDrawTexture(xx, yy - i*step, tex);
+                }
             } else if(mViewMode == eViewMode::supplies) {
                 if(bt == eBuildingType::commonHouse) {
                     const auto ch = static_cast<eSmallHouse*>(ub);
@@ -931,6 +965,16 @@ void eGameWidget::paintEvent(ePainter& p) {
                 const auto tex = getBasementTexture(rtx, rty, ub, trrTexs,
                                                     dir, boardw, boardh);
                 tp.drawTexture(rx, ry, tex, eAlignment::top);
+            }
+            // See Security: elite houses show only their floor, so their
+            // soldiers are added once, from the floor's last tile
+            if(mViewMode == eViewMode::security &&
+               bt == eBuildingType::eliteHousing) {
+                auto tr = ub->tileRect();
+                tr = eTileHelper::toRotatedRect(tr, dir, boardw, boardh);
+                if(rtx == tr.x + tr.w - 1 && rty == tr.y + tr.h - 1) {
+                    drawBuildingModes();
+                }
             }
         } else if(ub && !eBuilding::sFlatBuilding(bt)) {
             const auto getDisplacement =

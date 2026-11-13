@@ -39,6 +39,10 @@ public:
     int arms() const { return mArms; }
 
     int horses() const { return mHorses; }
+    // the hoplites and horsemen this house gives the army, by its level,
+    // arms and horses (the companies are raised from these, and the
+    // military view shows them standing on the house)
+    void soldiers(int& hoplites, int& horsemen) const;
 
     bool lowFood() const;
     bool lowFleece() const { return mFleece < 2; }

@@ -438,3 +438,19 @@ void eEliteHousing::robbed() {
     steal(mHorses, sHorses[l]/2);
     updateLevel();
 }
+
+void eEliteHousing::soldiers(int& hoplites, int& horsemen) const {
+    hoplites = 0;
+    horsemen = 0;
+    const int l = level();
+    if(l < 2) return;
+    const int a = mArms;
+    if(l == 2) {
+        hoplites = std::min(2, a);
+    } else if(l == 3) {
+        hoplites = std::min(4, a);
+    } else if(l == 4) {
+        horsemen = std::min(std::min(a, 4), mHorses);
+        hoplites = std::max(0, std::min(4 - horsemen, a - horsemen));
+    }
+}
